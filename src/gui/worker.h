@@ -24,9 +24,11 @@
 #define ACTION_START 10000
 #define ACTION_STOP 10001
 #define ACTION_RESTART 10002
+#define ACTION_KILL 10003
 
 DECLARE_EVENT_TYPE(wxEVT_SERVER_STARTED, -1)
 DECLARE_EVENT_TYPE(wxEVT_SERVER_STOPPED, -1)
+DECLARE_EVENT_TYPE(wxEVT_SERVER_KILLED, -1)
 
 class NWNXWorker : public wxThread
 {
@@ -37,6 +39,7 @@ class NWNXWorker : public wxThread
 	void startServer();
 	void stopServer();
 	void restartServer();
+	void killServer();
 
   private:
 	void resetAction();

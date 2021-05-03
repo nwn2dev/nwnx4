@@ -64,6 +64,13 @@ void *NWNXWorker::Entry()
 				wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_STARTED, m_mainFrame->GetId()) );
 				resetAction();
 				break;
+
+		    case ACTION_KILL:
+                wxLogMessage(wxT("* Killing the NWN Server."));
+                m_controller->killServerProcess();
+                wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_KILLED, m_mainFrame->GetId()) );
+                resetAction();
+                break;
 		}
 
 		if (i % 4 == 0)
@@ -99,9 +106,14 @@ void NWNXWorker::restartServer()
 	m_action = ACTION_RESTART;
 }
 
+void NWNXWorker::killServer()
+{
+    wxMutexLocker lock(*m_mutex);
+    m_action = ACTION_KILL;
+}
+
 void NWNXWorker::resetAction()
 {
 	wxMutexLocker lock(*m_mutex);
 	m_action = ACTION_NONE;
 }
-

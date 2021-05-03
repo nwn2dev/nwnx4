@@ -22,7 +22,7 @@
 #define udp_h
 
 #include <winsock.h>
-
+#include <WS2tcpip.h>
 #define UDP_WAIT 1000
 
 class CUDP

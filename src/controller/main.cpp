@@ -167,23 +167,26 @@ void process_command_line(int argc,char *argv[])
 
 int main(int argc,char *argv[])
 {
+    USES_CONVERSION;
+
 	// init
 	STARTUP_ACTION = no_action;
 	serviceNo = 1;
 
 	// Set the current working directory to the executeables base directory
-	char path_buffer[_MAX_PATH];
-	char drive[_MAX_DRIVE];
-	char dir[_MAX_DIR];
+	TCHAR path_buffer[_MAX_PATH];
+	TCHAR drive[_MAX_DRIVE];
+	TCHAR dir[_MAX_DIR];
 	GetModuleFileName(NULL, path_buffer, MAX_PATH);
-	_splitpath( path_buffer, drive, dir, NULL, NULL );
-	_makepath(path_buffer, drive, dir, NULL, NULL);
+	_wsplitpath( path_buffer, drive, dir, NULL, NULL );
+	_wmakepath(path_buffer, drive, dir, NULL, NULL);
 	SetCurrentDirectory(path_buffer);
 
 	// set up logging and process command line parameters
 	process_command_line(argc, argv);
 
 	// open ini file
+	std::cout << "here!";
 	wxString inifile(wxT("nwnx.ini")); 
 	wxLogTrace(TRACE_VERBOSE, wxT("Reading inifile %s"), inifile);
 	wxFileConfig* config = new wxFileConfig(wxEmptyString, wxEmptyString, 
@@ -194,8 +197,8 @@ int main(int argc,char *argv[])
 	config->Read(wxT("nwn2temp"), &tempPath);
 	if (tempPath != wxT(""))
 	{
-		SetEnvironmentVariable(wxT("TEMP"), tempPath);
-		SetEnvironmentVariable(wxT("TMP"), tempPath);
+		SetEnvironmentVariable(wxT("TEMP"), A2T(tempPath.c_str()));
+		SetEnvironmentVariable(wxT("TMP"), A2T(tempPath.c_str()));
 	}
 
 	controller = new NWNXController(config);

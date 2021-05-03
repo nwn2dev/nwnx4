@@ -171,6 +171,7 @@ void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, fl
 
 char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 {
+    USES_CONVERSION;
 	wxLogDebug(wxT("call to NWNXGetString(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)"),
 		sPlugin, sFunction, sParam1, nParam2);
 
@@ -197,7 +198,7 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 					i++;
 					if (i == nParam2)
 					{
-						sprintf_s(returnBuffer, MAX_BUFFER, wxT("%s"), it->first);
+						// sprintf_s(returnBuffer, MAX_BUFFER, wxT("%s"), it->first);
 						return returnBuffer;
 					}
 				}
@@ -253,6 +254,7 @@ void parseNWNCmdLine()
 
 void PayLoad(char *gameObject, char* nwnName, char* nwnValue)
 {
+    USES_CONVERSION;
 	wxLogTrace(TRACE_VERBOSE, wxT("* Payload called"));
 
 	if (!nwnName || !nwnValue)
@@ -306,7 +308,7 @@ void PayLoad(char *gameObject, char* nwnName, char* nwnValue)
 		// plugin found, handle the request
 		LegacyPlugin* pPlugin = it->second;
 		size_t valueLength = strlen(nwnValue);
-		const char* pRes = pPlugin->DoRequest(gameObject, (TCHAR*) function.c_str(), nwnValue);
+		const char* pRes = pPlugin->DoRequest(gameObject, W2A(function.c_str()), nwnValue);
 		if (pRes)
 		{
 			// copy result into nwn variable value while respecting the maximum size
@@ -414,7 +416,7 @@ DWORD FindHook()
 
 void init()
 {
-	parseNWNCmdLine();
+    parseNWNCmdLine();
     unsigned char* hookAt;
 
 	wxString logfile = *nwnxhome + wxT("\\nwnx.txt");
@@ -563,6 +565,7 @@ typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
 //
 void loadPlugins()
 {
+    USES_CONVERSION;
 	TCHAR fClass[128];
     wxString filename;
 	wxString pattern(wxT("xp_*.dll"));
@@ -582,7 +585,7 @@ void loadPlugins()
     {
         wxLogDebug(wxT("Trying to load plugin %s"), filename);
 
-		HINSTANCE hDLL = LoadLibrary(dir.GetName() + wxT("\\") + filename);
+		HINSTANCE hDLL = LoadLibrary(A2T((dir.GetName() + wxT("\\") + filename).c_str()));
 		if (hDLL == NULL)
 		{
 			LPVOID lpMsgBuf;
@@ -602,7 +605,7 @@ void loadPlugins()
 				Plugin* pPlugin = pGetPluginPointer();
 				if (pPlugin)
 				{
-					if (!pPlugin->Init((TCHAR*)nwnxhome->c_str()))
+					if (!pPlugin->Init(A2T(nwnxhome->c_str())))
 						wxLogMessage(wxT("* Loading plugin %s: Error during plugin initialization."), filename);
 					else
 					{
@@ -632,24 +635,22 @@ void loadPlugins()
 					LegacyPlugin* pPlugin = pGetPluginPointer();
 					if (pPlugin)
 					{
-						if (!pPlugin->Init((TCHAR*)nwnxhome->c_str()))
-							wxLogMessage(wxT("* Loading plugin %s: Error during plugin initialization."), filename);
-						else
-						{
-							pPlugin->GetFunctionClass(fClass);
-							if (plugins.find(fClass) == plugins.end())
-							{
-								wxLogMessage(wxT("* Loading plugin %s: Successfully registered as class: %s"), 
-									filename, fClass);
-								legacyplugins[fClass] = pPlugin;
-							}
-							else
-							{
-								wxLogMessage(wxT("* Skipping plugin %s: Class %s already registered by another plugin."),
-									filename, fClass);
-								FreeLibrary(hDLL);
-							}
-						}
+                        if (!pPlugin->Init(A2T(nwnxhome->c_str()))) {
+                            wxLogMessage(wxT("* Loading plugin %s: Error during plugin initialization."),
+                                         filename);
+                        } else {
+                            pPlugin->GetFunctionClass(fClass);
+                            if (plugins.find(fClass) == plugins.end()) {
+                                wxLogMessage(wxT("* Loading plugin %s: Successfully registered as class: %s"),
+                                             filename, fClass);
+                                legacyplugins[fClass] = pPlugin;
+                            } else {
+                                wxLogMessage(
+                                            wxT("* Skipping plugin %s: Class %s already registered by another plugin."),
+                                            filename, fClass);
+                                FreeLibrary(hDLL);
+                            }
+                        }
 					}
 					else
 						wxLogMessage(wxT("* Loading plugin %s: Error while instancing plugin."), filename);
@@ -729,7 +730,9 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 //
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
+    if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
 		// We are doing a lazy initialization here to increase the robustness of the 
 		// hooking DLL because it is not performed while the loader lock is held.

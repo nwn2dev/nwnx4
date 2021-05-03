@@ -24,7 +24,7 @@
 #include <windows.h>
 #include <string.h>
 #include <stdio.h>
-#include "detours.h"
+#include "detours/detours.h"
 #include "../plugin.h"
 #include "../../misc/log.h"
 

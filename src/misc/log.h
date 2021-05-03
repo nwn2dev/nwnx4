@@ -22,6 +22,8 @@
 #define LOG_H_INCLUDED
 
 #include "wx/log.h"
+#include <atlbase.h>
+#include <atlconv.h>
 
 const wxString TRACE_NORMAL = wxT("TRACE_NORMAL");
 const wxString TRACE_VERBOSE = wxT("TRACE_VERBOSE");
@@ -38,7 +40,7 @@ public:
 
 protected:
     // implement sink function
-    virtual void DoLogString(const wxChar *szString, time_t t);
+    virtual void DoLogText(const wxString &msg);
 
 	FILE* fFile;
 	wxString fName;

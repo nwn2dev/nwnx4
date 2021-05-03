@@ -24,6 +24,7 @@
 
 NWNXController::NWNXController(wxFileConfig *config)
 {
+    USES_CONVERSION;
 	this->config = config;
 
 	tick = 0;
@@ -110,13 +111,14 @@ void NWNXController::notifyServiceShutdown()
 
 bool NWNXController::startServerProcessInternal()
 {
+    USES_CONVERSION;
     SHARED_MEMORY shmem;
 	wxString nwnexe(wxT("\\nwn2server.exe"));
 
 #ifdef DEBUG
-	PCHAR pszHookDLLPath = "NWNX4_Hookd.dll";			// Debug DLL
+	wchar_t* pszHookDLLPath = L"hhHook.dll";			// Debug DLL
 #else
-	PCHAR pszHookDLLPath = "NWNX4_Hook.dll";			// Release DLL
+	wchar_t* pszHookDLLPath = L"hhHook.dll";			// Release DLL
 #endif
 
 	ZeroMemory(&si, sizeof(si));
@@ -125,10 +127,11 @@ bool NWNXController::startServerProcessInternal()
 
 	wxLogTrace(TRACE_VERBOSE, wxT("Starting server executable %s in %s"), nwnhome + nwnexe, nwnhome);
 
-	CHAR szDllPath[MAX_PATH];
-	PCHAR pszFilePart = NULL;
+	TCHAR szDllPath[MAX_PATH];
+	LPWSTR pszFilePart = NULL;
 
-	if (!GetFullPathName(pszHookDLLPath, arrayof(szDllPath), szDllPath, &pszFilePart)) 
+	//	if (!GetFullPathName(pszHookDLLPath, arrayof(szDllPath), szDllPath, &pszFilePart))
+	if (!GetFullPathName(pszHookDLLPath, arrayof(szDllPath), szDllPath, &pszFilePart))
 	{
 		wxLogMessage(wxT("Error: %s could not be found."), pszHookDLLPath);
 		return false;
@@ -152,9 +155,14 @@ bool NWNXController::startServerProcessInternal()
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 	SetLastError(0);
 
-	if (!DetourCreateProcessWithDll(nwnhome + nwnexe, (LPTSTR)parameters.c_str(),
-                                    NULL, NULL, TRUE, dwFlags, NULL, nwnhome,
-                                    &si, &pi, szDllPath, NULL))   
+	auto wexecutable = A2T((nwnhome + nwnexe).c_str());
+	auto wparameters = A2T(parameters.c_str());
+	auto wnwnhome = A2T(nwnhome.c_str());
+    auto wdllPath = T2A(szDllPath);
+
+	if (!DetourCreateProcessWithDll(wexecutable, wparameters,
+                                    NULL, NULL, TRUE, dwFlags, NULL, wnwnhome,
+                                    &si, &pi, wdllPath, NULL))
 	{
 		wxLogMessage(wxT("DetourCreateProcessWithDll failed: %d"), GetLastError());
 		CloseHandle( shmem.ready_event );
@@ -226,6 +234,7 @@ bool NWNXController::startServerProcessInternal()
 
 void NWNXController::restartServerProcess()
 {
+    USES_CONVERSION;
 	// Kill any leftovers
 	if (checkProcessActive())
 		killServerProcess(true);
@@ -242,7 +251,7 @@ void NWNXController::restartServerProcess()
 		si.cb = sizeof(si);
 		wxLogMessage(wxT("* Starting maintenance file %s"), restartCmd);
 		restartCmd.Prepend(wxT("cmd.exe /c "));
-		if (CreateProcess(NULL, (LPTSTR)restartCmd.c_str(), NULL, NULL,FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi))
+		if (CreateProcess(NULL, A2T(restartCmd.c_str()), NULL, NULL,FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi))
 		{
 			WaitForSingleObject( pi.hProcess, INFINITE );
 			CloseHandle( pi.hProcess );

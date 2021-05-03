@@ -38,11 +38,11 @@ bool LegacyPlugin::Init(TCHAR* parameter)
 
 void LegacyPlugin::ProcessQueryFunction(string function, char* buffer)
 {
-	if (function == _T("GET_SUBCLASS"))
+	if (function == "GET_SUBCLASS")
 		nwnxcpy(buffer, subClass.c_str()); 
-	else if (function == _T("GET_VERSION"))
+	else if (function == "GET_VERSION")
 		nwnxcpy(buffer, version.c_str()); 
-	else if (function == _T("GET_DESCRIPTION"))
+	else if (function == "GET_DESCRIPTION")
 		nwnxcpy(buffer, description.c_str()); 
 }
 
@@ -63,28 +63,15 @@ TCHAR* LegacyPlugin::GetPluginFullPath()
 
 void LegacyPlugin::SetPluginFullPath(TCHAR* fileName)
 {
-	// TODO: replace with _splitpath
-	pluginFullPath = _tcsdup(fileName);
+    char drive[5], dir[255], fname[50], ext[3];
+    _splitpath(fileName, drive, dir, fname, ext);
 
-	// extract filename from full path
-	int len = (int)_tcslen(fileName) - 1;
-	if (len > 0)
-	{
-		int begin = -1, end = -1;
-		for (int i = len; i >= 0; i--)
-		{
-			if ((end == -1) && (fileName[i] == '.'))
-				end = i;
-			else if ((begin == -1) && (fileName[i] == '\\'))
-				begin = i + 1;
-		}
-
-		if (end > begin)
-		{
-			pluginFileName = new TCHAR[MAX_PATH];
-			_tcsncpy_s(pluginFileName, MAX_PATH, fileName + begin, end - begin);
-		}
-	}
+    pluginFullPath = new TCHAR[MAX_BUFFER];
+    pluginFileName = new TCHAR[MAX_BUFFER];
+    strcpy(pluginFullPath, fileName);
+	strcat(pluginFileName, dir);
+    strcat(pluginFileName, "\\");
+    strcat(pluginFileName, fname);
 }
 
 void LegacyPlugin::nwnxcpy(char* buffer, const char* response)

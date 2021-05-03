@@ -28,13 +28,17 @@
 #include "wx/hashset.h"
 #include "wx/tokenzr.h"
 #include "wx/fileconf.h"
-#include "detours.h"
+#include "detours/detours.h"
 #include "crashdump.h"
 #include "../misc/log.h"
 #include "../misc/cmdlineargs.h"
 #include "../misc/shmem.h"
 #include "../plugins/plugin.h"
 #include "../plugins/legacy_plugin.h"
+#include <atlbase.h>
+#include <atlconv.h>
+#include <chrono>
+#include <thread>
 
 #define MAX_BUFFER 64*1024
 

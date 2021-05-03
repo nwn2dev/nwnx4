@@ -69,29 +69,16 @@ wxLogNWNX::wxLogNWNX(wxString fName, wxString header, long maxSizeKB)
 	create_log_file();
 }
 
-
-void wxLogNWNX::DoLogString(const wxChar *szString, time_t WXUNUSED(t))
-{
-/*
-    wxString str;
-    TimeStamp(&str);
-    str << szString;
-
-    fputs(str.mb_str(), fFile);
-    fputc(_T('\n'), fFile);
-    fflush(fFile);
-*/
-    wxString str;
-    str << szString;
-
-    fputs(str.mb_str(), fFile);
+void wxLogNWNX::DoLogText(const wxString &msg) {
+    fputs(msg.mb_str(), fFile);
     fputc(_T('\n'), fFile);
     fflush(fFile);
 }
 
 void wxLogNWNX::create_log_file()
 {
-	fFile = _tfopen(fName, wxT("w"));
+    USES_CONVERSION;
+	fFile = _tfopen(A2T(fName.c_str()), wxT("w"));
 	wxLog::SetActiveTarget(this);
 	set_trace_mask();
 	wxLogMessage(wxT("%s"), header);

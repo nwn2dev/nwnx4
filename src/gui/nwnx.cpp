@@ -23,13 +23,15 @@
 #include "nwnx.h"
 #include "DlgAbout.h"
 
-IMPLEMENT_APP(NWNXGUI)
-
 bool NWNXGUI::OnInit()
 {
+    USES_CONVERSION;
+
 	// open ini file
-	wxString inifile(wxT("nwnx.ini")); 
-	wxFileConfig* config = new wxFileConfig(wxEmptyString, wxEmptyString, 
+	wxString nwn2Dir = this->argc > 1 ? this->argv[1] : "";
+	wxString inifile(nwn2Dir + "\\nwnx.ini");
+	auto path = A2T(inifile.c_str());
+	wxFileConfig* config = new wxFileConfig(wxEmptyString, wxEmptyString,
 		inifile, wxEmptyString, wxCONFIG_USE_RELATIVE_PATH|wxCONFIG_USE_NO_ESCAPE_CHARACTERS);
 
 	// Setup temporary directories
@@ -37,8 +39,8 @@ bool NWNXGUI::OnInit()
 	config->Read(wxT("nwn2temp"), &tempPath);
 	if (tempPath != wxT(""))
 	{
-		SetEnvironmentVariable(wxT("TEMP"), tempPath);
-		SetEnvironmentVariable(wxT("TMP"), tempPath);
+		SetEnvironmentVariable(wxT("TEMP"), A2T(tempPath.c_str()));
+		SetEnvironmentVariable(wxT("TMP"), A2T(tempPath.c_str()));
 	}
 
 	m_locale.Init(wxLANGUAGE_DEFAULT, NULL);	
@@ -48,3 +50,5 @@ bool NWNXGUI::OnInit()
 	SetTopWindow(frame);
 	return TRUE;	
 }
+
+DECLARE_APP(NWNXGUI)

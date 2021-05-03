@@ -20,7 +20,7 @@
 
 #include "stdwx.h"
 #include "dlgabout.h"
-#include "res/nwnx4_logo.xpm"
+#include "res/hh_logo.xpm"
 
 #include "wx/statbmp.h"
 
@@ -34,7 +34,12 @@ AboutDialog::AboutDialog(
 	: wxDialog(parent, id, title, position, size, style)
 {
 	wxString aboutText;
-	aboutText.append(wxT("NWNX4 GUI Version 0.0.9\n"));
+
+    aboutText.append(wxT("hook_horror GUI Version 0.1.0\n"));
+    aboutText.append(wxT("Neverwinter Nights Extender and Message Broker for NWN2\n\n"));
+    aboutText.append(wxT("Copyright (C) 2021 Scott Munday\n\n"));
+
+	aboutText.append(wxT("Built (respectfully) from NWNX4 GUI Version 0.0.9\n"));
 	aboutText.append(wxT("Neverwinter Nights Extender for NWN2\n\n"));
 	aboutText.append(wxT("Copyright (C) 2008 Ingmar Stieger (Papillon)\n"));
 	aboutText.append(wxT("Visit us at http://www.nwnx.org/\n\n"));
@@ -45,7 +50,7 @@ AboutDialog::AboutDialog(
 	wxBoxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer *hsizer = new wxBoxSizer(wxHORIZONTAL);
 
-	wxStaticBitmap *logo = new wxStaticBitmap(this, wxID_ANY, wxIcon(nwnx4_logo_xpm));
+	wxStaticBitmap *logo = new wxStaticBitmap(this, wxID_ANY, wxIcon(hh_logo_xpm));
 	hsizer->Add(logo, 0, wxALL, 10);
 
 	wxStaticText *text = new wxStaticText(this, wxID_ANY, aboutText);

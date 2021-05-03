@@ -1,5 +1,5 @@
 #include "Pickpocket.h"
-#include "detours.h"
+#include "detours/detours.h"
 
 // 1.13
 // g_pVirtualMachine

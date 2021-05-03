@@ -25,11 +25,13 @@
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
-#include "detours.h"
+#include "detours/detours.h"
 #include "wx/fileconf.h"
 #include "udp.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
+#include <atlbase.h>
+#include <atlconv.h>
 
 #define arrayof(x)		(sizeof(x)/sizeof(x[0]))
 #define IDC_SENDMESSAGE_EDIT    0x3FC 

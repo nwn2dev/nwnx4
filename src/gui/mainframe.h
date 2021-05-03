@@ -71,7 +71,7 @@
 #define ID_HELP 10015
 #define ID_FORUM 10016
 #define SYMBOL_MAINFRAME_STYLE wxCAPTION|wxSYSTEM_MENU|wxMINIMIZE_BOX|wxCLOSE_BOX
-#define SYMBOL_MAINFRAME_TITLE _("NWNX4")
+#define SYMBOL_MAINFRAME_TITLE _("hook_horror")
 #define SYMBOL_MAINFRAME_IDNAME ID_MAINFRAME
 #define SYMBOL_MAINFRAME_SIZE wxSize(400, 260)
 #define SYMBOL_MAINFRAME_POSITION wxDefaultPosition
@@ -103,6 +103,8 @@ public:
 
     /// Initialises member variables
     void Init();
+
+    void OnClose(wxCloseEvent& event);
 
     /// Creates the controls and sizers
     void CreateControls();
@@ -140,6 +142,7 @@ public:
 
 	void OnServerStarted(wxCommandEvent &event);
 	void OnServerStopped(wxCommandEvent &event);
+    void OnServerKilled(wxCommandEvent &event);
 
 ////@begin MainFrame member function declarations
 

@@ -24,7 +24,6 @@
 #include "windows.h"
 #include "tchar.h"
 #include "string"
-
 #define MAX_BUFFER 64*1024
 
 using namespace std;
