@@ -43,5 +43,7 @@ class NWNXGUI : public wxApp
 	wxLocale m_locale;
 };
 
+DECLARE_APP(NWNXGUI)
+
 #endif
 

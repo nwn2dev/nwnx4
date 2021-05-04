@@ -431,7 +431,7 @@ void init()
 	CloseHandle(shmem->ready_event);
 
 	// open ini file
-	wxString inifile = *nwnxhome + wxT("\\nwnx.ini"); 
+	wxString inifile = *nwnxhome + wxT("\\nwnx.ini");
 	wxLogTrace(TRACE_VERBOSE, wxT("Reading inifile %s"), inifile);
 	config = new wxFileConfig(wxEmptyString, wxEmptyString, 
 		inifile, wxEmptyString, wxCONFIG_USE_NO_ESCAPE_CHARACTERS);
@@ -730,10 +730,12 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 //
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    int argc = 0;
+    wxChar **argv = NULL;
 
     if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
+        wxEntryStart(argc, argv);
 		// We are doing a lazy initialization here to increase the robustness of the 
 		// hooking DLL because it is not performed while the loader lock is held.
 		// We hook the app entry point.
@@ -745,6 +747,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 	}
 	else if (ul_reason_for_call == DLL_PROCESS_DETACH)
 	{
+	    wxEntryCleanup();
 		//
 		// Doing complicated things from DLL_PROCESS_ATTACH is extremely bad.
 		// Let's not.  Don't want to risk deadlocking the process during an

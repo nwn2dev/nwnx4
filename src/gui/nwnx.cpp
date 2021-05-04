@@ -50,5 +50,3 @@ bool NWNXGUI::OnInit()
 	SetTopWindow(frame);
 	return TRUE;	
 }
-
-DECLARE_APP(NWNXGUI)

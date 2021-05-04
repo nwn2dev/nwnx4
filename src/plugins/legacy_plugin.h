@@ -23,6 +23,7 @@
 
 #include "windows.h"
 #include "tchar.h"
+#include <stdlib.h>
 #include "string"
 #define MAX_BUFFER 64*1024
 

@@ -65,15 +65,15 @@ TCHAR* Plugin::GetPluginFullPath()
 
 void Plugin::SetPluginFullPath(TCHAR* fileName)
 {
-    char drive[5], dir[255], fname[50], ext[3];
-    _splitpath(fileName, drive, dir, fname, ext);
+    TCHAR drive[5], dir[255], fname[50], ext[3];
+    _tsplitpath(fileName, drive, dir, fname, ext);
 
     pluginFullPath = new TCHAR[MAX_BUFFER];
     pluginFileName = new TCHAR[MAX_BUFFER];
-    strcpy(pluginFullPath, fileName);
-    strcat(pluginFileName, dir);
-    strcat(pluginFileName, "\\");
-    strcat(pluginFileName, fname);
+    wxStrcpy(pluginFullPath, fileName);
+    wxStrcat(pluginFileName, dir);
+    wxStrcat(pluginFileName, "\\");
+    wxStrcat(pluginFileName, fname);
 }
 
 void Plugin::nwnxcpy(char* buffer, const char* response)
