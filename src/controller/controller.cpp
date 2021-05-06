@@ -22,6 +22,10 @@
 #include "stdwx.h"
 #include "controller.h"
 
+NWNXController::NWNXController(wxFileConfig* config, wxLog* logger): NWNXController(config) {
+    this->logger = logger;
+}
+
 NWNXController::NWNXController(wxFileConfig *config)
 {
     USES_CONVERSION;
@@ -142,6 +146,7 @@ bool NWNXController::startServerProcessInternal()
 	SecurityAttributes.bInheritHandle = TRUE;
 	SecurityAttributes.lpSecurityDescriptor = 0;
 
+	shmem.logger = this->logger;
 	shmem.ready_event = CreateEvent(&SecurityAttributes, TRUE, FALSE, 0);
 	if(!shmem.ready_event)
 	{ 
@@ -181,7 +186,10 @@ bool NWNXController::startServerProcessInternal()
 	GetCurrentDirectory(MAX_PATH, shmem.nwnx_home);
 	wxLogTrace(TRACE_VERBOSE, wxT("NWNX home directory set to %s"), shmem.nwnx_home);
 
-	DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY));
+	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {
+	    wxLogMessage(wxT("! Error: Could no copy payload to process. %d"), GetLastError());
+	    return false;
+	}
 
 	// Start the main thread running and wait for it to signal that it has read
 	// configuration data and started up it's end of any IPC mechanisms that we

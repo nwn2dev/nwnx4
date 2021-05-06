@@ -1,0 +1,11 @@
+version: '3'
+services:
+  kafka:
+    image: bitnami/kafka:latest
+    volumes:
+      - kafka:/bitnami/kafka
+    ports:
+      - 9092:9092
+
+volumes:
+  kafka:

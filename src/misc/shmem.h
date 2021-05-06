@@ -24,6 +24,7 @@
 typedef struct _SHARED_MEMORY {
 	TCHAR nwnx_home[MAX_PATH];
 	HANDLE ready_event;
+	wxLog* logger;
 } SHARED_MEMORY;
 
 #endif

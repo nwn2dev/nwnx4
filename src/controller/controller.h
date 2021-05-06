@@ -40,6 +40,7 @@
 class NWNXController
 {
 public:
+    NWNXController(wxFileConfig* config, wxLog* logger);
     NWNXController(wxFileConfig *config);
     ~NWNXController();
 
@@ -68,7 +69,7 @@ public:
 
 private:
 	wxFileConfig *config;
-
+    wxLog* logger;
 	CUDP *udp;
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;

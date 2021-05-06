@@ -75,8 +75,8 @@ unsigned char* FindPattern(const unsigned char* pattern)
 
 int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 {
-	wxLogDebug(wxT("call to NWNXGetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)"),
-		sPlugin, sFunction, sParam1, nParam2);
+	wxLogDebug(fmt::format("call to NWNXGetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)",
+		sPlugin, sFunction, sParam1, nParam2).c_str());
 
 	// try to call the plugin
 	PluginHashMap::iterator it = plugins.find(sPlugin);
@@ -97,12 +97,13 @@ int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			else if (function == wxT("GET PLUGIN COUNT"))
 				return (int)plugins.size();
 		}
-		else
-			wxLogMessage(wxT("* NWNXGetInt: Function class '%s' not provided by any plugin. Check your installation."), plugin);
+		else {
+		    wxLogMessage(_f("* NWNXGetInt: Function class '{}' not provided by any plugin. Check your installation.", plugin.ToStdString()));
+		}
+
 	}
 	return 0;
 }
-
 
 void NWNXSetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2, int nValue)
 {
@@ -419,13 +420,14 @@ void init()
     parseNWNCmdLine();
     unsigned char* hookAt;
 
+    // TODO: Replace to a log in Kafka
 	wxString logfile = *nwnxhome + wxT("\\nwnx.txt");
 	logger = new wxLogNWNX(logfile, header);
 
 	// signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
 	{
-		wxLogMessage(wxT("* SetEvent failed (%d)"), GetLastError());
+		wxLogMessage(_f("* SetEvent failed ({:d})", GetLastError()));
 		return;
 	}
 	CloseHandle(shmem->ready_event);
@@ -440,7 +442,7 @@ void init()
 	hookAt = FindPattern(SET_NWNX_GETINT);
 	if (hookAt)
 	{
-		wxLogDebug(wxT("Connecting NWNXGetInt (0x%x)..."), hookAt);
+		wxLogDebug(_f("Connecting NWNXGetInt (0x%x)...", hookAt));
 		int (*pt2NWNXSetFunctionPointer)(int (*pt2Function)(char*, char*, char*, int)) = (int (*)(int (*)(char*, char*, char*, int))) hookAt;
 		pt2NWNXSetFunctionPointer(&NWNXGetInt);
 	}
@@ -453,7 +455,7 @@ void init()
 	hookAt = FindPattern(SET_NWNX_GETFLOAT);
 	if (hookAt)
 	{
-		wxLogDebug(wxT("Connecting NWNXGetFloat (0x%x)..."), hookAt);
+		wxLogDebug(_f("Connecting NWNXGetFloat (0x%x)...", hookAt));
 		float (*pt2NWNXSetFunctionPointer)(float (*pt2Function)(char*, char*, char*, int)) = (float (*)(float (*)(char*, char*, char*, int))) hookAt;
 		pt2NWNXSetFunctionPointer(&NWNXGetFloat);
 	}
@@ -466,20 +468,20 @@ void init()
 	hookAt = FindPattern(SET_NWNX_GETSTRING);
 	if (hookAt)
 	{
-		wxLogDebug(wxT("Connecting NWNXGetString (0x%x)..."), hookAt);
+		wxLogDebug(_f("Connecting NWNXGetString (0x%x)...", hookAt));
 		char* (*pt2NWNXSetFunctionPointer)(char* (*pt2Function)(char*, char*, char*, int)) = (char* (*)(char* (*)(char*, char*, char*, int))) hookAt;
 		pt2NWNXSetFunctionPointer(&NWNXGetString);
 	}
 	else
 	{
-		wxLogDebug(wxT("NWNXGetString NOT FOUND!"));
+		wxLogDebug(_f("NWNXGetString NOT FOUND!"));
 		missingFunction = true;
 	}
 
 	hookAt = FindPattern(SET_NWNX_SETINT);
 	if (hookAt)
 	{
-		wxLogDebug(wxT("Connecting NWNXSetInt (0x%x)..."), hookAt);
+		wxLogDebug(_f("Connecting NWNXSetInt (0x%x)...", hookAt));
 		void (*pt2NWNXSetFunctionPointer)(void (*pt2Function)(char*, char*, char*, int, int)) = (void (*)(void (*)(char*, char*, char*, int, int))) hookAt;
 		pt2NWNXSetFunctionPointer(&NWNXSetInt);
 	}
@@ -492,7 +494,7 @@ void init()
 	hookAt = FindPattern(SET_NWNX_SETFLOAT);
 	if (hookAt)
 	{
-		wxLogDebug(wxT("Connecting NWNXSetFloat (0x%x)..."), hookAt);
+		wxLogDebug(_f("Connecting NWNXSetFloat (0x%x)...", hookAt));
 		void (*pt2NWNXSetFunctionPointer)(void (*pt2Function)(char*, char*, char*, int, float)) = (void (*)(void (*)(char*, char*, char*, int, float))) hookAt;
 		pt2NWNXSetFunctionPointer(&NWNXSetFloat);
 	}
@@ -505,7 +507,7 @@ void init()
 	hookAt = FindPattern(SET_NWNX_SETSTRING);
 	if (hookAt)
 	{
-		wxLogDebug(wxT("Connecting NWNXSetString (0x%x)..."), hookAt);
+		wxLogDebug(_f("Connecting NWNXSetString (0x%x)...", hookAt));
 		void (*pt2NWNXSetFunctionPointer)(void (*pt2Function)(char*, char*, char*, int, char*)) = (void (*)(void (*)(char*, char*, char*, int, char*))) hookAt;
 		pt2NWNXSetFunctionPointer(&NWNXSetString);
 	}
@@ -524,7 +526,7 @@ void init()
 	DetourTransactionCommit();
 
 	if (oldHookAt)
-		wxLogDebug(wxT("SetLocalString hooked at 0x%x"), oldHookAt);
+		wxLogDebug(_f("SetLocalString hooked at 0x%x", oldHookAt));
 	else
 	{
 		wxLogDebug(wxT("SetLocalString NOT FOUND!"));
@@ -681,9 +683,9 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		{0xb6, 0xd7, 0x00, 0x60, 0x97, 0xb0, 0x10, 0xe3}
 	};
 
-	shmem = NULL;
+	shmem = nullptr;
 
-    for (HINSTANCE hinst = NULL; (hinst = DetourEnumerateModules(hinst)) != NULL;)
+    for (HINSTANCE hinst = nullptr; (hinst = DetourEnumerateModules(hinst)) != nullptr;)
 	{
 	    shmem = (SHARED_MEMORY*) DetourFindPayload(hinst, my_guid, &cbData);
 
@@ -693,15 +695,14 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			// Start the crash dump client first off, as the controller will try and
 			// connect to it after we acknowledge booting.
 			//
-
 			RegisterCrashDumpHandler();
 
 			//
 			// Initialize plugins and load configuration data.
 			//
-
 			nwnxhome = new wxString(shmem->nwnx_home);
 
+            // Handle log
 			init();
 			break;
 		}
@@ -710,51 +711,49 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	/*
 	 * If we didn't connect to the controller then bail out here.
 	 */
-
 	if (!shmem)
 	{
 		//DebugPrint( "NWNXWinMain(): Failed to connect to controller!\n" );
-		ExitProcess( ERROR_DEVICE_NOT_CONNECTED );
+		ExitProcess(ERROR_DEVICE_NOT_CONNECTED);
 	}
 
 	/*
 	 * Call the original entrypoint of the process now that we have done our
 	 * preprocessing.
 	 */
-
     return TrueWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 }
 
-// Called by Windows when the DLL gets loaded or unloaded
-// It just starts the IPC server.
-//
+/*
+ * Called by Windows when the DLL gets loaded or unloaded
+ * It just starts the IPC server.
+ */
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-    int argc = 0;
-    wxChar **argv = NULL;
+    std::this_thread::sleep_for(std::chrono::microseconds(5000));
 
-    if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-	{
-        wxEntryStart(argc, argv);
-		// We are doing a lazy initialization here to increase the robustness of the 
+    if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
+        // We are doing a lazy initialization here to increase the robustness of the
 		// hooking DLL because it is not performed while the loader lock is held.
 		// We hook the app entry point.
-        TrueWinMain = (int (WINAPI *)(HINSTANCE, HINSTANCE, LPSTR, int)) DetourGetEntryPoint(NULL);
+        int argc = 0;
+        wxChar **argv = nullptr;
+        wxEntryStart(argc, argv);
+        // wxLogInfo(wxT("* hook_horror starting up."));
+        TrueWinMain = (int (WINAPI *)(HINSTANCE, HINSTANCE, LPSTR, int)) DetourGetEntryPoint(nullptr);
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
         DetourAttach(&(PVOID&)TrueWinMain, NWNXWinMain);
         DetourTransactionCommit();
-	}
-	else if (ul_reason_for_call == DLL_PROCESS_DETACH)
-	{
-	    wxEntryCleanup();
-		//
+	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
+	    //
 		// Doing complicated things from DLL_PROCESS_ATTACH is extremely bad.
 		// Let's not.  Don't want to risk deadlocking the process during an
 		// otherwise clean shutdown.
 		//
-
-//		wxLogMessage(wxT("* NWNX4 shutting down."));
+        wxEntryCleanup();
+        // wxLogInfo(wxT("* hook_horror shutting down."));
 	}
+
     return TRUE;
 }

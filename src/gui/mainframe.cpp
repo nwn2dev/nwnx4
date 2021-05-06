@@ -115,7 +115,7 @@ bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption,
 	wxDateTime now = wxDateTime::Now();
 	m_startedAt->AppendText(now.Format());
 
-	controller = new NWNXController(m_config);
+	controller = new NWNXController(m_config, m_logger);
 
 	m_CmdLine->AppendText(controller->parameters);
 	m_PWEnabled->SetValue(controller->processWatchdog);
