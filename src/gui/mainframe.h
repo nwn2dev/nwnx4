@@ -39,7 +39,10 @@
 #include "wx/thread.h"
 #include "controller.h"
 #include "worker.h"
-#include "Log.h"
+#include "GuiLog.h"
+#include "LogServiceImpl.h"
+#include <grpcpp/grpcpp.h>
+#include <thread>
 
 /*!
  * Forward declarations
@@ -179,6 +182,9 @@ private:
     wxLogTextCtrl* m_logger;
 	wxTimer m_timer;
 	NWNXWorker* worker;
+    std::thread logServerThread;
+
+    void InitLogService(std::string url);
 };
 
 #endif

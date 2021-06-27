@@ -1,0 +1,13 @@
+syntax = 'proto3';
+
+import 'google/protobuf/wrappers.proto';
+
+package Gui;
+
+service LogService {
+  rpc logTrace(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
+  rpc logDebug(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
+  rpc logInfo(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
+  rpc logWarn(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
+  rpc logErr(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
+}

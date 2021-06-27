@@ -90,10 +90,9 @@ MainFrame::MainFrame(wxWindow* parent, wxWindowID id, const wxString& caption, c
 /*!
  * MainFrame creator
  */
-
 bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
 {
-    logger = static_cast<LogNWNX*>(new Log());
+    logger = new GuiLog();
 
 ////@begin MainFrame creation
     wxFrame::Create( parent, id, caption, pos, size, style );
@@ -138,6 +137,24 @@ bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption,
 		worker->Run();
 		m_BtnStart->Enable(false);
 		worker->startServer();
+	}
+
+	std::string logServiceUrl;
+	config->Read("guiLogServiceUrl", &logServiceUrl);
+
+	if (logServiceUrl != "") {
+        logServerThread = std::thread([](std::string url) {
+            // Run the log service.
+            std::string server_address(url);
+            LogServiceImpl service;
+
+            grpc::ServerBuilder builder;
+            builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+            builder.RegisterService(&service);
+            std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+            logger->Info("Started GUI log service at %s.", server_address.c_str());
+            server->Wait();
+        }, logServiceUrl);
 	}
 
     return true;

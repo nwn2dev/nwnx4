@@ -425,7 +425,7 @@ void init()
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
 
-    logger->Info("NWNX Home: %s", nwnxHome);
+    logger->Info("NWNX Home: %s", legacyNwnxHome);
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
@@ -436,7 +436,7 @@ void init()
 	CloseHandle(shmem->ready_event);
 
 	// open ini file
-	auto inifile = *nwnxHome + L"\\nwnx.ini";
+	auto inifile = *legacyNwnxHome + "\\nwnx.ini";
 	logger->Trace("Reading inifile %s", inifile.c_str());
 	config = new SimpleIniConfig(inifile);
 	logger->Configure(config);

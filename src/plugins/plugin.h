@@ -18,8 +18,7 @@
 
  ***************************************************************************/
 
-#if !defined(PLUGIN_H_INCLUDED)
-#define PLUGIN_H_INCLUDED
+#pragma once
 
 #include <windows.h>
 #include <string>
@@ -71,5 +70,3 @@ private:
 	char *pluginFileName;
 	char *pluginFullPath;
 };
-
-#endif
