@@ -1,12 +1,23 @@
-source_files = ['../misc/log.cpp', '../misc/log.h', 'main.cpp', 'controller.cpp', 'service.cpp', 'udp.cpp', 'stdafx.h']
 
-if get_option('buildtype') == 'debug'
-    cpp_args = ['/DWIN32', '/D_DEBUG', '/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE', '/D_WINDOWS', '/DUNICODE']
-    libs = [cpp.find_library('ws2_32'), cpp.find_library('wsock32'), cpp.find_library('detours', dirs: lib_dirs)]
-else
-    cpp_args = ['/DWIN32', '/D_NDEBUG', '/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE', '/D_WINDOWS', '/DUNICODE']
-    libs = [cpp.find_library('ws2_32'), cpp.find_library('wsock32'), cpp.find_library('detours', dirs: lib_dirs)]
-endif
+NWNx4Controller_exe = executable('NWNX4_Controller',
+    [
+        'main.cpp',
+        'controller.cpp',
+        'service.cpp',
+        'udp.cpp',
+        '../misc/log.cpp',
+    ],
+    win_subsystem: 'console',
+    cpp_args: ['/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE'],
+    include_directories: include_dirs,
+    dependencies: [
+        cppcompiler.find_library('wsock32'),
+        cppcompiler.find_library('ws2_32'),
+        cppcompiler.find_library('detours', dirs: lib_dirs),
+    ],
+    install: true,
+)
 
-executable('NWNx4Controller', source_files,
-    cpp_args: cpp_args, include_directories: include_directories(include_dirs), dependencies: libs)
+install_data('nwnx.ini', install_dir: '.')
+install_data('nwnx_restart.cmd', install_dir: '.')
+install_data('nwnx_include.nss', install_dir: 'nwscript')

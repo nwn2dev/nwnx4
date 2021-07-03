@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "scorcohook.h"
 #include "dbplugin.h"
-#include "mysql/mysql.h" //This is a temporary design flaw workaround: see below
+#include "mysql/mysql_plugin.h" //This is a temporary design flaw workaround: see below
 
 //DESIGN FLAW
 //Can't access base class here

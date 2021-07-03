@@ -1,0 +1,1 @@
+../../bin/dist/nss/nwnx_mysql_errors.nss

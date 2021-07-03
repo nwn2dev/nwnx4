@@ -28,7 +28,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CIniFile::CIniFile(LPCSTR lpszFileName)
+CIniFile::CIniFile(const wchar_t* lpszFileName)
 {
 	// profile functions require complete path
 	_fullpath (m_szFileName, lpszFileName, MAX_PATH);
@@ -38,13 +38,13 @@ CIniFile::~CIniFile()
 {
 }
 
-int CIniFile::ReadInteger (LPCSTR lpszSection, LPCSTR lpszKey, int iDefault)
+int CIniFile::ReadInteger (const wchar_t* lpszSection, const wchar_t* lpszKey, int iDefault)
 {
 	// read integer value from ini-file
 	return GetPrivateProfileInt (lpszSection, lpszKey, iDefault, m_szFileName);
 }
 
-long CIniFile::ReadLong (LPCSTR lpszSection, LPCSTR lpszKey, long lDefault)
+long CIniFile::ReadLong (const wchar_t* lpszSection, const wchar_t* lpszKey, long lDefault)
 {
 	// read long value from ini-file
 	char buffer[256];
@@ -56,13 +56,13 @@ long CIniFile::ReadLong (LPCSTR lpszSection, LPCSTR lpszKey, long lDefault)
 		return lDefault;
 }
 
-void CIniFile::ReadString (LPCSTR lpszSection, LPCSTR lpszKey, LPSTR lpszBuffer, int Size, LPCSTR lpszDefault)
+void CIniFile::ReadString (const wchar_t* lpszSection, const wchar_t* lpszKey, LPSTR lpszBuffer, int Size, const wchar_t* lpszDefault)
 {
 	// read string value
 	GetPrivateProfileString (lpszSection, lpszKey, lpszDefault, lpszBuffer, Size, m_szFileName);
 }
 
-bool CIniFile::ReadBool(LPCSTR lpszSection, LPCSTR lpszKey, bool iDefault)
+bool CIniFile::ReadBool(const wchar_t* lpszSection, const wchar_t* lpszKey, bool iDefault)
 {
 	char buffer[256];
 	ReadString(lpszSection, lpszKey, buffer, 256, "");

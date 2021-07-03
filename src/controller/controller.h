@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include <cstring>
 #include <cwchar>
-#include "detours/detours.h"
+#include <detours/detours.h>
 #include "udp.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"

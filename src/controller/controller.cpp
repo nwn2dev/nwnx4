@@ -120,7 +120,7 @@ bool NWNXController::startServerProcessInternal()
 {
     SHARED_MEMORY shmem;
 	std::string nwnexe("\\nwn2server.exe");
-	LPWSTR pszHookDLLPath = L"NWNx4Hook.dll";
+	LPWSTR pszHookDLLPath = L"NWNX4_Hook.dll";
 
 	ZeroMemory(&si, sizeof(si));
 	ZeroMemory(&pi, sizeof(pi));

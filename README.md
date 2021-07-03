@@ -1,56 +1,77 @@
 
+# NWNX4
+
+NWNX4 is a launcher for NWN2Server that injects code into the server process, in order
+to provide additional features and bug fixes.
+
+## Usage
+
+1. Extract the [NWNX4 zip file](https://github.com/nwn2dev/nwnx4/releases) in any directory
+2. Edit `nwnx.ini`, at least:
+    + `nwn2`: full or relative path to the NWN2 install folder
+    + `parameters`: nwn2server command line arguments. Examples:
+        * `-module YourModuleName` if your module is a .mod file
+        * `-moduledir YourModuleName` if your module is a directory
+3. Delete or rename either `xp_mysql.dll` or `xp_sqlite.dll`
+4. Configure your plugins (`xp_*.ini` files). Most plugins come with convenient defaults, but you may need to tweak some of them.
+5. Start NWNX4:
+    + Run `NWNX4_GUI.exe` for the GUI version
+    + Run `NWNX4_Controller.exe -interactive` in a shell for the command-line version.
+
+
+## About
+NWNX4 was originally written by Virusman, Grinning Fool, McKillroy, Skywing,
+Papillon and many contributors. This repository is based on the original
+codebase, but with modern build tools and new maintainers.
+
+The original source code can be found here: https://github.com/NWNX/nwnx4
 
 # Build
 
-## Using a Visual Studio 2019
-
-- Install [Microsoft Visual Studio 2019 Community](https://visualstudio.microsoft.com/downloads/#visual-studio-community-2019)
-- Open `src/NWNX4.sln` with Visual Studio
-- Press F6 or go to _Build -> Build solution_
-
-
-# Work in progress
-
-[ ] nwnx_gui should be ported to use latest Qt version
-[ ] xp_ruby: I could not find any up-to-date prebuilt Ruby C library to link against
-[ ] xp_chat does not work (error triggered when a player enters the server). This plugin is probably useless since you can set a custom OnChat script in the module properties.
-
-# Build (2021/06/02)
-
-This set of instructions should help build the source code for the new decade.
-
 ## Requirements
 
-- Windows
-- CMake
-- Git
-- MSBuild
-- PowerShell
+- [Meson](https://github.com/mesonbuild/meson/releases)
+- [Microsoft Visual Studio 2019
+  Community](https://visualstudio.microsoft.com/downloads/#visual-studio-community-2019)
+  or [MSBuild
+  tools](https://visualstudio.microsoft.com/fr/downloads/?q=build+tools)
 
-## Instructions
+## Building
 
-The following dependencies are required for NWNx4:
-
-- Detours
-- wxWidgets
-
-The most recent version of these dependencies are large. They are so large, that it doesn't make sense (for many reasons)
-to maintain these packages within the repository. For this reason, I have included a bootstrap PowerShell script that 
-takes out all the headache out of the process. 
+### Initialize your environment
 
 ```powershell
-./bootstrap.ps1
+# Initialize git submodules (if you did not clone this repo with `--recurse`)
+git submodule init
+git submodule update
+
+# Bootstrap vcpkg
+vcpkg\bootstrap-vcpkg.sh
+
+# Install dependencies (can take a while)
+vcpkg\vcpkg.exe install --triplet=x86-windows-static-md
 ```
 
-This script will install vcpkg and its dependencies.
+### Build NWNX4
 
-### Build Debug/Release
-
-With the bootstrap completed, you only have to run Meson. Good thing is that I took out the headache out of this too.
-From a VS Command Prompt, enter the following command:
-
+From a x86 MSBuild prompt (i.e. `x86 Native Tools Command Prompt for VS 2019` if you installed Visual Studio 2019):
 ```powershell
-pwsh ./build.ps1
+# Setup build
+meson builddir
+
+# Build project
+cd builddir
+meson compile
+
+# Install nwnx4 at a given location
+meson install --destdir=%cd%\..\nwnx4-install
 ```
 
-You should find two folders: meson-build-debug and meson-build-release. They are the built version of the codebase respectively divided upon environments.
+
+## Developing with Visual Studio 2019
+
+Meson can generate solutions for Visual Studio. The following command will
+create a `NWNX4.sln` that you can open with Visual Studio:
+```ps
+meson setup --backend=vs2019 vsbuild
+```

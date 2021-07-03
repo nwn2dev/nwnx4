@@ -18,7 +18,7 @@
 
 ***************************************************************************/
 
-#include "controller.h"
+#include "../controller/controller.h"
 
 #define ACTION_NONE 0
 #define ACTION_START 10000

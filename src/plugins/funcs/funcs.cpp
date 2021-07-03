@@ -44,7 +44,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 		plugin = new Funcs();
 
 		char szPath[MAX_PATH];
-		GetModuleFileName(hModule, szPath, MAX_PATH);
+		GetModuleFileNameA(hModule, szPath, MAX_PATH);
 		plugin->SetPluginFullPath(szPath);
 	}
 	else if (ul_reason_for_call == DLL_PROCESS_DETACH)

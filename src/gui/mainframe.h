@@ -37,7 +37,7 @@
 
 #include "wx/fileconf.h"
 #include "wx/thread.h"
-#include "controller.h"
+#include "../controller/controller.h"
 #include "worker.h"
 #include "GuiLog.h"
 #include "LogServiceImpl.h"

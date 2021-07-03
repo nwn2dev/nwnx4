@@ -23,7 +23,7 @@
 
 #include <windows.h>
 #include <unordered_map>
-#include "detours/detours.h"
+#include <detours/detours.h>
 #include "crashdump.h"
 #include "../misc/ini.h"
 #include "../misc/log.h"
