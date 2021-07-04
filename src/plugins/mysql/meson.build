@@ -1,7 +1,11 @@
 if get_option('buildtype') == 'release'
-    extra_libs = cppcompiler.find_library('zlib', dirs: lib_dirs)
+    extra_libs = [
+        cppcompiler.find_library('zlib', dirs: lib_dirs)
+    ]
 else
-    extra_libs = cppcompiler.find_library('zlibd', dirs: lib_dirs)
+    extra_libs = [
+        cppcompiler.find_library('zlibd', dirs: lib_dirs)
+    ]
 endif
 
 shared_library('xp_mysql',

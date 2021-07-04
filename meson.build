@@ -138,7 +138,7 @@ grpc_dep += [
     cppcompiler.find_library('absl_time_zone', dirs: lib_dirs),
     cppcompiler.find_library('absl_wyhash', dirs: lib_dirs)
 ]
-message(lib_dirs)
+
 # Target list
 subdir('src/hook')
 subdir('src/controller')
