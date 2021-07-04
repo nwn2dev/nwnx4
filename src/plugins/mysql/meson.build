@@ -1,4 +1,8 @@
-
+if get_option('buildtype') == 'release'
+    extra_libs = cppcompiler.find_library('zlib', dirs: lib_dirs)
+else
+    extra_libs = cppcompiler.find_library('zlibd', dirs: lib_dirs)
+endif
 
 shared_library('xp_mysql',
     [
@@ -13,7 +17,6 @@ shared_library('xp_mysql',
     	# MariaDB & dependencies
         cppcompiler.find_library('libmariadb', dirs: lib_dirs),
     	cppcompiler.find_library('mariadbclient', dirs: lib_dirs),
-        cppcompiler.find_library('zlib', dirs: lib_dirs),
         cppcompiler.find_library('libssl', dirs: lib_dirs),
         cppcompiler.find_library('libcrypto', dirs: lib_dirs),
         cppcompiler.find_library('shlwapi'),
@@ -23,7 +26,7 @@ shared_library('xp_mysql',
     	cppcompiler.find_library('NWN2_MemoryMgr_amdxp', dirs: lib_dirs),
         cppcompiler.find_library('dbghelp'),
         cppcompiler.find_library('ws2_32'),
-    ],
+    ] + extra_libs,
     install: true,
 )
 

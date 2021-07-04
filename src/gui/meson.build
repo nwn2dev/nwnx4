@@ -24,7 +24,6 @@ else
     ]
 endif
 
-
 NWNx4Controller_exe = executable('NWNX4_Gui',
     [
         'stdwx.cpp',
@@ -36,7 +35,10 @@ NWNx4Controller_exe = executable('NWNX4_Gui',
         'worker.cpp',
         'main.cpp',
         '../misc/log.cpp',
-        'Log.cpp',
+        'GuiLog.cpp',
+        'LogServiceImpl.cpp',
+        'log.grpc.pb.cc',
+        'log.pb.cc'
     ],
     win_subsystem: 'windows',
     cpp_args: wx_args,
@@ -47,6 +49,6 @@ NWNx4Controller_exe = executable('NWNX4_Gui',
         cppcompiler.find_library('comctl32'),
         cppcompiler.find_library('rpcrt4'),
         cppcompiler.find_library('detours', dirs: lib_dirs),
-    ] + wx_dep,
+    ] + wx_dep + grpc_dep,
     install: true,
 )
