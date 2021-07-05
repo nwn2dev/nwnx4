@@ -424,7 +424,7 @@ void init()
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
 
-    logger->Info("NWNX Home: %s", nwnxHome);
+    logger->Info("NWNX Home: %s", nwnxHome->c_str());
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
@@ -582,7 +582,7 @@ void loadPlugins()
     	if(filename.substr(0, 3) == "xp_" && filename.substr(filename.size() - 4) == ".dll"){
         	logger->Debug("Trying to load plugin %s", filename.c_str());
 
-			HINSTANCE hDLL = LoadLibrary((wchar_t*)file.path().string().c_str()); // Warning: unconst cast
+			HINSTANCE hDLL = LoadLibraryA(file.path().string().c_str()); // Warning: unconst cast
 			if (hDLL == nullptr)
 			{
 				LPVOID lpMsgBuf;
