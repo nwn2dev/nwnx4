@@ -139,23 +139,21 @@ bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption,
 		worker->startServer();
 	}
 
-	std::string logServiceUrl;
-	config->Read("guiLogServiceUrl", &logServiceUrl);
+	// Create log service.
+    std::string guiLogServiceUrl;
+    config->Read("guiLogServiceUrl", &guiLogServiceUrl);
 
-	if (logServiceUrl != "") {
-        logServerThread = std::thread([](std::string url) {
-            // Run the log service.
-            std::string server_address(url);
-            LogServiceImpl service;
-
-            grpc::ServerBuilder builder;
-            builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-            builder.RegisterService(&service);
-            std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-            logger->Info("Started GUI log service at %s.", server_address.c_str());
-            server->Wait();
-        }, logServiceUrl);
-	}
+    if (guiLogServiceUrl != "") {
+        guiLogWorker = new GuiLogWorker(guiLogServiceUrl, (GuiLog*) logger);
+        if (guiLogWorker->Create() != wxTHREAD_NO_ERROR)
+        {
+            wxLogError(wxT("Can't create GUI log worker thread!"));
+            guiLogWorker->Delete();
+            guiLogWorker = nullptr;
+        } else {
+            guiLogWorker->Run();
+        }
+    }
 
     return true;
 }
@@ -183,6 +181,7 @@ void MainFrame::Init()
     m_BtnRestart = nullptr;
 ////@end MainFrame member initialisation
 	worker = nullptr;
+	guiLogWorker = nullptr;
 }
 /*!
  * Control creation for MainFrame

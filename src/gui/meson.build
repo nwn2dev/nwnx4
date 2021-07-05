@@ -36,6 +36,7 @@ NWNx4Controller_exe = executable('NWNX4_Gui',
         'main.cpp',
         '../misc/log.cpp',
         'GuiLog.cpp',
+        'GuiLogWorker.cpp',
         'LogServiceImpl.cpp',
         'log.grpc.pb.cc',
         'log.pb.cc'

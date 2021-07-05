@@ -40,9 +40,7 @@
 #include "../controller/controller.h"
 #include "worker.h"
 #include "GuiLog.h"
-#include "LogServiceImpl.h"
-#include <grpcpp/grpcpp.h>
-#include <thread>
+#include "GuiLogWorker.h"
 
 /*!
  * Forward declarations
@@ -182,7 +180,7 @@ private:
     wxLogTextCtrl* m_logger;
 	wxTimer m_timer;
 	NWNXWorker* worker;
-    std::thread logServerThread;
+    GuiLogWorker* guiLogWorker;
 
     void InitLogService(std::string url);
 };
