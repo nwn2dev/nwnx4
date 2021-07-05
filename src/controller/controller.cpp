@@ -120,7 +120,7 @@ bool NWNXController::startServerProcessInternal()
 {
     SHARED_MEMORY shmem;
 	std::string nwnexe("\\nwn2server.exe");
-	LPWSTR pszHookDLLPath = L"NWNX4_Hook.dll";
+	auto pszHookDLLPath = "NWNX4_Hook.dll";
 
 	ZeroMemory(&si, sizeof(si));
 	ZeroMemory(&pi, sizeof(pi));
@@ -129,10 +129,10 @@ bool NWNXController::startServerProcessInternal()
 	auto exePath = nwnhome + nwnexe;
 	logger->Trace("Starting server executable %s in %s", exePath.c_str(), nwnhome.c_str());
 
-	wchar_t szDllPath[MAX_PATH];
-	LPWSTR pszFilePart = nullptr;
+	char szDllPath[MAX_PATH];
+	LPSTR pszFilePart = nullptr;
 
-    if (!GetFullPathName(pszHookDLLPath, arrayof(szDllPath), szDllPath, &pszFilePart))
+    if (!GetFullPathNameA(pszHookDLLPath, arrayof(szDllPath), szDllPath, &pszFilePart))
 	{
 		logger->Info("Error: %s could not be found.", pszHookDLLPath);
 		return false;
@@ -156,28 +156,9 @@ bool NWNXController::startServerProcessInternal()
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 	SetLastError(0);
 
-	// TODO: Fix this to better accomodate wstr.
-	auto exeStr = nwnhome + nwnexe;
-    auto nwnExecutable = std::wstring(exeStr.begin(), exeStr.end());
-
-    auto len = wcslen(szDllPath) + 1;
-	char nwnDllPath[MAX_PATH];
-	memset(nwnDllPath, 0, MAX_PATH);
-	wcstombs(nwnDllPath, szDllPath, len);
-
-	len = nwnhome.length() + 1;
-	wchar_t nwnHome[MAX_PATH];
-	memset(nwnHome, 0, MAX_PATH);
-    mbstowcs(nwnHome, nwnhome.c_str(), len);
-
-    len = parameters.length() + 1;
-	wchar_t nwnParameters[MAX_PATH];
-    memset(nwnParameters, 0, MAX_PATH);
-    mbstowcs(nwnParameters, parameters.c_str(), len);
-
-	if (!DetourCreateProcessWithDll(nwnExecutable.c_str(), nwnParameters,
-                                    nullptr, nullptr, TRUE, dwFlags, nullptr, nwnHome,
-                                    &si, &pi, nwnDllPath, nullptr))
+	if (!DetourCreateProcessWithDllA(exePath.c_str(), (LPSTR) parameters.c_str(),
+                                    nullptr, nullptr, TRUE, dwFlags, nullptr, nwnhome.c_str(),
+                                    &si, &pi, szDllPath, nullptr))
 	{
 		auto err = GetLastError();
 		logger->Info("DetourCreateProcessWithDll failed: %d", err);
@@ -197,7 +178,7 @@ bool NWNXController::startServerProcessInternal()
 		{0xb6, 0xd7, 0x00, 0x60, 0x97, 0xb0, 0x10, 0xe3}
 	};
 
-	GetCurrentDirectory(MAX_PATH, shmem.nwnx_home);
+	GetCurrentDirectoryA(MAX_PATH, shmem.nwnx_home);
 	logger->Trace("NWNX home directory set to %s", shmem.nwnx_home);
 
 	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {

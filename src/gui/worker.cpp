@@ -47,28 +47,28 @@ void *NWNXWorker::Entry()
 			case ACTION_START:
 				wxLogMessage(wxT("* Starting the NWN Server."));
 				m_controller->startServerProcess();
-				wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_STARTED, m_mainFrame->GetId()) );
+				wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_STARTED, m_mainFrame->GetId()));
 				resetAction();
 				break;
 
 			case ACTION_STOP:
 				wxLogMessage(wxT("* Stopping the NWN Server."));
 				m_controller->killServerProcess(true);
-				wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_STOPPED, m_mainFrame->GetId()) );
+				wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_STOPPED, m_mainFrame->GetId()));
 				resetAction();
 				break;
 
 			case ACTION_RESTART:
 				wxLogMessage(wxT("* Restarting the NWN Server."));
 				m_controller->restartServerProcess();
-				wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_STARTED, m_mainFrame->GetId()) );
+				wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_STARTED, m_mainFrame->GetId()));
 				resetAction();
 				break;
 
 		    case ACTION_KILL:
                 wxLogMessage(wxT("* Killing the NWN Server."));
                 m_controller->killServerProcess();
-                wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_KILLED, m_mainFrame->GetId()) );
+                wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_KILLED, m_mainFrame->GetId()));
                 resetAction();
                 break;
 		}
@@ -108,8 +108,13 @@ void NWNXWorker::restartServer()
 
 void NWNXWorker::killServer()
 {
-    wxMutexLocker lock(*m_mutex);
-    m_action = ACTION_KILL;
+    if (m_action == ACTION_NONE) {
+        wxMutexLocker lock(*m_mutex);
+        m_action = ACTION_KILL;
+    } else {
+        m_controller->killServerProcess();
+        wxPostEvent(m_mainFrame->GetEventHandler(), wxCommandEvent(wxEVT_SERVER_KILLED, m_mainFrame->GetId()));
+    }
 }
 
 void NWNXWorker::resetAction()

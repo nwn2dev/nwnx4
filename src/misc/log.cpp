@@ -54,7 +54,6 @@ LogNWNX::LogNWNX(LogLevel level)
 {
     m_level = level;
 }
-LogNWNX::LogNWNX(std::wstring filePath, LogLevel level): LogNWNX(std::string(filePath.begin(), filePath.end()), level) {}
 LogNWNX::LogNWNX(std::string filePath, LogLevel level)
 {
     m_level = level;

@@ -42,7 +42,6 @@ class LogNWNX
 {
 public:
     LogNWNX(LogLevel level = LogLevel::info);
-    LogNWNX(std::wstring, LogLevel level = LogLevel::info);
     LogNWNX(std::string, LogLevel level = LogLevel::info);
 
     void SetLogLevel(LogLevel level) {

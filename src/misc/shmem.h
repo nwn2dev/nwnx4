@@ -22,7 +22,7 @@
 #define SHMEM_H_INCLUDED
 
 typedef struct _SHARED_MEMORY {
-	wchar_t nwnx_home[MAX_PATH];
+	char nwnx_home[MAX_PATH];
 	HANDLE ready_event;
 } SHARED_MEMORY;
 

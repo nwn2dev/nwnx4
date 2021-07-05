@@ -31,8 +31,7 @@ PluginHashMap plugins;
 LegacyPluginHashMap legacyplugins;
 
 LogNWNX* logger;
-std::string* legacyNwnxHome;
-std::wstring* nwnxHome;
+std::string* nwnxHome;
 SimpleIniConfig* config;
 
 char returnBuffer[MAX_BUFFER];
@@ -419,13 +418,13 @@ void init()
 {
     unsigned char* hookAt;
 
-	auto logfile = std::wstring(*nwnxHome) + L"\\nwnx.txt";
+	auto logfile = std::string(*nwnxHome) + "\\nwnx.txt";
 	logger = new LogNWNX(logfile);
 	logger->Info("NWN Extender 4 V.1.1.0");
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
 
-    logger->Info("NWNX Home: %s", legacyNwnxHome);
+    logger->Info("NWNX Home: %s", nwnxHome);
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
@@ -436,7 +435,7 @@ void init()
 	CloseHandle(shmem->ready_event);
 
 	// open ini file
-	auto inifile = *legacyNwnxHome + "\\nwnx.ini";
+	auto inifile = *nwnxHome + "\\nwnx.ini";
 	logger->Trace("Reading inifile %s", inifile.c_str());
 	config = new SimpleIniConfig(inifile);
 	logger->Configure(config);
@@ -603,7 +602,7 @@ void loadPlugins()
 					Plugin* pPlugin = pGetPluginPointer();
 					if (pPlugin)
 					{
-						if (!pPlugin->Init(legacyNwnxHome->data()))
+						if (!pPlugin->Init(nwnxHome->data()))
 							logger->Info("* Loading plugin %s: Error during plugin initialization.", filename.c_str());
 						else
 						{
@@ -633,7 +632,7 @@ void loadPlugins()
 						LegacyPlugin* pPlugin = pGetPluginPointer();
 						if (pPlugin)
 						{
-							if (!pPlugin->Init(legacyNwnxHome->data()))
+							if (!pPlugin->Init(nwnxHome->data()))
 								logger->Info("* Loading plugin %s: Error during plugin initialization.", filename.c_str());
 							else
 							{
@@ -792,13 +791,7 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			// Initialize plugins and load configuration data.
 			//
 
-            nwnxHome = new std::wstring(shmem->nwnx_home);
-
-            // For legacy.
-            char tmp[MAX_PATH];
-            memset(tmp, 0, MAX_PATH);
-			wcstombs(tmp, shmem->nwnx_home, wcslen(shmem->nwnx_home));
-			legacyNwnxHome = new std::string(tmp);
+            nwnxHome = new std::string(shmem->nwnx_home);
 
 			// Initialize hook.
 			init();

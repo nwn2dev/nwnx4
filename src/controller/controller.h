@@ -68,7 +68,7 @@ private:
 	SimpleIniConfig* config;
 
 	CUDP *udp;
-	STARTUPINFO si;
+	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
 
 	unsigned long tick;
