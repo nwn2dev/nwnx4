@@ -26,12 +26,14 @@
 #include <grpcpp/impl/codegen/stub_options.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
 
-namespace Gui {
+namespace HookHorror {
+namespace Util {
+namespace Log {
 
 class LogService final {
  public:
   static constexpr char const* service_full_name() {
-    return "Gui.LogService";
+    return "HookHorror.Util.Log.LogService";
   }
   class StubInterface {
    public:
@@ -1090,7 +1092,9 @@ class LogService final {
   typedef WithStreamedUnaryMethod_logTrace<WithStreamedUnaryMethod_logDebug<WithStreamedUnaryMethod_logInfo<WithStreamedUnaryMethod_logWarn<WithStreamedUnaryMethod_logErr<Service > > > > > StreamedService;
 };
 
-}  // namespace Gui
+}  // namespace Log
+}  // namespace Util
+}  // namespace HookHorror
 
 
 #endif  // GRPC_log_2eproto__INCLUDED

@@ -19,14 +19,16 @@
 #include <grpcpp/impl/codegen/server_context.h>
 #include <grpcpp/impl/codegen/service_type.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
-namespace Gui {
+namespace HookHorror {
+namespace Util {
+namespace Log {
 
 static const char* LogService_method_names[] = {
-  "/Gui.LogService/logTrace",
-  "/Gui.LogService/logDebug",
-  "/Gui.LogService/logInfo",
-  "/Gui.LogService/logWarn",
-  "/Gui.LogService/logErr",
+  "/HookHorror.Util.Log.LogService/logTrace",
+  "/HookHorror.Util.Log.LogService/logDebug",
+  "/HookHorror.Util.Log.LogService/logInfo",
+  "/HookHorror.Util.Log.LogService/logWarn",
+  "/HookHorror.Util.Log.LogService/logErr",
 };
 
 std::unique_ptr< LogService::Stub> LogService::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -250,5 +252,7 @@ LogService::Service::~Service() {
 }
 
 
-}  // namespace Gui
+}  // namespace HookHorror
+}  // namespace Util
+}  // namespace Log
 
