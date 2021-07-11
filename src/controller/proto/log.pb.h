@@ -55,7 +55,9 @@ extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table
 ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_log_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_NAMESPACE_CLOSE
-namespace Gui {
+namespace HookHorror {
+namespace Util {
+namespace Log {
 
 // ===================================================================
 
@@ -75,7 +77,9 @@ namespace Gui {
 
 // @@protoc_insertion_point(namespace_scope)
 
-}  // namespace Gui
+}  // namespace Log
+}  // namespace Util
+}  // namespace HookHorror
 
 // @@protoc_insertion_point(global_scope)
 

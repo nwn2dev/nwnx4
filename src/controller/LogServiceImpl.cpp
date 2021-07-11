@@ -41,4 +41,3 @@ extern LogNWNX* logger;
 
     return ::grpc::Status::OK;
 }
-

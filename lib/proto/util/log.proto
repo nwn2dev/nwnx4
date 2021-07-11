@@ -2,7 +2,7 @@ syntax = 'proto3';
 
 import 'google/protobuf/wrappers.proto';
 
-package Gui;
+package HookHorror.Util.Log;
 
 service LogService {
   rpc logTrace(google.protobuf.StringValue) returns (google.protobuf.BoolValue);

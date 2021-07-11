@@ -1,4 +1,3 @@
-
 wx_args = ['/DwxUSE_GUI=1', '/DwxUSE_UNICODE']
 if get_option('buildtype') == 'release'
     wx_args += ['/D__WXMSWU__']
@@ -30,16 +29,17 @@ NWNx4Controller_exe = executable('NWNX4_Gui',
         'mainframe.cpp',
         '../controller/controller.cpp',
         '../controller/udp.cpp',
+        '../controller/LogService.cpp',
+        '../controller/LogService.cpp',
+        '../controller/LogServiceImpl.cpp',
+        '../controller/proto/log.grpc.pb.cc',
+        '../controller/proto/log.pb.cc',
         'dlgabout.cpp',
         'nwnx.cpp',
         'worker.cpp',
         'main.cpp',
         '../misc/log.cpp',
-        'GuiLog.cpp',
-        'GuiLogWorker.cpp',
-        'LogServiceImpl.cpp',
-        'log.grpc.pb.cc',
-        'log.pb.cc'
+        'GuiLog.cpp'
     ],
     win_subsystem: 'windows',
     cpp_args: wx_args,
