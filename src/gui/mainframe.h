@@ -180,8 +180,6 @@ private:
     wxLogTextCtrl* m_logger;
 	wxTimer m_timer;
 	NWNXWorker* worker;
-
-    void InitLogService(std::string url);
 };
 
 #endif
