@@ -23,6 +23,8 @@
 
 extern LogNWNX* logger;
 
+std::future<void> logServiceConnection;
+
 NWNXController::NWNXController(SimpleIniConfig* config)
 {
     this->config = config;
@@ -73,6 +75,19 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 	}
 	logger->Trace("NWN2 home: %s", nwnhome.c_str());
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
+
+	// Create log service (if necessary).
+	std::string logServiceUrl;
+	config->Read("logServiceUrl", &logServiceUrl);  // Only configuration necessary for handling log service.
+
+    if (logServiceUrl != "") {
+        try {
+            logService = new LogService(config);
+            logServiceConnection = logService->asyncStart();
+        } catch (const char* exception) {
+            logger->Err(exception);
+        }
+    }
 }
 
 NWNXController::~NWNXController()
@@ -81,6 +96,10 @@ NWNXController::~NWNXController()
 
 	if (udp)
 		delete udp;
+
+	if (logService != nullptr) {
+        delete logService;
+    }
 }
 
 void NWNXController::setupTempDirectories() {

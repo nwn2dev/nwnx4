@@ -25,5 +25,8 @@
 .idea/
 vcpkg/
 vcpkg_installed/
+cmake-*/
 meson-*/
+ssl/
 CMakeLists.txt
+build.ps1

@@ -30,7 +30,7 @@ DECLARE_EVENT_TYPE(wxEVT_SERVER_STARTED, -1)
 DECLARE_EVENT_TYPE(wxEVT_SERVER_STOPPED, -1)
 DECLARE_EVENT_TYPE(wxEVT_SERVER_KILLED, -1)
 
-class NWNXWorker : public wxThread
+class NWNXWorker: public wxThread
 {
   public:
 	NWNXWorker(NWNXController* controller, wxFrame* mainFrame);

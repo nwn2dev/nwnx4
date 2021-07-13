@@ -26,7 +26,9 @@
 #include <cstring>
 #include <cwchar>
 #include <detours/detours.h>
+#include <future>
 #include "udp.h"
+#include "LogService.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
 #include "../misc/ini.h"
@@ -75,8 +77,9 @@ private:
 	std::string nwnhome;
 	bool initialized;
 	bool shuttingDown;
+    LogService* logService;
 
-	void setupTempDirectories();
+    void setupTempDirectories();
 
 	bool startServerProcessInternal();
 	bool checkProcessActive();

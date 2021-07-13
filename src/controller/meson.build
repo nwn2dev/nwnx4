@@ -1,3 +1,12 @@
+if get_option('buildtype') == 'release'
+    extra_dep = [
+        cppcompiler.find_library('zlib', dirs: lib_dirs),
+    ]
+else
+    extra_dep = [
+        cppcompiler.find_library('zlibd', dirs: lib_dirs),
+    ]
+endif
 
 NWNx4Controller_exe = executable('NWNX4_Controller',
     [
@@ -5,7 +14,11 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
         'controller.cpp',
         'service.cpp',
         'udp.cpp',
-        '../misc/log.cpp',
+        'LogService.cpp',
+        'LogServiceImpl.cpp',
+        'proto/log.grpc.pb.cc',
+        'proto/log.pb.cc',
+        '../misc/log.cpp'
     ],
     win_subsystem: 'console',
     cpp_args: ['/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE'],
@@ -14,7 +27,7 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
         cppcompiler.find_library('wsock32'),
         cppcompiler.find_library('ws2_32'),
         cppcompiler.find_library('detours', dirs: lib_dirs),
-    ],
+    ] + extra_dep + grpc_dep,
     install: true,
 )
 
