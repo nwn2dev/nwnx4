@@ -433,7 +433,7 @@
 // Used to reduce the default (2000) AABB count for area objects.
 //
 
-#define OFFS_CNWSArea_CNWSArea_InitialPatchAABBCount 0x00772ADE // 1.0.230.1765: nwn2server!CNWArea::CNWArea+0x7e
+#define OFFS_CNWSArea_CNWSArea_InitialPatchAABBCount 0x00772ADE // 1.0.23.1765: nwn2server!CNWArea::CNWArea+0x7e
 
 //
 // Used to reduce the amount of attachment points allocated by default.
@@ -442,6 +442,12 @@
 #define OFFS_NWN2_DynamicArray_NWN2_Object_NWN2_AttachmentPoint_add_DefaultCountPatch 0x0040DC04 // 1.0.23.1765: nwn2server!NWN2_DynamicArray<NWN2_Object::NWN2_AttachmentPoint>::add+0x14
 #define OFFS_NWN2_Object_AddBaseAttachmentPoint_DefaultCountPatch 0x0040DCED // 1.0.23.1765: nwn2server!NWN2_Object::AddBaseAttachmentPoint+0x4d
 #define OFFS_NWN2_Object_DefineAttachmentPoint_DefaultCountPatch 0x0077DF18 // 1.0.23.1765: nwn2server!NWN2_Object::DefineAttachmentPoint+0x88
+
+//
+// Used a fix a crash when resting while in transit.
+//
+
+#define OFFS_CNWSMessage_HandlePlayerToServerInputMessage_RestPatch1 0x00633F22 // 1.0.23.1765: nwn2server!CNWSMessage::HandlePlayerToServerInputMessage+0xf62
 
 #elif NWN2SERVER_VERSION == 0x01221588
 

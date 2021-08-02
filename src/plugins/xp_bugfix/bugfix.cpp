@@ -33,7 +33,7 @@
 #include <cassert>
 #include <map>
 
-#define BUGFIX_VERSION "1.0.69"
+#define BUGFIX_VERSION "1.0.70"
 #define __NWN2_VERSION_STR(X) #X
 #define _NWN2_VERSION_STR(X) __NWN2_VERSION_STR(X)
 #define NWN2_VERSION _NWN2_VERSION_STR(NWN2SERVER_VERSION)
@@ -396,6 +396,10 @@ Patch _patches[] =
 
 #ifdef OFFS_CNWSCreature_UnpossessFamiliar_DisableAutoMapCopy
 	Patch(OFFS_CNWSCreature_UnpossessFamiliar_DisableAutoMapCopy, "\x90\xe9", 2),
+#endif
+
+#ifdef OFFS_CNWSMessage_HandlePlayerToServerInputMessage_RestPatch1
+	Patch(OFFS_CNWSMessage_HandlePlayerToServerInputMessage_RestPatch1+1, "\x24", 1),
 #endif
 
 #endif
