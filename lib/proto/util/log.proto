@@ -1,13 +1,14 @@
 syntax = 'proto3';
 
+import 'google/protobuf/empty.proto';
 import 'google/protobuf/wrappers.proto';
 
-package HookHorror.Util.Log;
+package Util.Log;
 
 service LogService {
-  rpc logTrace(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
-  rpc logDebug(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
-  rpc logInfo(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
-  rpc logWarn(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
-  rpc logErr(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
+  rpc logTrace(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc logDebug(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc logInfo(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc logWarn(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc logErr(google.protobuf.StringValue) returns (google.protobuf.Empty);
 }

@@ -29,6 +29,7 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/empty.pb.h>
 #include <google/protobuf/wrappers.pb.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
@@ -55,7 +56,6 @@ extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table
 ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_log_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_NAMESPACE_CLOSE
-namespace HookHorror {
 namespace Util {
 namespace Log {
 
@@ -79,7 +79,6 @@ namespace Log {
 
 }  // namespace Log
 }  // namespace Util
-}  // namespace HookHorror
 
 // @@protoc_insertion_point(global_scope)
 

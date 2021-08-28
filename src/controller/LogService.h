@@ -10,20 +10,15 @@
 #include <grpcpp/grpcpp.h>
 #include "LogServiceImpl.h"
 #include "../misc/log.h"
+#include "../misc/HookHorror/Service.h"
 
-class LogService {
+class LogService: public ::NWNX4::HookHorror::Service {
 public:
-    LogService(SimpleIniConfig *config);
-    ~LogService();
-    std::future<void> asyncStart();
-    void shutdown();
-
+    explicit LogService(SimpleIniConfig *config);
+protected:
+    void setupBuilder(::grpc::ServerBuilder& builder);
 private:
-    std::string url;
-    std::string privateKey;
-    std::string certificate;
-    std::string caRoot;
-    std::unique_ptr<grpc::Server> logServer;
+    LogServiceImpl service;
 };
 
 #endif //NWNX4_LOGSERVICE_H

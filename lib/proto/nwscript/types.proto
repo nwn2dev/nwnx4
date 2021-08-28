@@ -1,0 +1,24 @@
+syntax = 'proto3';
+
+import 'google/protobuf/empty.proto';
+import 'google/protobuf/wrappers.proto';
+
+package NwScript.Types;
+
+message Action {}
+message Command {}
+message Const {}
+message Effect {}
+message Event {}
+message Float {}
+message Int {}
+message ItemProperty {}
+message Location {}
+message Object {}
+message String {}
+// Exclusive to NWN:EE.
+// message SqlQuery
+message Struct {}
+message Talent {}
+message Vector {}
+message Void {}

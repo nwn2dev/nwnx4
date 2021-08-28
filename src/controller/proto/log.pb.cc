@@ -16,12 +16,10 @@
 #include <google/protobuf/port_def.inc>
 
 PROTOBUF_PRAGMA_INIT_SEG
-namespace HookHorror {
 namespace Util {
 namespace Log {
 }  // namespace Log
 }  // namespace Util
-}  // namespace HookHorror
 static constexpr ::PROTOBUF_NAMESPACE_ID::Metadata* file_level_metadata_log_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_log_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_log_2eproto = nullptr;
@@ -30,25 +28,26 @@ static constexpr ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema* schemas = n
 static constexpr ::PROTOBUF_NAMESPACE_ID::Message* const* file_default_instances = nullptr;
 
 const char descriptor_table_protodef_log_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\tlog.proto\022\023HookHorror.Util.Log\032\036google"
-  "/protobuf/wrappers.proto2\346\002\n\nLogService\022"
-  "D\n\010logTrace\022\034.google.protobuf.StringValu"
-  "e\032\032.google.protobuf.BoolValue\022D\n\010logDebu"
-  "g\022\034.google.protobuf.StringValue\032\032.google"
-  ".protobuf.BoolValue\022C\n\007logInfo\022\034.google."
-  "protobuf.StringValue\032\032.google.protobuf.B"
-  "oolValue\022C\n\007logWarn\022\034.google.protobuf.St"
-  "ringValue\032\032.google.protobuf.BoolValue\022B\n"
-  "\006logErr\022\034.google.protobuf.StringValue\032\032."
-  "google.protobuf.BoolValueb\006proto3"
+  "\n\tlog.proto\022\010Util.Log\032\033google/protobuf/e"
+  "mpty.proto\032\036google/protobuf/wrappers.pro"
+  "to2\322\002\n\nLogService\022@\n\010logTrace\022\034.google.p"
+  "rotobuf.StringValue\032\026.google.protobuf.Em"
+  "pty\022@\n\010logDebug\022\034.google.protobuf.String"
+  "Value\032\026.google.protobuf.Empty\022\?\n\007logInfo"
+  "\022\034.google.protobuf.StringValue\032\026.google."
+  "protobuf.Empty\022\?\n\007logWarn\022\034.google.proto"
+  "buf.StringValue\032\026.google.protobuf.Empty\022"
+  ">\n\006logErr\022\034.google.protobuf.StringValue\032"
+  "\026.google.protobuf.Emptyb\006proto3"
   ;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_log_2eproto_deps[1] = {
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_log_2eproto_deps[2] = {
+  &::descriptor_table_google_2fprotobuf_2fempty_2eproto,
   &::descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_log_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_log_2eproto = {
-  false, false, 433, descriptor_table_protodef_log_2eproto, "log.proto", 
-  &descriptor_table_log_2eproto_once, descriptor_table_log_2eproto_deps, 1, 0,
+  false, false, 431, descriptor_table_protodef_log_2eproto, "log.proto", 
+  &descriptor_table_log_2eproto_once, descriptor_table_log_2eproto_deps, 2, 0,
   schemas, file_default_instances, TableStruct_log_2eproto::offsets,
   file_level_metadata_log_2eproto, file_level_enum_descriptors_log_2eproto, file_level_service_descriptors_log_2eproto,
 };
@@ -60,14 +59,12 @@ descriptor_table_log_2eproto_metadata_getter(int index) {
 
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_log_2eproto(&descriptor_table_log_2eproto);
-namespace HookHorror {
 namespace Util {
 namespace Log {
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace Log
 }  // namespace Util
-}  // namespace HookHorror
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_NAMESPACE_CLOSE
 

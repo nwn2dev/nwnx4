@@ -18,7 +18,8 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
         'LogServiceImpl.cpp',
         'proto/log.grpc.pb.cc',
         'proto/log.pb.cc',
-        '../misc/log.cpp'
+        '../misc/log.cpp',
+        '../misc/HookHorror/Service.cpp'
     ],
     win_subsystem: 'console',
     cpp_args: ['/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE'],

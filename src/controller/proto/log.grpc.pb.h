@@ -26,85 +26,84 @@
 #include <grpcpp/impl/codegen/stub_options.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
 
-namespace HookHorror {
 namespace Util {
 namespace Log {
 
 class LogService final {
  public:
   static constexpr char const* service_full_name() {
-    return "HookHorror.Util.Log.LogService";
+    return "Util.Log.LogService";
   }
   class StubInterface {
    public:
     virtual ~StubInterface() {}
-    virtual ::grpc::Status logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> AsynclogTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(AsynclogTraceRaw(context, request, cq));
+    virtual ::grpc::Status logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsynclogTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsynclogTraceRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> PrepareAsynclogTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(PrepareAsynclogTraceRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsynclogTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsynclogTraceRaw(context, request, cq));
     }
-    virtual ::grpc::Status logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> AsynclogDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(AsynclogDebugRaw(context, request, cq));
+    virtual ::grpc::Status logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsynclogDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsynclogDebugRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> PrepareAsynclogDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(PrepareAsynclogDebugRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsynclogDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsynclogDebugRaw(context, request, cq));
     }
-    virtual ::grpc::Status logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> AsynclogInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(AsynclogInfoRaw(context, request, cq));
+    virtual ::grpc::Status logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsynclogInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsynclogInfoRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> PrepareAsynclogInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(PrepareAsynclogInfoRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsynclogInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsynclogInfoRaw(context, request, cq));
     }
-    virtual ::grpc::Status logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> AsynclogWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(AsynclogWarnRaw(context, request, cq));
+    virtual ::grpc::Status logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsynclogWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsynclogWarnRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> PrepareAsynclogWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(PrepareAsynclogWarnRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsynclogWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsynclogWarnRaw(context, request, cq));
     }
-    virtual ::grpc::Status logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> AsynclogErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(AsynclogErrRaw(context, request, cq));
+    virtual ::grpc::Status logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsynclogErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsynclogErrRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>> PrepareAsynclogErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>>(PrepareAsynclogErrRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsynclogErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsynclogErrRaw(context, request, cq));
     }
     class experimental_async_interface {
      public:
       virtual ~experimental_async_interface() {}
-      virtual void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       #else
-      virtual void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
-      virtual void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       #else
-      virtual void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
-      virtual void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       #else
-      virtual void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
-      virtual void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       #else
-      virtual void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
-      virtual void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       #else
-      virtual void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
     };
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
@@ -115,87 +114,87 @@ class LogService final {
     #endif
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* AsynclogTraceRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* PrepareAsynclogTraceRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* AsynclogDebugRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* PrepareAsynclogDebugRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* AsynclogInfoRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* PrepareAsynclogInfoRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* AsynclogWarnRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* PrepareAsynclogWarnRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* AsynclogErrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::BoolValue>* PrepareAsynclogErrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsynclogTraceRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsynclogTraceRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsynclogDebugRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsynclogDebugRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsynclogInfoRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsynclogInfoRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsynclogWarnRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsynclogWarnRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsynclogErrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsynclogErrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
     Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel);
-    ::grpc::Status logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> AsynclogTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(AsynclogTraceRaw(context, request, cq));
+    ::grpc::Status logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsynclogTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsynclogTraceRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> PrepareAsynclogTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(PrepareAsynclogTraceRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsynclogTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsynclogTraceRaw(context, request, cq));
     }
-    ::grpc::Status logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> AsynclogDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(AsynclogDebugRaw(context, request, cq));
+    ::grpc::Status logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsynclogDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsynclogDebugRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> PrepareAsynclogDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(PrepareAsynclogDebugRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsynclogDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsynclogDebugRaw(context, request, cq));
     }
-    ::grpc::Status logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> AsynclogInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(AsynclogInfoRaw(context, request, cq));
+    ::grpc::Status logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsynclogInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsynclogInfoRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> PrepareAsynclogInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(PrepareAsynclogInfoRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsynclogInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsynclogInfoRaw(context, request, cq));
     }
-    ::grpc::Status logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> AsynclogWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(AsynclogWarnRaw(context, request, cq));
+    ::grpc::Status logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsynclogWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsynclogWarnRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> PrepareAsynclogWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(PrepareAsynclogWarnRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsynclogWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsynclogWarnRaw(context, request, cq));
     }
-    ::grpc::Status logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::BoolValue* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> AsynclogErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(AsynclogErrRaw(context, request, cq));
+    ::grpc::Status logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsynclogErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsynclogErrRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>> PrepareAsynclogErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>>(PrepareAsynclogErrRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsynclogErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsynclogErrRaw(context, request, cq));
     }
     class experimental_async final :
       public StubInterface::experimental_async_interface {
      public:
-      void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) override;
+      void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       #else
-      void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
-      void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) override;
+      void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       #else
-      void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void logDebug(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
-      void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) override;
+      void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       #else
-      void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void logInfo(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
-      void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) override;
+      void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       #else
-      void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void logWarn(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
-      void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, std::function<void(::grpc::Status)>) override;
+      void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       #else
-      void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void logErr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
      private:
       friend class Stub;
@@ -208,16 +207,16 @@ class LogService final {
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
     class experimental_async async_stub_{this};
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* AsynclogTraceRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* PrepareAsynclogTraceRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* AsynclogDebugRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* PrepareAsynclogDebugRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* AsynclogInfoRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* PrepareAsynclogInfoRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* AsynclogWarnRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* PrepareAsynclogWarnRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* AsynclogErrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::google::protobuf::BoolValue>* PrepareAsynclogErrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsynclogTraceRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsynclogTraceRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsynclogDebugRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsynclogDebugRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsynclogInfoRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsynclogInfoRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsynclogWarnRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsynclogWarnRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsynclogErrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsynclogErrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_logTrace_;
     const ::grpc::internal::RpcMethod rpcmethod_logDebug_;
     const ::grpc::internal::RpcMethod rpcmethod_logInfo_;
@@ -230,11 +229,11 @@ class LogService final {
    public:
     Service();
     virtual ~Service();
-    virtual ::grpc::Status logTrace(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response);
-    virtual ::grpc::Status logDebug(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response);
-    virtual ::grpc::Status logInfo(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response);
-    virtual ::grpc::Status logWarn(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response);
-    virtual ::grpc::Status logErr(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response);
+    virtual ::grpc::Status logTrace(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response);
+    virtual ::grpc::Status logDebug(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response);
+    virtual ::grpc::Status logInfo(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response);
+    virtual ::grpc::Status logWarn(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response);
+    virtual ::grpc::Status logErr(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_logTrace : public BaseClass {
@@ -248,11 +247,11 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestlogTrace(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::BoolValue>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestlogTrace(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
@@ -268,11 +267,11 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestlogDebug(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::BoolValue>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestlogDebug(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
@@ -288,11 +287,11 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestlogInfo(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::BoolValue>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestlogInfo(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
@@ -308,11 +307,11 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestlogWarn(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::BoolValue>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestlogWarn(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
@@ -328,11 +327,11 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestlogErr(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::BoolValue>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestlogErr(::grpc::ServerContext* context, ::google::protobuf::StringValue* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
@@ -349,38 +348,38 @@ class LogService final {
       ::grpc::Service::experimental().
     #endif
         MarkMethodCallback(0,
-          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
                    ::grpc::CallbackServerContext*
     #else
                    ::grpc::experimental::CallbackServerContext*
     #endif
-                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response) { return this->logTrace(context, request, response); }));}
+                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response) { return this->logTrace(context, request, response); }));}
     void SetMessageAllocatorFor_logTrace(
-        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::Empty>* allocator) {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(0);
     #else
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(0);
     #endif
-      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>*>(handler)
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_logTrace() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* logTrace(
-      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #else
     virtual ::grpc::experimental::ServerUnaryReactor* logTrace(
-      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #endif
       { return nullptr; }
   };
@@ -396,38 +395,38 @@ class LogService final {
       ::grpc::Service::experimental().
     #endif
         MarkMethodCallback(1,
-          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
                    ::grpc::CallbackServerContext*
     #else
                    ::grpc::experimental::CallbackServerContext*
     #endif
-                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response) { return this->logDebug(context, request, response); }));}
+                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response) { return this->logDebug(context, request, response); }));}
     void SetMessageAllocatorFor_logDebug(
-        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::Empty>* allocator) {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(1);
     #else
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(1);
     #endif
-      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>*>(handler)
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_logDebug() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* logDebug(
-      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #else
     virtual ::grpc::experimental::ServerUnaryReactor* logDebug(
-      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #endif
       { return nullptr; }
   };
@@ -443,38 +442,38 @@ class LogService final {
       ::grpc::Service::experimental().
     #endif
         MarkMethodCallback(2,
-          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
                    ::grpc::CallbackServerContext*
     #else
                    ::grpc::experimental::CallbackServerContext*
     #endif
-                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response) { return this->logInfo(context, request, response); }));}
+                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response) { return this->logInfo(context, request, response); }));}
     void SetMessageAllocatorFor_logInfo(
-        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::Empty>* allocator) {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(2);
     #else
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(2);
     #endif
-      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>*>(handler)
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_logInfo() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* logInfo(
-      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #else
     virtual ::grpc::experimental::ServerUnaryReactor* logInfo(
-      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #endif
       { return nullptr; }
   };
@@ -490,38 +489,38 @@ class LogService final {
       ::grpc::Service::experimental().
     #endif
         MarkMethodCallback(3,
-          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
                    ::grpc::CallbackServerContext*
     #else
                    ::grpc::experimental::CallbackServerContext*
     #endif
-                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response) { return this->logWarn(context, request, response); }));}
+                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response) { return this->logWarn(context, request, response); }));}
     void SetMessageAllocatorFor_logWarn(
-        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::Empty>* allocator) {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(3);
     #else
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(3);
     #endif
-      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>*>(handler)
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_logWarn() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* logWarn(
-      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #else
     virtual ::grpc::experimental::ServerUnaryReactor* logWarn(
-      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #endif
       { return nullptr; }
   };
@@ -537,38 +536,38 @@ class LogService final {
       ::grpc::Service::experimental().
     #endif
         MarkMethodCallback(4,
-          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          new ::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
                    ::grpc::CallbackServerContext*
     #else
                    ::grpc::experimental::CallbackServerContext*
     #endif
-                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::BoolValue* response) { return this->logErr(context, request, response); }));}
+                     context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response) { return this->logErr(context, request, response); }));}
     void SetMessageAllocatorFor_logErr(
-        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* allocator) {
+        ::grpc::experimental::MessageAllocator< ::google::protobuf::StringValue, ::google::protobuf::Empty>* allocator) {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(4);
     #else
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(4);
     #endif
-      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::BoolValue>*>(handler)
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::google::protobuf::StringValue, ::google::protobuf::Empty>*>(handler)
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_logErr() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* logErr(
-      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #else
     virtual ::grpc::experimental::ServerUnaryReactor* logErr(
-      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/)
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/)
     #endif
       { return nullptr; }
   };
@@ -589,7 +588,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -606,7 +605,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -623,7 +622,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -640,7 +639,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -657,7 +656,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -674,7 +673,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -694,7 +693,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -714,7 +713,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -734,7 +733,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -754,7 +753,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -787,7 +786,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -825,7 +824,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -863,7 +862,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -901,7 +900,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -939,7 +938,7 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -960,10 +959,10 @@ class LogService final {
     WithStreamedUnaryMethod_logTrace() {
       ::grpc::Service::MarkMethodStreamed(0,
         new ::grpc::internal::StreamedUnaryHandler<
-          ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
                    ::grpc::ServerUnaryStreamer<
-                     ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* streamer) {
+                     ::google::protobuf::StringValue, ::google::protobuf::Empty>* streamer) {
                        return this->StreamedlogTrace(context,
                          streamer);
                   }));
@@ -972,12 +971,12 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logTrace(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedlogTrace(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::BoolValue>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedlogTrace(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::Empty>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_logDebug : public BaseClass {
@@ -987,10 +986,10 @@ class LogService final {
     WithStreamedUnaryMethod_logDebug() {
       ::grpc::Service::MarkMethodStreamed(1,
         new ::grpc::internal::StreamedUnaryHandler<
-          ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
                    ::grpc::ServerUnaryStreamer<
-                     ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* streamer) {
+                     ::google::protobuf::StringValue, ::google::protobuf::Empty>* streamer) {
                        return this->StreamedlogDebug(context,
                          streamer);
                   }));
@@ -999,12 +998,12 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logDebug(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedlogDebug(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::BoolValue>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedlogDebug(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::Empty>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_logInfo : public BaseClass {
@@ -1014,10 +1013,10 @@ class LogService final {
     WithStreamedUnaryMethod_logInfo() {
       ::grpc::Service::MarkMethodStreamed(2,
         new ::grpc::internal::StreamedUnaryHandler<
-          ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
                    ::grpc::ServerUnaryStreamer<
-                     ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* streamer) {
+                     ::google::protobuf::StringValue, ::google::protobuf::Empty>* streamer) {
                        return this->StreamedlogInfo(context,
                          streamer);
                   }));
@@ -1026,12 +1025,12 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logInfo(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedlogInfo(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::BoolValue>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedlogInfo(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::Empty>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_logWarn : public BaseClass {
@@ -1041,10 +1040,10 @@ class LogService final {
     WithStreamedUnaryMethod_logWarn() {
       ::grpc::Service::MarkMethodStreamed(3,
         new ::grpc::internal::StreamedUnaryHandler<
-          ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
                    ::grpc::ServerUnaryStreamer<
-                     ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* streamer) {
+                     ::google::protobuf::StringValue, ::google::protobuf::Empty>* streamer) {
                        return this->StreamedlogWarn(context,
                          streamer);
                   }));
@@ -1053,12 +1052,12 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logWarn(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedlogWarn(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::BoolValue>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedlogWarn(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::Empty>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_logErr : public BaseClass {
@@ -1068,10 +1067,10 @@ class LogService final {
     WithStreamedUnaryMethod_logErr() {
       ::grpc::Service::MarkMethodStreamed(4,
         new ::grpc::internal::StreamedUnaryHandler<
-          ::google::protobuf::StringValue, ::google::protobuf::BoolValue>(
+          ::google::protobuf::StringValue, ::google::protobuf::Empty>(
             [this](::grpc::ServerContext* context,
                    ::grpc::ServerUnaryStreamer<
-                     ::google::protobuf::StringValue, ::google::protobuf::BoolValue>* streamer) {
+                     ::google::protobuf::StringValue, ::google::protobuf::Empty>* streamer) {
                        return this->StreamedlogErr(context,
                          streamer);
                   }));
@@ -1080,12 +1079,12 @@ class LogService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::BoolValue* /*response*/) override {
+    ::grpc::Status logErr(::grpc::ServerContext* /*context*/, const ::google::protobuf::StringValue* /*request*/, ::google::protobuf::Empty* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedlogErr(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::BoolValue>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedlogErr(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::StringValue,::google::protobuf::Empty>* server_unary_streamer) = 0;
   };
   typedef WithStreamedUnaryMethod_logTrace<WithStreamedUnaryMethod_logDebug<WithStreamedUnaryMethod_logInfo<WithStreamedUnaryMethod_logWarn<WithStreamedUnaryMethod_logErr<Service > > > > > StreamedUnaryService;
   typedef Service SplitStreamedService;
@@ -1094,7 +1093,6 @@ class LogService final {
 
 }  // namespace Log
 }  // namespace Util
-}  // namespace HookHorror
 
 
 #endif  // GRPC_log_2eproto__INCLUDED
