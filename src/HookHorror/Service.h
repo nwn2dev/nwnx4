@@ -7,23 +7,25 @@
 
 #include <future>
 #include <grpcpp/grpcpp.h>
+#include "../misc/log.h"
 
 namespace NWNX4::HookHorror {
     class Service {
     public:
         ~Service();
-        void start();
-        std::future<void> asyncStart();
-        void shutdown();
+        void Start();
+        std::future<void> StartAsync();
+        void Shutdown();
     protected:
+        bool enabled = false;
         bool enableSsl = false;
         bool verifySsl = true;
         ::std::string url;
         ::std::shared_ptr<::grpc::ServerCredentials> sslCredentials;
-        std::unique_ptr<grpc::Server> server;
-        virtual char* getServiceName() { return 'HookHorror service'; }
-        virtual void setupBuilder(::grpc::ServerBuilder& builder) { }
-        void init();
+        ::std::unique_ptr<::grpc::Server> server;
+        virtual const char* const GetServiceName() { return "HookHorror service"; }
+        virtual void SetupBuilder(::grpc::ServerBuilder& builder) { }
+        void Init();
     };
 }
 

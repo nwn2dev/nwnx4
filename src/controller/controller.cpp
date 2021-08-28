@@ -77,16 +77,11 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
 
 	// Create log service (if necessary).
-	std::string logServiceUrl;
-	config->Read("logServiceUrl", &logServiceUrl);  // Only configuration necessary for handling log service.
-
-    if (logServiceUrl != "") {
-        try {
-            logService = new LogService(config);
-            logServiceConnection = logService->asyncStart();
-        } catch (const char* exception) {
-            logger->Err(exception);
-        }
+	try {
+        logService = new NWNX4::HookHorror::Log::LogService(nwnhome.c_str());
+        logServiceConnection = logService->StartAsync();
+    } catch (const char* exception) {
+        logger->Err(exception);
     }
 }
 

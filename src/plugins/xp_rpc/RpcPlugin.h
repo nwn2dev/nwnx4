@@ -25,28 +25,27 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <specstrings.h>
+#include <yaml-cpp/yaml.h>
 #include "../plugin.h"
 #include "../../misc/log.h"
-#include <yaml-cpp/yaml.h>
-#include "../../misc/grpc/LogClient.h"
+#include "../../HookHorror/LogClient.h"
 
 class RpcPlugin: public Plugin {
 public:
     RpcPlugin();
     ~RpcPlugin();
 
+    void GetFunctionClass(char* fClass);
     bool Init(char* nwnxhome);
 
     int GetInt(char* sFunction, char* sParam1, int nParam2) { return 0; }
-    void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) {};
+    void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) { }
     float GetFloat(char* sFunction, char* sParam1, int nParam2) { return 0.0; }
-    void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) {};
+    void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) { }
     void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue);
     char* GetString(char* sFunction, char* sParam1, int nParam2);
-    void GetFunctionClass(char* fClass);
-
 private:
-    LogNWNX* logger;
+    NWNX4::HookHorror::Log::LogClient* logger_;
     bool logged;
 };
 

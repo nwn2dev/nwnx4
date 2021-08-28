@@ -1,0 +1,15 @@
+syntax = 'proto3';
+
+import 'google/protobuf/empty.proto';
+import 'google/protobuf/wrappers.proto';
+
+package NWNX4.HookHorror.Proto.Log;
+
+service LogService {
+  rpc Trace(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc Debug(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc Info(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc Warn(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc Err(google.protobuf.StringValue) returns (google.protobuf.Empty);
+  rpc LogStr(google.protobuf.StringValue) returns (google.protobuf.Empty);
+}

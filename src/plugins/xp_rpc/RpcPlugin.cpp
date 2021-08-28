@@ -8,6 +8,8 @@
 
 RpcPlugin *plugin;
 
+LogNWNX* logger;
+
 /***************************************************************************
     NWNX and DLL specific functions
 ***************************************************************************/
@@ -38,10 +40,10 @@ void RpcPlugin::GetFunctionClass(char* fClass)
 
 RpcPlugin::RpcPlugin(): logged(false) {
     header =
-        "NWNX RPC (hook_horror) Plugin " PLUGIN_VERSION "\n" \
+        "NWNX RPC (w/ HookHorror) Plugin " PLUGIN_VERSION "\n" \
 		"(c) 2021 by ihatemundays \n";
 
-    description = "This reduces NWN2Server start times by using links instead of copying module data.";
+    description = "A better way to build NWN2 microservices.";
 
     subClass = "RPC";
     version  = PLUGIN_VERSION;
@@ -52,9 +54,16 @@ RpcPlugin::~RpcPlugin() {
 }
 
 bool RpcPlugin::Init(char* nwnxhome) {
-    auto yaml = YAML::LoadFile("xp_rpc.yml");
-    grpc::CreateChannel
+    // Build backup log.
+    std::string logfile(nwnxhome);
+    logfile += "\\";
+    logfile += GetPluginFileName();
+    logfile += ".txt";
+    logger = new LogNWNX(logfile);
 
+    // Build log client; default is to use backup logger.
+    logger_ = new NWNX4::HookHorror::Log::LogClient(nwnxhome);
+    logger_->Info(header.c_str());
 
     return true;
 }

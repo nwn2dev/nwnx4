@@ -28,6 +28,7 @@ static const char* LogService_method_names[] = {
   "/Util.Log.LogService/logInfo",
   "/Util.Log.LogService/logWarn",
   "/Util.Log.LogService/logErr",
+  "/Util.Log.LogService/logStr",
 };
 
 std::unique_ptr< LogService::Stub> LogService::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -42,6 +43,7 @@ LogService::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel
   , rpcmethod_logInfo_(LogService_method_names[2], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_logWarn_(LogService_method_names[3], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_logErr_(LogService_method_names[4], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_logStr_(LogService_method_names[5], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status LogService::Stub::logTrace(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) {
@@ -159,6 +161,29 @@ void LogService::Stub::experimental_async::logErr(::grpc::ClientContext* context
   return result;
 }
 
+::grpc::Status LogService::Stub::logStr(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::google::protobuf::Empty* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::google::protobuf::StringValue, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_logStr_, context, request, response);
+}
+
+void LogService::Stub::experimental_async::logStr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::google::protobuf::StringValue, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_logStr_, context, request, response, std::move(f));
+}
+
+void LogService::Stub::experimental_async::logStr(::grpc::ClientContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_logStr_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* LogService::Stub::PrepareAsynclogStrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::google::protobuf::Empty, ::google::protobuf::StringValue, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_logStr_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* LogService::Stub::AsynclogStrRaw(::grpc::ClientContext* context, const ::google::protobuf::StringValue& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsynclogStrRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
 LogService::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       LogService_method_names[0],
@@ -210,6 +235,16 @@ LogService::Service::Service() {
              ::google::protobuf::Empty* resp) {
                return service->logErr(ctx, req, resp);
              }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      LogService_method_names[5],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< LogService::Service, ::google::protobuf::StringValue, ::google::protobuf::Empty, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](LogService::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::google::protobuf::StringValue* req,
+             ::google::protobuf::Empty* resp) {
+               return service->logStr(ctx, req, resp);
+             }, this)));
 }
 
 LogService::Service::~Service() {
@@ -244,6 +279,13 @@ LogService::Service::~Service() {
 }
 
 ::grpc::Status LogService::Service::logErr(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status LogService::Service::logStr(::grpc::ServerContext* context, const ::google::protobuf::StringValue* request, ::google::protobuf::Empty* response) {
   (void) context;
   (void) request;
   (void) response;

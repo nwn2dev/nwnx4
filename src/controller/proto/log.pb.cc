@@ -30,7 +30,7 @@ static constexpr ::PROTOBUF_NAMESPACE_ID::Message* const* file_default_instances
 const char descriptor_table_protodef_log_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\tlog.proto\022\010Util.Log\032\033google/protobuf/e"
   "mpty.proto\032\036google/protobuf/wrappers.pro"
-  "to2\322\002\n\nLogService\022@\n\010logTrace\022\034.google.p"
+  "to2\222\003\n\nLogService\022@\n\010logTrace\022\034.google.p"
   "rotobuf.StringValue\032\026.google.protobuf.Em"
   "pty\022@\n\010logDebug\022\034.google.protobuf.String"
   "Value\032\026.google.protobuf.Empty\022\?\n\007logInfo"
@@ -38,7 +38,9 @@ const char descriptor_table_protodef_log_2eproto[] PROTOBUF_SECTION_VARIABLE(pro
   "protobuf.Empty\022\?\n\007logWarn\022\034.google.proto"
   "buf.StringValue\032\026.google.protobuf.Empty\022"
   ">\n\006logErr\022\034.google.protobuf.StringValue\032"
-  "\026.google.protobuf.Emptyb\006proto3"
+  "\026.google.protobuf.Empty\022>\n\006logStr\022\034.goog"
+  "le.protobuf.StringValue\032\026.google.protobu"
+  "f.Emptyb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_log_2eproto_deps[2] = {
   &::descriptor_table_google_2fprotobuf_2fempty_2eproto,
@@ -46,7 +48,7 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_log_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_log_2eproto = {
-  false, false, 431, descriptor_table_protodef_log_2eproto, "log.proto", 
+  false, false, 495, descriptor_table_protodef_log_2eproto, "log.proto", 
   &descriptor_table_log_2eproto_once, descriptor_table_log_2eproto_deps, 2, 0,
   schemas, file_default_instances, TableStruct_log_2eproto::offsets,
   file_level_metadata_log_2eproto, file_level_enum_descriptors_log_2eproto, file_level_service_descriptors_log_2eproto,

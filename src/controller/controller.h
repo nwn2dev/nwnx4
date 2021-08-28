@@ -28,10 +28,10 @@
 #include <detours/detours.h>
 #include <future>
 #include "udp.h"
-#include "LogService.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
 #include "../misc/ini.h"
+#include "../HookHorror/LogService.h"
 
 #define arrayof(x)		(sizeof(x)/sizeof(x[0]))
 #define IDC_SENDMESSAGE_EDIT    0x3FC
@@ -77,7 +77,7 @@ private:
 	std::string nwnhome;
 	bool initialized;
 	bool shuttingDown;
-    LogService* logService;
+    NWNX4::HookHorror::Log::LogService* logService;
 
     void setupTempDirectories();
 

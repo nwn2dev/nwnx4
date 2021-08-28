@@ -86,12 +86,12 @@ public:
         Log(LogLevel::error, format, args);
         va_end(args);
     }
+    virtual void LogStr(const char* message);
 protected:
     std::ofstream m_ofStream;
     LogLevel m_level;
 
     virtual void Log(LogLevel level, const char* format, va_list args);
-    virtual void LogStr(const char* message);
 };
 
 
