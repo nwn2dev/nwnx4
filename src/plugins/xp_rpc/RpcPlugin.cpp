@@ -50,7 +50,7 @@ RpcPlugin::RpcPlugin(): logged(false) {
 }
 
 RpcPlugin::~RpcPlugin() {
-    logger->Info("* Plugin unloaded.");
+    logger->Info("* RPC plugin unloaded.");
 }
 
 bool RpcPlugin::Init(char* nwnxhome) {
@@ -92,7 +92,7 @@ bool RpcPlugin::Init(char* nwnxhome) {
         clients_.insert(std::make_pair(element.first.as<std::string>(), element.second.as<RpcClient>()));
     }
 
-    logger_->Info("Installed %d clients into xp_rpc.", clients_.size());
+    logger_->Info("Installed %d client(s) into xp_rpc.", clients_.size());
 
     return true;
 }
@@ -188,9 +188,14 @@ char* RpcPlugin::GetString(char* sFunction, char* sParam1, int nParam2) {
 void RpcPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) {
     auto client = GetRpcClient(sFunction);
 
+    logger_->Info("Started NWNXSetString: %s, %s, %d, %s", sFunction, sParam1, nParam2, sValue);
+
     if (client == nullptr) {
+        logger_->Warn("%s client not found.", sFunction);
         return;
     }
+
+    logger_->Info("Client available. Proceeding.");
 
     grpc::ClientContext context;
     proto::NWScript::NWNXSetStringRequest request;
@@ -200,6 +205,8 @@ void RpcPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sVa
     request.set_svalue(sValue);
     proto::NWScript::Void response;
     client->stub_->NWNXSetString(&context, request, &response);
+
+    logger_->Info("Done with NWNXSetString.");
 }
 
 RpcClient* RpcPlugin::GetRpcClient(char* sFunction) {

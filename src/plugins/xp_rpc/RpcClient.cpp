@@ -9,6 +9,6 @@ void RpcClient::Build(std::string url) {
     std::shared_ptr<grpc::ChannelInterface> channel(
             grpc::CreateChannel(
                     url,
-                    grpc::SslCredentials(grpc::SslCredentialsOptions())));
+                    grpc::InsecureChannelCredentials()));
     stub_ = proto::NWScript::NWNXService::NewStub(channel);
 }
