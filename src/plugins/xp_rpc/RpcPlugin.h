@@ -22,6 +22,7 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
+#include <filesystem>
 #include <windows.h>
 #include <windowsx.h>
 #include <specstrings.h>
@@ -29,6 +30,10 @@
 #include "../plugin.h"
 #include "../../misc/log.h"
 #include "../../HookHorror/LogClient.h"
+#include "proto/NWScript/nwnx.grpc.pb.h"
+#include "proto/NWScript/nwnx.pb.h"
+#include "proto/NWScript/types.pb.h"
+#include "RpcClient.h"
 
 class RpcPlugin: public Plugin {
 public:
@@ -38,15 +43,17 @@ public:
     void GetFunctionClass(char* fClass);
     bool Init(char* nwnxhome);
 
-    int GetInt(char* sFunction, char* sParam1, int nParam2) { return 0; }
-    void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) { }
-    float GetFloat(char* sFunction, char* sParam1, int nParam2) { return 0.0; }
-    void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) { }
-    void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue);
+    int GetInt(char* sFunction, char* sParam1, int nParam2);
+    void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue);
+    float GetFloat(char* sFunction, char* sParam1, int nParam2);
+    void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue);
     char* GetString(char* sFunction, char* sParam1, int nParam2);
+    void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue);
 private:
-    NWNX4::HookHorror::Log::LogClient* logger_;
     bool logged;
+    NWNX4::HookHorror::Log::LogClient* logger_;
+    std::map<std::string, RpcClient> clients_;
+    RpcClient* GetRpcClient(char* sFunction);
 };
 
 #endif

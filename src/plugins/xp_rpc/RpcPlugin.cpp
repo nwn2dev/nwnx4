@@ -65,12 +65,167 @@ bool RpcPlugin::Init(char* nwnxhome) {
     logger_ = new NWNX4::HookHorror::Log::LogClient(nwnxhome);
     logger_->Info(header.c_str());
 
+    // Setup yaml map for services.
+    std::string configfile(nwnxhome);
+    configfile += "\\";
+    configfile += GetPluginFileName();
+    configfile += ".yml";
+
+    if (!std::filesystem::exists(std::filesystem::path(configfile))) {
+        logger_->Warn("There is no config file at %s.", configfile.c_str());
+
+        return false;
+    }
+
+    // Get config.
+    logger_->Info("Get config at %s.", configfile.c_str());
+    auto config = YAML::LoadFile(configfile);
+    auto services = config["clients"];
+
+    if (!services.IsMap()) {
+        logger_->Warn("Clients must be a map.");
+
+        return false;
+    }
+
+    for (auto element: config["clients"]) {
+        clients_.insert(std::make_pair(element.first.as<std::string>(), element.second.as<RpcClient>()));
+    }
+
+    logger_->Info("Installed %d clients into xp_rpc.", clients_.size());
+
     return true;
 }
 
-void RpcPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) {
+int RpcPlugin::GetInt(char* sFunction, char* sParam1, int nParam2) {
+    auto client = GetRpcClient(sFunction);
+
+    if (client == nullptr) {
+        return 0;
+    }
+
+    grpc::ClientContext context;
+    proto::NWScript::NWNXGetIntRequest request;
+    request.set_sfunction(sFunction);
+    request.set_sparam1(sParam1);
+    request.set_nparam2(nParam2);
+    proto::NWScript::Int response;
+    client->stub_->NWNXGetInt(&context, request, &response);
+
+    return response.value();
+}
+
+void RpcPlugin::SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) {
+    auto client = GetRpcClient(sFunction);
+
+    if (client == nullptr) {
+        return;
+    }
+
+    grpc::ClientContext context;
+    proto::NWScript::NWNXSetIntRequest request;
+    request.set_sfunction(sFunction);
+    request.set_sparam1(sParam1);
+    request.set_nparam2(nParam2);
+    request.set_nvalue(nValue);
+    proto::NWScript::Void response;
+    client->stub_->NWNXSetInt(&context, request, &response);
+}
+
+float RpcPlugin::GetFloat(char* sFunction, char* sParam1, int nParam2) {
+    auto client = GetRpcClient(sFunction);
+
+    if (client == nullptr) {
+        return 0.0;
+    }
+
+    grpc::ClientContext context;
+    proto::NWScript::NWNXGetFloatRequest request;
+    request.set_sfunction(sFunction);
+    request.set_sparam1(sParam1);
+    request.set_nparam2(nParam2);
+    proto::NWScript::Float response;
+    client->stub_->NWNXGetFloat(&context, request, &response);
+
+    return response.value();
+}
+
+void RpcPlugin::SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) {
+    auto client = GetRpcClient(sFunction);
+
+    if (client == nullptr) {
+        return;
+    }
+
+    grpc::ClientContext context;
+    proto::NWScript::NWNXSetFloatRequest request;
+    request.set_sfunction(sFunction);
+    request.set_sparam1(sParam1);
+    request.set_nparam2(nParam2);
+    request.set_fvalue(fValue);
+    proto::NWScript::Void response;
+    client->stub_->NWNXSetFloat(&context, request, &response);
 }
 
 char* RpcPlugin::GetString(char* sFunction, char* sParam1, int nParam2) {
+    auto client = GetRpcClient(sFunction);
+
+    if (client == nullptr) {
+        return "";
+    }
+
+    grpc::ClientContext context;
+    proto::NWScript::NWNXGetStringRequest request;
+    request.set_sfunction(sFunction);
+    request.set_sparam1(sParam1);
+    request.set_nparam2(nParam2);
+    proto::NWScript::String response;
+    client->stub_->NWNXGetString(&context, request, &response);
+
+    return (char*) response.value().c_str();
+}
+
+void RpcPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) {
+    auto client = GetRpcClient(sFunction);
+
+    if (client == nullptr) {
+        return;
+    }
+
+    grpc::ClientContext context;
+    proto::NWScript::NWNXSetStringRequest request;
+    request.set_sfunction(sFunction);
+    request.set_sparam1(sParam1);
+    request.set_nparam2(nParam2);
+    request.set_svalue(sValue);
+    proto::NWScript::Void response;
+    client->stub_->NWNXSetString(&context, request, &response);
+}
+
+RpcClient* RpcPlugin::GetRpcClient(char* sFunction) {
+    try {
+        return &clients_.at(sFunction);
+    } catch (std::out_of_range exception) {
+        logger_->Err("Service %s not available.", sFunction);
+    }
+
     return nullptr;
+}
+
+namespace YAML {
+    template<>
+    struct convert<RpcClient> {
+        static Node encode(const RpcClient& rhs) {
+            Node node;
+            node.as<std::string>();
+
+            return node;
+        }
+
+        static bool decode(const Node& node, RpcClient& rhs) {
+            rhs.Build(node.as<std::string>());
+
+            return true;
+        }
+    };
 }

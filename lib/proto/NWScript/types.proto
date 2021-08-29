@@ -1,21 +1,26 @@
 syntax = 'proto3';
 
-import 'google/protobuf/empty.proto';
-import 'google/protobuf/wrappers.proto';
+package NWNX4.HookHorror.Proto.NWScript;
 
-package NWNX4.HookHorror.Proto.NwScript.Types;
+message Float {
+  float value = 1;
+}
+message Int {
+  int32 value = 1;
+}
+
+message String {
+  string value = 1;
+}
 
 message Action {}
 message Command {}
 message Const {}
 message Effect {}
 message Event {}
-message Float {}
-message Int {}
 message ItemProperty {}
 message Location {}
 message Object {}
-message String {}
 // Exclusive to NWN:EE.
 // message SqlQuery
 message Struct {}

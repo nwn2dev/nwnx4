@@ -28,15 +28,16 @@ namespace NWNX4::HookHorror::Log {
 
             if (config->GetEnableSsl()) {
                 std::shared_ptr<grpc::ChannelInterface> channel(
-                        grpc::CreateChannel(
-                                config->GetUrl(),
-                                grpc::SslCredentials(grpc::SslCredentialsOptions())));
+                    grpc::CreateChannel(
+                        config->GetUrl(),
+                        grpc::SslCredentials(grpc::SslCredentialsOptions())));
                 stub = proto::Log::LogService::NewStub(channel);
 
                 return;
             }
 
-            std::shared_ptr<grpc::ChannelInterface> channel(grpc::CreateChannel(config->GetUrl(), grpc::InsecureChannelCredentials()));
+            std::shared_ptr<grpc::ChannelInterface> channel(
+                    grpc::CreateChannel(config->GetUrl(), grpc::InsecureChannelCredentials()));
             stub = proto::Log::LogService::NewStub(channel);
         }
         void LogStr(const char* message);

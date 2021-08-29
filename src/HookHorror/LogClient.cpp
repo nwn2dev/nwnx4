@@ -19,7 +19,6 @@ namespace NWNX4::HookHorror::Log {
         google::protobuf::StringValue request;
         request.set_value(message);
         google::protobuf::Empty response;
-
         stub->LogStr(&context, request, &response);
     }
 }

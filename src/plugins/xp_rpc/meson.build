@@ -12,6 +12,10 @@ extra_dep += [
     cppcompiler.find_library('libyaml-cppmdd', dirs: lib_dirs)
 ]
 
+xp_rpc_include_dirs = []
+xp_rpc_include_dirs += include_dirs
+xp_rpc_include_dirs += include_directories(['proto'])
+
 shared_library('xp_rpc',
     [
         '../../misc/log.cpp',
@@ -20,9 +24,13 @@ shared_library('xp_rpc',
         '../../HookHorror/LogConfig.cpp',
         '../../HookHorror/LogClient.cpp',
         '../plugin.cpp',
-        'RpcPlugin.cpp'
+        'proto/NWScript/nwnx.grpc.pb.cc',
+        'proto/NWScript/nwnx.pb.cc',
+        'proto/NWScript/types.pb.cc',
+        'RpcPlugin.cpp',
+        'RpcClient.cpp'
     ],
-    include_directories: include_dirs,
+    include_directories: xp_rpc_include_dirs,
     dependencies: [
         cppcompiler.find_library('wsock32'),
         cppcompiler.find_library('ws2_32'),

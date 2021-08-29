@@ -1,0 +1,2 @@
+clients:
+  TestService: "localhost:3001"
