@@ -100,9 +100,15 @@ bool RpcPlugin::Init(char* nwnxhome) {
 int RpcPlugin::GetInt(char* sFunction, char* sParam1, int nParam2) {
     auto client = GetRpcClient(sFunction);
 
+    logger_->Info("Started NWNXGetInt.");
+
     if (client == nullptr) {
+        logger_->Warn("%s client not found.", sFunction);
+
         return 0;
     }
+
+    logger_->Info("Invoked NWNXGetInt.");
 
     grpc::ClientContext context;
     proto::NWScript::NWNXGetIntRequest request;
@@ -118,9 +124,15 @@ int RpcPlugin::GetInt(char* sFunction, char* sParam1, int nParam2) {
 void RpcPlugin::SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) {
     auto client = GetRpcClient(sFunction);
 
+    logger_->Info("Started NWNXSetInt.");
+
     if (client == nullptr) {
+        logger_->Warn("%s client not found.", sFunction);
+
         return;
     }
+
+    logger_->Info("Invoked NWNXSetInt.");
 
     grpc::ClientContext context;
     proto::NWScript::NWNXSetIntRequest request;
@@ -135,9 +147,15 @@ void RpcPlugin::SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) 
 float RpcPlugin::GetFloat(char* sFunction, char* sParam1, int nParam2) {
     auto client = GetRpcClient(sFunction);
 
+    logger_->Info("Started NWNXGetFloat.");
+
     if (client == nullptr) {
+        logger_->Warn("%s client not found.", sFunction);
+
         return 0.0;
     }
+
+    logger_->Info("Invoked NWNXGetFloat.");
 
     grpc::ClientContext context;
     proto::NWScript::NWNXGetFloatRequest request;
@@ -153,9 +171,15 @@ float RpcPlugin::GetFloat(char* sFunction, char* sParam1, int nParam2) {
 void RpcPlugin::SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) {
     auto client = GetRpcClient(sFunction);
 
+    logger_->Info("Started NWNXSetFloat.");
+
     if (client == nullptr) {
+        logger_->Warn("%s client not found.", sFunction);
+
         return;
     }
+
+    logger_->Info("Invoked NWNXSetFloat.");
 
     grpc::ClientContext context;
     proto::NWScript::NWNXSetFloatRequest request;
@@ -170,9 +194,15 @@ void RpcPlugin::SetFloat(char* sFunction, char* sParam1, int nParam2, float fVal
 char* RpcPlugin::GetString(char* sFunction, char* sParam1, int nParam2) {
     auto client = GetRpcClient(sFunction);
 
+    logger_->Info("Started NWNXGetString.");
+
     if (client == nullptr) {
+        logger_->Warn("%s client not found.", sFunction);
+
         return "";
     }
+
+    logger_->Info("Invoked NWNXGetString.");
 
     grpc::ClientContext context;
     proto::NWScript::NWNXGetStringRequest request;
@@ -188,14 +218,15 @@ char* RpcPlugin::GetString(char* sFunction, char* sParam1, int nParam2) {
 void RpcPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) {
     auto client = GetRpcClient(sFunction);
 
-    logger_->Info("Started NWNXSetString: %s, %s, %d, %s", sFunction, sParam1, nParam2, sValue);
+    logger_->Info("Started NWNXSetString.");
 
     if (client == nullptr) {
         logger_->Warn("%s client not found.", sFunction);
+
         return;
     }
 
-    logger_->Info("Client available. Proceeding.");
+    logger_->Info("Invoked NWNXSetString.");
 
     grpc::ClientContext context;
     proto::NWScript::NWNXSetStringRequest request;
@@ -205,8 +236,6 @@ void RpcPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sVa
     request.set_svalue(sValue);
     proto::NWScript::Void response;
     client->stub_->NWNXSetString(&context, request, &response);
-
-    logger_->Info("Done with NWNXSetString.");
 }
 
 RpcClient* RpcPlugin::GetRpcClient(char* sFunction) {
