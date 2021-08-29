@@ -1,0 +1,135 @@
+name: NWNX4
+on:
+  push:
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      # Setup MSVC
+      - name: Preparing msvc tools
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+          # toolset: 14.XX
+
+      # Install python & meson
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Python Dependencies
+        run: pip install meson ninja
+
+      - name: Restore cached VCPKG dependencies
+        id: vcpkg_cache
+        uses: actions/cache@v2
+        with:
+          path: vcpkg_installed/
+          key: "vcpkg.json-${{ hashFiles('vcpkg.json') }}"
+
+      - name: Setup VCPKG
+        if: steps.vcpkg_cache.outputs.cache-hit != 'true'
+        uses: lukka/run-vcpkg@v7
+        with:
+          setupOnly: true
+          doNotCache: true
+          vcpkgArguments: "--triplet=x86-windows-static-md --disable-metrics"
+
+      # Install vcpkg dependencies
+      - name: Install & build dependencies
+        if: steps.vcpkg_cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics
+
+          if [ ! -d vcpkg_installed/nwn-lib-d-tools/ ]; then
+            curl -L 'https://github.com/CromFr/nwn-lib-d/releases/download/v1.0.2/nwn-lib-d-tools-windows-x86_64.zip' -o /tmp/nwn-lib-d-tools.zip
+            unzip -d vcpkg_installed/ /tmp/nwn-lib-d-tools.zip
+            rm /tmp/nwn-lib-d-tools.zip
+          fi
+
+      - name: Configure
+        run: |
+          meson setup builddir --backend=vs --buildtype=release --optimization=2 --strip
+
+      - name: Build
+        run: |
+          cd builddir
+          meson compile
+
+      - name: Install
+        shell: bash
+        run: |
+          cd builddir
+          meson install --destdir=$PWD/../nwnx4
+
+      - name: Package
+        shell: bash
+        run: |
+          rm nwnx4/*.lib
+          vcpkg_installed/nwn-lib-d-tools/nwn-erf create -o nwnx4/nwscript_includes.erf nwnx4/nwscript/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: nwnx4/
+          name: nwnx4-${{ github.sha }}.zip
+
+
+  # create_release:
+  #   name: Create release if tagged
+  #   if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+      - name: Get release info
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        shell: bash
+        id: rel_info
+        run: |
+          TAG=$(echo '${{ github.ref }}' | grep -oE '\bv[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' || true)
+          echo "::set-output name=tag::$TAG"
+
+          [[ "$TAG" =~ -rc[0-9]+$ ]] && PRERELEASE=true || PRERELEASE=false
+          echo "::set-output name=prerelease::$PRERELEASE"
+
+          if [[ "$TAG" != "" ]]; then
+            echo "Deploying $TAG (prerelease=$PRERELEASE)"
+          else
+            echo "Not a tagged release"
+          fi
+
+      - name: Create Release (if on tag)
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.rel_info.outputs.tag }}
+          release_name: ${{ steps.rel_info.outputs.tag }}
+          prerelease: ${{ steps.rel_info.outputs.prerelease }}
+
+      - name: Compress release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          Compress-Archive -LiteralPath nwnx4\ -DestinationPath nwnx4.zip
+
+      - name: Upload Release Asset (if on tag)
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./nwnx4.zip
+          asset_name: nwnx4.zip
+          asset_content_type: application/zip
