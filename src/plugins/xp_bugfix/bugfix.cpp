@@ -33,7 +33,7 @@
 #include <cassert>
 #include <map>
 
-#define BUGFIX_VERSION "1.0.70"
+#define BUGFIX_VERSION "1.0.71"
 #define __NWN2_VERSION_STR(X) #X
 #define _NWN2_VERSION_STR(X) __NWN2_VERSION_STR(X)
 #define NWN2_VERSION _NWN2_VERSION_STR(NWN2SERVER_VERSION)
@@ -400,6 +400,40 @@ Patch _patches[] =
 
 #ifdef OFFS_CNWSMessage_HandlePlayerToServerInputMessage_RestPatch1
 	Patch(OFFS_CNWSMessage_HandlePlayerToServerInputMessage_RestPatch1+1, "\x24", 1),
+#endif
+
+#ifdef OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch1
+	//
+	// Convert 8-bit loop counters to 32-bit loop counters.
+	//
+
+	// xor bl, bl -> xor ebx, ebx
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch1, "\x31\xdb", 2),
+	// add bl, 1 -> inc ebx; nop; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch2, "\x43\x90\x90", 3),
+	// movzx eax, bl -> mov eax, ebx ; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch3, "\x89\xd8\x90", 3),
+
+	// xor bl, bl -> xor ebx, ebx
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch1, "\x31\xdb", 2),
+	// add bl, 1 -> inc ebx; nop; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch2, "\x43\x90\x90", 3),
+	// movzx eax, bl -> mov eax, ebx ; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch3, "\x89\xd8\x90", 3),
+
+	// xor bl, bl -> xor ebx, ebx
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch1, "\x31\xdb", 2),
+	// add bl, 1 -> inc ebx; nop; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch2, "\x43\x90\x90", 3),
+	// movzx edi, bl -> mov edi, ebx ; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch3, "\x89\xdf\x90", 3),
+
+	// xor bl, bl -> xor ebx, ebx
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch1, "\x31\xdb", 2),
+	// add bl, 1 -> inc ebx; nop; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch2, "\x43\x90\x90", 3),
+	// movzx edi, bl -> mov edi, ebx ; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch3, "\x89\xdf\x90", 3),
 #endif
 
 #endif

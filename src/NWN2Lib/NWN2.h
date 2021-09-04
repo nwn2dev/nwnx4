@@ -449,6 +449,30 @@
 
 #define OFFS_CNWSMessage_HandlePlayerToServerInputMessage_RestPatch1 0x00633F22 // 1.0.23.1765: nwn2server!CNWSMessage::HandlePlayerToServerInputMessage+0xf62
 
+//
+// The following fix an infinite loop with more than 255 known spells, or more
+// than 255 readied/memorized spells, by widening a loop counter to 32-bit
+// instead of the inadequate default 8-bit counter.
+//
+
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch1 0x005643BD // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x2ad
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch2 0x005643D6 // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x2c6
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch3 0x005643D9 // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x2c9
+
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch1 0x005643EE // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x2de
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch2 0x00564408 // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x2f8
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch3 0x0056440B // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x2fb
+
+
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch1 0x005644AB // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x39b
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch2 0x005644DB // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x3cb
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch3 0x005644DE // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x3ce
+
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch1 0x005644F3 // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x3e3
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch2 0x00564578 // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x468
+#define OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch3 0x0056457B // 1.0.23.1765: nwn2server!CNWSMessage::WriteGameObjUpdate_PlayerUpdate+0x46b
+
+
 #elif NWN2SERVER_VERSION == 0x01221588
 
 /*
