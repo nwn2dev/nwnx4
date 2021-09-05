@@ -1,2 +1,10 @@
-clients:
-  TestService: "localhost:3001"
+clients:  # RPC clients that bind between a key (function) and an unsecure route*.
+  # In this example, "TestService" is the function name you provide to the NWNX* command. The route will be called with
+  # the criteria of the request.
+  # > NWNX*("RPC", "TestService", ...);
+  TestService: localhost:3001
+
+# *Unsecure routes are routes that do not use SSL certificates. This is not to say it isn't a secure, transmission of
+#  requests, but that it doesn't have the heightened security of a handshake or a token in traditional web traffic.
+#  That said, I suggest that you either use parameter #2 of the NWNX* methods to provide a token that is shared between
+#  your server and microservice or that you allow traffic only from the host of your NWN2 server.
