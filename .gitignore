@@ -23,7 +23,6 @@
 /src/plugins/*/Release/
 
 .idea/
-vcpkg/
 vcpkg_installed/
 meson-*/
 CMakeLists.txt
