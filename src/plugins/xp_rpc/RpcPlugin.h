@@ -1,6 +1,6 @@
 /***************************************************************************
-    NWNX FastBoot - NWN2Server Zero Module Copy (Startup Time Improvements)
-    Copyright (C) 2008 Skywing (skywing@valhallalegends.com)
+    NWNX RPC - Middleware between server and microservices.
+    Copyright (C) 2021 ihatemundays
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,10 +29,8 @@
 #include <yaml-cpp/yaml.h>
 #include "../plugin.h"
 #include "../../misc/log.h"
-#include "../../HookHorror/LogClient.h"
-#include "proto/NWScript/nwnx.grpc.pb.h"
-#include "proto/NWScript/nwnx.pb.h"
-#include "proto/NWScript/types.pb.h"
+#include "../../RPC/LogClient.h"
+#include "../../RPC/proto/NWScript/nwnx.grpc.pb.h"
 #include "RpcClient.h"
 
 class RpcPlugin: public Plugin {
@@ -51,7 +49,7 @@ public:
     void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue);
 private:
     bool logged;
-    NWNX4::HookHorror::Log::LogClient* logger_;
+    NWNX4::RPC::Log::LogClient* logger_;
     std::map<std::string, RpcClient> clients_;
     RpcClient* GetRpcClient(char* sFunction);
 };

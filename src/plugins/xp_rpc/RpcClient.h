@@ -6,11 +6,9 @@
 #define XP_RPC_RPCCLIENT_H
 
 #include <grpcpp/grpcpp.h>
-#include "proto/NWScript/nwnx.grpc.pb.h"
-#include "proto/NWScript/nwnx.pb.h"
-#include "proto/NWScript/types.pb.h"
+#include "../../RPC/proto/NWScript/nwnx.grpc.pb.h"
 
-namespace proto = NWNX4::HookHorror::Proto;
+namespace proto = NWNX4::RPC::Proto;
 
 class RpcClient {
 public:

@@ -12,25 +12,21 @@ extra_dep += [
     cppcompiler.find_library('libyaml-cppmdd', dirs: lib_dirs)
 ]
 
-xp_rpc_include_dirs = []
-xp_rpc_include_dirs += include_dirs
-xp_rpc_include_dirs += include_directories(['proto'])
-
 shared_library('xp_rpc',
     [
         '../../misc/log.cpp',
-        '../../HookHorror/proto/log.grpc.pb.cc',
-        '../../HookHorror/proto/log.pb.cc',
-        '../../HookHorror/LogConfig.cpp',
-        '../../HookHorror/LogClient.cpp',
         '../plugin.cpp',
-        'proto/NWScript/nwnx.grpc.pb.cc',
-        'proto/NWScript/nwnx.pb.cc',
-        'proto/NWScript/types.pb.cc',
         'RpcPlugin.cpp',
-        'RpcClient.cpp'
+        'RpcClient.cpp',
+        '../../RPC/proto/NWScript/nwnx.grpc.pb.cc',
+        '../../RPC/proto/NWScript/nwnx.pb.cc',
+        '../../RPC/proto/NWScript/types.pb.cc',
+        '../../RPC/proto/log.grpc.pb.cc',
+        '../../RPC/proto/log.pb.cc',
+        '../../RPC/LogConfig.cpp',
+        '../../RPC/LogClient.cpp'
     ],
-    include_directories: xp_rpc_include_dirs,
+    include_directories: include_dirs,
     dependencies: [
         cppcompiler.find_library('wsock32'),
         cppcompiler.find_library('ws2_32'),

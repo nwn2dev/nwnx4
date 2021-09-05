@@ -2,7 +2,7 @@ syntax = 'proto3';
 
 import "NWScript/types.proto";
 
-package NWNX4.HookHorror.Proto.NWScript;
+package NWNX4.RPC.Proto.NWScript;
 
 service NWNXService {
   rpc NWNXGetInt(NWNXGetIntRequest) returns (Int);

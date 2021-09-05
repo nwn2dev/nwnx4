@@ -8,6 +8,8 @@ else
     ]
 endif
 
+grpc_files
+
 NWNx4Controller_exe = executable('NWNX4_Controller',
     [
         'main.cpp',
@@ -15,12 +17,12 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
         'service.cpp',
         'udp.cpp',
         '../misc/log.cpp',
-        '../HookHorror/proto/log.grpc.pb.cc',
-        '../HookHorror/proto/log.pb.cc',
-        '../HookHorror/Service.cpp',
-        '../HookHorror/LogService.cpp',
-        '../HookHorror/LogServiceImpl.cpp',
-        '../HookHorror/LogConfig.cpp',
+        '../RPC/proto/log.grpc.pb.cc',
+        '../RPC/proto/log.pb.cc',
+        '../RPC/Service.cpp',
+        '../RPC/LogService.cpp',
+        '../RPC/LogServiceImpl.cpp',
+        '../RPC/LogConfig.cpp',
     ],
     win_subsystem: 'console',
     cpp_args: ['/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE'],

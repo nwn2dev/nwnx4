@@ -31,7 +31,7 @@
 #include "../misc/log.h"
 #include "../misc/shmem.h"
 #include "../misc/ini.h"
-#include "../HookHorror/LogService.h"
+#include "../RPC/LogService.h"
 
 #define arrayof(x)		(sizeof(x)/sizeof(x[0]))
 #define IDC_SENDMESSAGE_EDIT    0x3FC
@@ -77,7 +77,7 @@ private:
 	std::string nwnhome;
 	bool initialized;
 	bool shuttingDown;
-    NWNX4::HookHorror::Log::LogService* logService;
+    NWNX4::RPC::Log::LogService* logService;
 
     void setupTempDirectories();
 

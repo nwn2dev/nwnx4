@@ -25,6 +25,7 @@ nwnx4_repo_path = meson.global_source_root()
 include_dirs = include_directories([
     'lib/NWN2/include',
     'vcpkg_installed/x86-windows-static-md/include',
+    'src/RPC/proto'
 ])
 lib_dirs = [
     nwnx4_repo_path + '/lib/NWN2'
@@ -138,6 +139,21 @@ grpc_dep += [
     cppcompiler.find_library('absl_time_zone', dirs: lib_dirs),
     cppcompiler.find_library('absl_wyhash', dirs: lib_dirs)
 ]
+
+# Setup gRPC.
+protoc = find_program('protoc', required: false, dirs: [meson.source_root() + '\\vcpkg_installed\\x64-windows\\tools\\protobuf'])
+grpc_cpp_plugin = find_program('grpc_cpp_plugin', required: false, dirs: [meson.source_root() + '\\vcpkg_installed\\x64-windows\\tools\\grpc'])
+
+if not protoc.found() or not grpc_cpp_plugin.found()
+  error('MESON_SKIP_TEST: protoc tool and/or grpc plugin not found')
+endif
+
+proto_src = meson.source_root() + '\\lib\\RPC\\proto'
+proto_dest = meson.source_root() + '\\src\\RPC\\proto'
+grpc_gen = generator(protoc, \
+  output: ['@BASENAME@.grpc.pb.cc', '@BASENAME@.grpc.pb.h', '@BASENAME@.pb.cc', '@BASENAME@.pb.h'], \
+  arguments: ['-I=' + proto_src, '--plugin=protoc-gen-grpc=' + grpc_cpp_plugin.path(), '--grpc_out=' + proto_dest, '--cpp_out=' + proto_dest, '@INPUT@'])
+grpc_files = grpc_gen.process([proto_src + '\\log.proto', proto_src + '\\NWScript\\nwnx.proto', proto_src + '\\NWScript\\types.proto'])
 
 # Target list
 subdir('src/hook')

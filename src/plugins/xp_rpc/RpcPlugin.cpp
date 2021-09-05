@@ -40,7 +40,7 @@ void RpcPlugin::GetFunctionClass(char* fClass)
 
 RpcPlugin::RpcPlugin(): logged(false) {
     header =
-        "NWNX RPC (w/ HookHorror) Plugin " PLUGIN_VERSION "\n" \
+        "NWNX RPC Plugin " PLUGIN_VERSION "\n" \
 		"(c) 2021 by ihatemundays \n";
 
     description = "A better way to build NWN2 microservices.";
@@ -62,7 +62,7 @@ bool RpcPlugin::Init(char* nwnxhome) {
     logger = new LogNWNX(logfile);
 
     // Build log client; default is to use backup logger.
-    logger_ = new NWNX4::HookHorror::Log::LogClient(nwnxhome);
+    logger_ = new NWNX4::RPC::Log::LogClient(nwnxhome);
     logger_->Info(header.c_str());
 
     // Setup yaml map for services.
