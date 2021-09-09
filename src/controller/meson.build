@@ -8,8 +8,6 @@ else
     ]
 endif
 
-grpc_files
-
 NWNx4Controller_exe = executable('NWNX4_Controller',
     [
         'main.cpp',
@@ -17,13 +15,12 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
         'service.cpp',
         'udp.cpp',
         '../misc/log.cpp',
-        '../RPC/proto/log.grpc.pb.cc',
-        '../RPC/proto/log.pb.cc',
-        '../RPC/Service.cpp',
-        '../RPC/LogService.cpp',
-        '../RPC/LogServiceImpl.cpp',
+        'RPC/Service.cpp',
+        'RPC/LogService.cpp',
+        'RPC/LogServiceImpl.cpp',
         '../RPC/LogConfig.cpp',
     ],
+
     win_subsystem: 'console',
     cpp_args: ['/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE'],
     include_directories: include_dirs,
@@ -31,7 +28,8 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
         cppcompiler.find_library('wsock32'),
         cppcompiler.find_library('ws2_32'),
         cppcompiler.find_library('detours', dirs: lib_dirs),
-    ] + extra_dep + grpc_dep,
+        nwnx_rpc_dep,
+    ],
     install: true,
 )
 

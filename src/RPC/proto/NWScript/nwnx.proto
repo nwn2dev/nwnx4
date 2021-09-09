@@ -1,6 +1,6 @@
 syntax = 'proto3';
 
-import "NWScript/types.proto";
+import "proto/NWScript/types.proto";
 
 package NWNX4.RPC.Proto.NWScript;
 

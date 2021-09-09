@@ -5,7 +5,7 @@
 #ifndef RPC_LOGSERVICEIMPL_H
 #define RPC_LOGSERVICEIMPL_H
 
-#include "../misc/log.h"
+#include "../../misc/log.h"
 #include "proto/log.grpc.pb.h"
 
 namespace proto = NWNX4::RPC::Proto;

@@ -19,7 +19,7 @@ namespace NWNX4 {
         namespace Log {
             class LogClient final: public LogNWNX {
             public:
-                LogClient(const char* const nwnxHome, LogLevel level = LogLevel::info): LogNWNX(level) {
+                LogClient(LogNWNX* logger, const char* const nwnxHome, LogLevel level = LogLevel::info): LogNWNX(level) {
                     auto config = new LogConfig(nwnxHome);
 
                     if (!config->GetEnabled()) {
@@ -44,6 +44,7 @@ namespace NWNX4 {
                 }
                 void LogStr(const char* message);
             private:
+                LogNWNX* logger;
                 bool useLogService = false;
                 std::unique_ptr<proto::Log::LogService::Stub> stub;
             };

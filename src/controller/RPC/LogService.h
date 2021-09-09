@@ -8,7 +8,7 @@
 #include <grpcpp/grpcpp.h>
 #include "../misc/log.h"
 #include "Service.h"
-#include "LogConfig.h"
+#include "../../RPC/LogConfig.h"
 #include "LogServiceImpl.h"
 
 namespace RPC = NWNX4::RPC;

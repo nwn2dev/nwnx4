@@ -18,11 +18,6 @@ shared_library('xp_rpc',
         '../plugin.cpp',
         'RpcPlugin.cpp',
         'RpcClient.cpp',
-        '../../RPC/proto/NWScript/nwnx.grpc.pb.cc',
-        '../../RPC/proto/NWScript/nwnx.pb.cc',
-        '../../RPC/proto/NWScript/types.pb.cc',
-        '../../RPC/proto/log.grpc.pb.cc',
-        '../../RPC/proto/log.pb.cc',
         '../../RPC/LogConfig.cpp',
         '../../RPC/LogClient.cpp'
     ],
@@ -31,7 +26,8 @@ shared_library('xp_rpc',
         cppcompiler.find_library('wsock32'),
         cppcompiler.find_library('ws2_32'),
         cppcompiler.find_library('detours', dirs: lib_dirs),
-    ] + extra_dep + grpc_dep,
+        nwnx_rpc_dep,
+    ] + extra_dep,
     install: true
 )
 

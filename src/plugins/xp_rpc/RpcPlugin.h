@@ -30,7 +30,7 @@
 #include "../plugin.h"
 #include "../../misc/log.h"
 #include "../../RPC/LogClient.h"
-#include "../../RPC/proto/NWScript/nwnx.grpc.pb.h"
+#include "proto/NWScript/nwnx.grpc.pb.h"
 #include "RpcClient.h"
 
 class RpcPlugin: public Plugin {
