@@ -78,7 +78,7 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 
 	// Create log service (if necessary).
 	try {
-        logService = new NWNX4::RPC::Log::LogService(nwnhome.c_str());
+        logService = new NWNX4::RPC::Log::LogService(nwninstalldir.c_str());
         logServiceConnection = logService->StartAsync();
     } catch (const char* exception) {
         logger->Err(exception);
