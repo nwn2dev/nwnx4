@@ -39,6 +39,9 @@ jobs:
           path: vcpkg_installed/
           key: "vcpkg.json-${{ hashFiles('vcpkg.json') }}"
 
+      - name: ↳ Install CMake
+        uses: lukka/get-cmake@latest
+
       - name: ↳ Setup VCPKG
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
         uses: lukka/run-vcpkg@v7
