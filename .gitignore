@@ -6,6 +6,7 @@
 *.pdb
 *.lib
 *.exp
+!/lib/*/lib/*
 
 # vs2019 files
 .vs/

@@ -1,0 +1,7 @@
+#pragma once
+
+#define NWNX_VERSION "@VCS_TAG@"
+
+#define NWNX_BUILD_DATE __DATE__ " " __TIME__
+
+#define NWNX_VERSION_INFO NWNX_VERSION " (" NWNX_BUILD_DATE ")"

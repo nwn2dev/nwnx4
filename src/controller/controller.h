@@ -74,7 +74,7 @@ private:
 	PROCESS_INFORMATION pi;
 
 	unsigned long tick;
-	std::string nwnhome;
+	std::string nwninstalldir;
 	bool initialized;
 	bool shuttingDown;
     NWNX4::RPC::Log::LogService* logService;

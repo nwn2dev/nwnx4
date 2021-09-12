@@ -21,6 +21,7 @@
 #include "stdwx.h"
 #include "dlgabout.h"
 #include "res/nwnx4_logo.xpm"
+#include "../nwnx_version.h"
 
 #include "wx/statbmp.h"
 
@@ -35,7 +36,7 @@ AboutDialog::AboutDialog(
 {
 	wxString aboutText;
 
-    aboutText.append(wxT("NWNX4 GUI Version 0.1.0\n"));
+    aboutText.append(wxT("NWNX4 GUI Version " NWNX_VERSION_INFO "\n"));
     aboutText.append(wxT("Neverwinter Nights Extender for NWN2\n\n"));
     aboutText.append(wxT("Copyright (C) 2021 Crom, ihatemundays (Scott Munday)\n\n"));
 

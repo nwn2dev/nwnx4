@@ -40,6 +40,7 @@
 #include "../controller/controller.h"
 #include "worker.h"
 #include "GuiLog.h"
+#include "../../nwnx_version.h"
 
 /*!
  * Forward declarations
@@ -72,7 +73,7 @@
 #define ID_HELP 10015
 #define ID_FORUM 10016
 #define SYMBOL_MAINFRAME_STYLE wxCAPTION|wxSYSTEM_MENU|wxMINIMIZE_BOX|wxCLOSE_BOX
-#define SYMBOL_MAINFRAME_TITLE _("NWNX4 0.1.0")
+#define SYMBOL_MAINFRAME_TITLE _("NWNX4 " NWNX_VERSION )
 #define SYMBOL_MAINFRAME_IDNAME ID_MAINFRAME
 #define SYMBOL_MAINFRAME_SIZE wxSize(400, 260)
 #define SYMBOL_MAINFRAME_POSITION wxDefaultPosition

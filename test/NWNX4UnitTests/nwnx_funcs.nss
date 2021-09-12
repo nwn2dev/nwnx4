@@ -1,1 +1,0 @@
-../../bin/dist/nss/nwnx_funcs.nss

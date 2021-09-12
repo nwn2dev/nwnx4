@@ -19,6 +19,11 @@ const int SQL_SUCCESS = 1;
 /* Function prototypes              */
 /************************************/
 
+// Create the SQL tables required for the SetPersistentXXX and
+// GetPersistentXXX functions, if they don't already exist. You can call this
+// function in the OnModuleLoad script.
+void SQLCreateTables();
+
 // Execute statement in sSQL
 // returns: SQL_SUCCESS if the query was successful
 //          SQL_ERROR if an error has occurred
@@ -170,6 +175,55 @@ object SQLRetrieveObject(location lLocation, object oOwner = OBJECT_INVALID, str
 /************************************/
 /* Implementation                   */
 /************************************/
+
+void SQLCreateTables(){
+    string sSubClass = NWNXGetString("SQL", "GET SUBCLASS", "", 0);
+
+    if(sSubClass == "MySQL"){
+        SQLExecDirect("CREATE TABLE IF NOT EXISTS `pwdata` ("
+            + "  `player` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `tag` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `name` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `val` text DEFAULT NULL,"
+            + "  `expire` int(11) DEFAULT NULL,"
+            + "  `last` timestamp NOT NULL DEFAULT current_timestamp(),"
+            + "  PRIMARY KEY (`player`,`tag`,`name`)"
+            + ") ENGINE=MyISAM DEFAULT CHARSET=utf8"
+        );
+        SQLExecDirect("CREATE TABLE IF NOT EXISTS `pwobjdata` ("
+            + "  `player` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `tag` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `name` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `val` blob DEFAULT NULL,"
+            + "  `expire` int(11) DEFAULT NULL,"
+            + "  `last` timestamp NOT NULL DEFAULT current_timestamp(),"
+            + "  PRIMARY KEY (`player`,`tag`,`name`)"
+            + ") ENGINE=MyISAM DEFAULT CHARSET=utf8"
+        );
+    }
+    else if(sSubClass == "SQLite"){
+        SQLExecDirect("CREATE TABLE IF NOT EXISTS `pwdata` ("
+            + "  `player` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `tag` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `name` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `val` text DEFAULT NULL,"
+            + "  `expire` int(11) DEFAULT NULL,"
+            + "  `last` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+            + "  PRIMARY KEY (`player`,`tag`,`name`)"
+            + ")"
+        );
+        SQLExecDirect("CREATE TABLE IF NOT EXISTS `pwobjdata` ("
+            + "  `player` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `tag` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `name` varchar(64) NOT NULL DEFAULT '~',"
+            + "  `val` blob DEFAULT NULL,"
+            + "  `expire` int(11) DEFAULT NULL,"
+            + "  `last` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+            + "  PRIMARY KEY (`player`,`tag`,`name`)"
+            + ")"
+        );
+    }
+}
 
 int SQLExecDirect(string sSQL)
 {

@@ -41,24 +41,23 @@ endif
 subdir('src/RPC') # Provides the nwnx_rpc_dep dependency
 
 # Target list
+subdir('src')
 subdir('src/hook')
 subdir('src/controller')
 subdir('src/gui')
 
 nwscript_includes = []
 
-# subdir('src/plugins/chat') # Obsolete ?
 subdir('src/plugins/funcs')
-# subdir('src/plugins/leto') # Obsolete / not ported
 subdir('src/plugins/mysql')
 subdir('src/plugins/pickpocket')
 subdir('src/plugins/profiler')
-# subdir('src/plugins/ruby') # Not ported
 subdir('src/plugins/sqlite')
 subdir('src/plugins/time')
-# subdir('src/plugins/vaultster') # TODO
 subdir('src/plugins/xp_bugfix')
 subdir('src/plugins/xp_fastboot')
 subdir('src/plugins/xp_objectattributes')
 subdir('src/plugins/xp_srvadmin')
 subdir('src/plugins/xp_rpc')
+
+install_data('README.md', install_dir: '.')

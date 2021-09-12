@@ -1,0 +1,26 @@
+Changelog for Vaultster
+
+
+* 14.6.2008: v1.4.6 (NWNx4 by Hialmar)
+- Ported to NWNx4
+- Switched to secure versions of sprintf, strcpy...
+- Corrected a bug with the length of bic file names as reported 
+on the NWNX forums in the following post: 
+http://www.nwnx.org/phpBB2/viewtopic.php?p=8335#8335
+- Note: I should change the version number.
+
+* 7.5.2005: v1.4.6
+- Added default character vault path
+- Added extra checks on variables
+- Added extra logging info
+- Added check in addKnownServer for zero termination
+- Fixed isValidClient function
+- Fixed return value transmitFile
+- Fixed dot problem in createPattern function
+
+* 9.2.2005: v1.4.4
+- Support for NWNX version 2.60 or higher
+- Fixed create directory bug
+- Fixed 10093 socket error
+- Fixed bug in search for latest character file
+- Fixed client id in vaultster_inc NWScript file

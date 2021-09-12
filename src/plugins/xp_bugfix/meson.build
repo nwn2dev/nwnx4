@@ -22,3 +22,8 @@ shared_library('xp_bugfix',
 
 install_data('xp_bugfix.ini', install_dir: '.')
 install_data('nwnx_bugfix.nss', install_dir: 'nwscript')
+
+install_data(meson.global_source_root() + '/lib/auroraserverdll/lib/AuroraServerMsgCheck.dll', install_dir: 'nwn2server-dll')
+install_data(meson.global_source_root() + '/lib/auroraserverdll/lib/AuroraServerMsgCheck.pdb', install_dir: 'nwn2server-dll')
+install_data(meson.global_source_root() + '/lib/auroraserverdll/lib/AuroraServerNetLayer.dll', install_dir: 'nwn2server-dll')
+install_data(meson.global_source_root() + '/lib/auroraserverdll/lib/AuroraServerNetLayer.pdb', install_dir: 'nwn2server-dll')

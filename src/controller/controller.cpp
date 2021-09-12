@@ -68,12 +68,12 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 		}
 	}
 
-	if (!config->Read("nwn2", &nwnhome))
+	if (!config->Read("nwn2", &nwninstalldir))
 	{
-		logger->Info("* NWN2 home directory not found. Check your nwnx.ini file.");
+		logger->Info("* NWN2 installation directory not found. Check your nwnx.ini file.");
 		return;
 	}
-	logger->Trace("NWN2 home: %s", nwnhome.c_str());
+	logger->Trace("NWN2 install dir: %s", nwninstalldir.c_str());
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
 
 	// Create log service (if necessary).
@@ -140,8 +140,8 @@ bool NWNXController::startServerProcessInternal()
 	ZeroMemory(&pi, sizeof(pi));
 	si.cb = sizeof(si);
 
-	auto exePath = nwnhome + nwnexe;
-	logger->Trace("Starting server executable %s in %s", exePath.c_str(), nwnhome.c_str());
+	auto exePath = nwninstalldir + nwnexe;
+	logger->Trace("Starting server executable %s in %s", exePath.c_str(), nwninstalldir.c_str());
 
 	char szDllPath[MAX_PATH];
 	LPSTR pszFilePart = nullptr;
@@ -164,25 +164,29 @@ bool NWNXController::startServerProcessInternal()
 		return false;
 	}
 
-	logger->Trace("Starting: %s", exePath.c_str());
+	logger->Trace("Starting: %s %s", exePath.c_str(), parameters.c_str());
 	logger->Trace("with %s", szDllPath);
 
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 	SetLastError(0);
 
-	if (!DetourCreateProcessWithDllA(exePath.c_str(), (LPSTR) parameters.c_str(),
-                                    nullptr, nullptr, TRUE, dwFlags, nullptr, nwnhome.c_str(),
+	std::string params = "nwn2server.exe " + parameters;
+
+	if (!DetourCreateProcessWithDllExA(exePath.c_str(), (LPSTR)params.c_str(),
+                                    nullptr, nullptr, TRUE, dwFlags, nullptr, nwninstalldir.c_str(),
                                     &si, &pi, szDllPath, nullptr))
 	{
 		auto err = GetLastError();
-		logger->Info("DetourCreateProcessWithDll failed: %d", err);
+		logger->Err("DetourCreateProcessWithDll failed: %d", err);
 		if (err == 740) {
-			logger->Info("You probably need to run the command as administrator.");
+			logger->Err("You probably need to run the command as administrator.");
 		}
 		CloseHandle( shmem.ready_event );
 		ZeroMemory( &pi, sizeof( PROCESS_INFORMATION ) );
 		return false;
     }
+
+    logger->Trace("Started nwn2server");
 
 	GUID my_guid =
 	{ /* d9ab8a40-f4cc-11d1-b6d7-006097b010e3 */
@@ -193,10 +197,10 @@ bool NWNXController::startServerProcessInternal()
 	};
 
 	GetCurrentDirectoryA(MAX_PATH, shmem.nwnx_home);
-	logger->Trace("NWNX home directory set to %s", shmem.nwnx_home);
+	logger->Trace("Injecting NWNX home directory as '%s'", shmem.nwnx_home);
 
 	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {
-	    logger->Err("! Error: Could no copy payload to process.", GetLastError());
+	    logger->Err("! Error: Could not copy payload to process.", GetLastError());
 	    return false;
 	}
 

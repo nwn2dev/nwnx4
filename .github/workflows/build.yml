@@ -1,8 +1,13 @@
 name: NWNX4
-on:
-  push:
+on: [push, pull_request]
+
+env:
+  nwnlibd_version: v1.0.2
 
 jobs:
+
+  # --------------------------------------------------
+
   build:
     name: Build
     runs-on: windows-latest
@@ -34,7 +39,7 @@ jobs:
           path: vcpkg_installed/
           key: "vcpkg.json-${{ hashFiles('vcpkg.json') }}"
 
-      - name: Setup VCPKG
+      - name: ↳ Setup VCPKG
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
         uses: lukka/run-vcpkg@v7
         with:
@@ -43,54 +48,199 @@ jobs:
           vcpkgArguments: "--triplet=x86-windows-static-md --disable-metrics"
 
       # Install vcpkg dependencies
-      - name: Install & build dependencies
+      - name: ↳ Install & build dependencies
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics
 
-          if [ ! -d vcpkg_installed/nwn-lib-d-tools/ ]; then
-            curl -L 'https://github.com/CromFr/nwn-lib-d/releases/download/v1.0.2/nwn-lib-d-tools-windows-x86_64.zip' -o /tmp/nwn-lib-d-tools.zip
-            unzip -d vcpkg_installed/ /tmp/nwn-lib-d-tools.zip
-            rm /tmp/nwn-lib-d-tools.zip
-          fi
-
-      - name: Configure
+      - name: Meson Configure
         run: |
           meson setup builddir --backend=vs --buildtype=release --optimization=2 --strip
 
-      - name: Build
+      - name: Meson build
         run: |
           cd builddir
           meson compile
 
-      - name: Install
+      - name: Meson install
         shell: bash
         run: |
           cd builddir
           meson install --destdir=$PWD/../nwnx4
 
-      - name: Package
+      # Download / restore nwn-lib-d tools
+      - name: Restore cached nwn-lib-d-tools
+        id: nwnlibd_cache
+        uses: actions/cache@v2
+        with:
+          path: C:/nwn-lib-d-tools/
+          key: "nwn-lib-d-tools-${{env.nwnlibd_version}}"
+
+      - name: Install nwn-lib-d-tools if not cached
+        if: steps.nwnlibd_cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L 'https://github.com/CromFr/nwn-lib-d/releases/download/${{env.nwnlibd_version}}/nwn-lib-d-tools-windows-x86_64.zip' -o /tmp/nwn-lib-d-tools.zip
+          unzip -d /c/ /tmp/nwn-lib-d-tools.zip
+          rm /tmp/nwn-lib-d-tools.zip
+
+      - name: Package nwnx4
         shell: bash
         run: |
           rm nwnx4/*.lib
-          vcpkg_installed/nwn-lib-d-tools/nwn-erf create -o nwnx4/nwscript_includes.erf nwnx4/nwscript/
+          /c/nwn-lib-d-tools/nwn-erf create -o nwnx4/nwscript/nwnx.erf nwnx4/nwscript/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           path: nwnx4/
-          name: nwnx4-${{ github.sha }}.zip
+          name: nwnx4-${{ github.sha }}
 
+  # --------------------------------------------------
 
-  # create_release:
-  #   name: Create release if tagged
-  #   if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
+  test:
+    name: Run test module
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      # ------------- Install dependencies
+      - uses: shogo82148/actions-setup-mysql@v1
+        with:
+          distribution: mariadb
+          mysql-version: '10.6'
+          auto-start: true
+
+      - name: "Setup SQL user and database"
+        run: |
+          mysql -uroot -hlocalhost -e "
+            CREATE USER 'nwn'@'localhost' IDENTIFIED BY 'nwn';
+            CREATE DATABASE nwnx;
+            GRANT ALL ON nwnx.* TO 'nwn'@'localhost';
+          "
+
+      - name: Install cached nwn-lib-d-tools
+        id: nwnlibd_cache
+        uses: actions/cache@v2
+        with:
+          path: C:/nwn-lib-d-tools/
+          key: "nwn-lib-d-tools-${{env.nwnlibd_version}}"
+
+      - name: "Download NWN2Server"
+        shell: bash
+        run: |
+          curl -L 'https://raw.githubusercontent.com/wiki/nwn2dev/nwnx4/nwnx4_nwn2server.zip' -o nwnx4_nwn2server.zip
+          7z x nwnx4_nwn2server.zip -o/c/
+          rm nwnx4_nwn2server.zip
+
+      - name: "Install choco packages"
+        run: |
+          choco install vcredist2005 dotnet3.5 dotnet4.7 directx
+
+      # ------------- Run module
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: nwnx4-${{ github.sha }}
+          path: C:/nwnx4/
+
+      - name: "Copy NWN2 home"
+        shell: bash
+        run: |
+          cp -r test/ /c/nwn2home
+
+      - name: "Configure NWNX4"
+        shell: bash
+        run: |
+          # Configure nwnx.ini to load the module
+          sed -i -E 's|^nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g' /c/nwnx4/nwnx.ini
+          sed -i -E 's|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home C:/nwn2home|g' /c/nwnx4/nwnx.ini
+          sed -i -E 's|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g' /c/nwnx4/nwnx.ini
+          sed -i -E 's|^restartDelay\s*=.*$|restartDelay = 60|g' /c/nwnx4/nwnx.ini
+
+          # Use xp_mysql instead if xp_sqlite
+          mv /c/nwnx4/xp_sqlite.dll /c/nwnx4/xp_sqlite.dll_
+
+          cp /c/nwnx4/nwn2server-dll/* /c/nwnx4_nwn2server/
+
+          echo "======================================== nwnx.ini"
+          cat /c/nwnx4/nwnx.ini
+          echo "========================================"
+
+      # - name: "Disable windows defender"
+      #   run: |
+      #     Add-MpPreference -ExclusionProcess "NWNX4_Controller.exe"
+      #     Add-MpPreference -ExclusionProcess "nwn2server.exe"
+
+      - name: "Start server and wait for test success"
+        shell: bash
+        run: |
+          set -o pipefail
+
+          cd /c/nwnx4/
+          echo "> $(date --rfc-3339=seconds --utc) Start NWNX4"
+
+          # Start NWNX4_Controller.exe with admin privileges
+          powershell -Command "Start-Process NWNX4_Controller.exe -ArgumentList '-verbose','-interactive' -Verb RunAs"
+          # powershell -Command "Start-Process NWNX4_Gui.exe -Verb RunAs"
+
+          sleep 10
+          echo "> $(date --rfc-3339=seconds --utc) Check NWNX4"
+
+          # Check if nwn2server is online
+          RUN_MOD=$(/c/nwn-lib-d-tools/nwn-srv bnxi 127.0.0.1 -f json 2> /dev/null | jq -r .modName || echo "Unknown")
+          if tasklist | grep -qi "NWNX4_Controller.exe" \
+          && tasklist | grep -qi "nwn2server.exe" \
+          && [[ "$RUN_MOD" == "NWNX4UnitTests" ]]; then
+            echo "> NWN2Server is still running, tests succeeded"
+            RES=0
+          else
+            echo "> NWN2Server is not running as expected:"
+            tasklist | grep -qi "NWNX4_Controller.exe" || echo "> Missing NWNX4_Controller.exe process"
+            tasklist | grep -qi "nwn2server.exe"       || echo "> Missing nwn2server.exe process"
+            /c/nwn-lib-d-tools/nwn-srv ping 127.0.0.1 >&/dev/null || echo "> Not responding to UDP pings"
+            [[ "$RUN_MOD" == "NWNX4UnitTests" ]]       || echo "> Loaded module: $RUN_MOD"
+            RES=1
+          fi
+
+          # Print failed asserts if any
+          if grep -q "Assert failed" /c/nwn2temp/NWN2/LOGS.0/nwserverLog1.txt; then
+            echo "======================================== Failed asserts:"
+            grep "Assert failed" /c/nwn2temp/NWN2/LOGS.0/nwserverLog1.txt
+            echo "========================================"
+            RES=1
+          fi
+
+          # Stop processes if still running
+          taskkill //IM nwn2server.exe //IM NWNX4_Controller.exe //F ||true
+
+          exit $RES
+
+      - name: "Upload nwn2server logs"
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          path: |
+            C:/nwn2temp/NWN2/LOGS.0/*.txt
+            C:/nwnx4/*.txt
+          name: test-logs
+
+  # --------------------------------------------------
+
+  release:
+    name: Create release if tagged
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: nwnx4-${{ github.sha }}
+          path: nwnx4/
+
       - name: Get release info
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         shell: bash
         id: rel_info
         run: |
@@ -107,7 +257,6 @@ jobs:
           fi
 
       - name: Create Release (if on tag)
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -118,12 +267,10 @@ jobs:
           prerelease: ${{ steps.rel_info.outputs.prerelease }}
 
       - name: Compress release
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
-          Compress-Archive -LiteralPath nwnx4\ -DestinationPath nwnx4.zip
+          zip -r nwnx4.zip nwnx4/
 
       - name: Upload Release Asset (if on tag)
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
