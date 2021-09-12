@@ -50,6 +50,7 @@ jobs:
       # Install vcpkg dependencies
       - name: ↳ Install & build dependencies
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
+        timeout-minutes: 120
         shell: bash
         run: |
           vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics
