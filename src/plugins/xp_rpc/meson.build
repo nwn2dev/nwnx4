@@ -1,16 +1,14 @@
 if get_option('buildtype') == 'release'
     extra_dep = [
         cppcompiler.find_library('zlib', dirs: lib_dirs),
+        cppcompiler.find_library('libyaml-cppmd', dirs: lib_dirs),
     ]
 else
     extra_dep = [
         cppcompiler.find_library('zlibd', dirs: lib_dirs),
+        cppcompiler.find_library('libyaml-cppmdd', dirs: lib_dirs),
     ]
 endif
-
-extra_dep += [
-    cppcompiler.find_library('libyaml-cppmdd', dirs: lib_dirs)
-]
 
 shared_library('xp_rpc',
     [
