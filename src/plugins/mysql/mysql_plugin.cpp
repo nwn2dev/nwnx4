@@ -360,6 +360,11 @@ int MySQL::GetAffectedRows()
 	return mysql_affected_rows(&mysql);
 }
 
+int MySQL::GetLastInsertID()
+{
+	return mysql_insert_id(&mysql);
+}
+
 void MySQL::GetEscapeString(char* str, char* buffer)
 {
 	if (*str == 0x0)

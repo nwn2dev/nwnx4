@@ -55,6 +55,10 @@ string SQLGetDataText(int iCol);
 // INSERT, UPDATE, or DELETE operation.
 int SQLGetAffectedRows();
 
+// Returns the ID of the last inserted or updated row.
+// The table must have an AUTOINCREMENT column.
+int SQLGetLastInsertedID();
+
 // Return the error code for the most recently invoked API function that can succeed or fail.
 // A return value of zero means that no error occurred.
 // Client error message numbers are listed in nwnx_mysql_errors.nss
@@ -248,6 +252,11 @@ string SQLGetDataText(int iCol)
 int SQLGetAffectedRows()
 {
     return NWNXGetInt("SQL", "GET AFFECTED ROWS", "", 0);
+}
+
+int SQLGetLastInsertedID()
+{
+    return NWNXGetInt("SQL", "GET INSID", "", 0);
 }
 
 int SQLGetErrno()

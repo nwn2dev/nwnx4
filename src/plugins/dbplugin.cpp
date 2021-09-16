@@ -96,6 +96,8 @@ int DBPlugin::GetInt(char* sFunction, char* sParam1, int nParam2)
 		return GetAffectedRows();
 	else if (function == "GET ERRNO")
 		return GetErrno();
+	else if (function == "GET INSID")
+		return GetLastInsertID();
 
 	return 0;
 
@@ -166,6 +168,11 @@ bool DBPlugin::Execute(char* query)
 int DBPlugin::GetAffectedRows()
 {
 	return -1;
+}
+
+int DBPlugin::GetLastInsertID()
+{
+	return 0;
 }
 
 int DBPlugin::Fetch(char* buffer)

@@ -51,6 +51,7 @@ private:
 	MYSQL_RES* AdvanceToNextValidResultset();
 	int GetErrno() override;
 	const char *GetErrorMessage() override;
+	int GetLastInsertID() override;
 
 	MYSQL mysql;
 	MYSQL* connection;

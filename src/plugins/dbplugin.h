@@ -62,6 +62,7 @@ protected:
 	virtual void GetEscapeString(char* str, char* buffer);
 	virtual int GetErrno();
 	virtual const char *GetErrorMessage();
+	virtual int GetLastInsertID();
 	void SetScorcoSQL(char *request);
 };
 
