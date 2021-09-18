@@ -33,7 +33,7 @@
 #include <cassert>
 #include <map>
 
-#define BUGFIX_VERSION "1.0.69"
+#define BUGFIX_VERSION "1.0.72"
 #define __NWN2_VERSION_STR(X) #X
 #define _NWN2_VERSION_STR(X) __NWN2_VERSION_STR(X)
 #define NWN2_VERSION _NWN2_VERSION_STR(NWN2SERVER_VERSION)
@@ -103,6 +103,9 @@ NWN2IntersectRayTri(
 	__in const NWN::Vector3 * Tri2,
 	__out float & T
 	);
+
+void
+BugFixDisconnectPlayer();
 
 void *sendtoMstHookAddress = BugFix::sendtoMstHook;
 
@@ -396,6 +399,49 @@ Patch _patches[] =
 
 #ifdef OFFS_CNWSCreature_UnpossessFamiliar_DisableAutoMapCopy
 	Patch(OFFS_CNWSCreature_UnpossessFamiliar_DisableAutoMapCopy, "\x90\xe9", 2),
+#endif
+
+#ifdef OFFS_CNWSMessage_HandlePlayerToServerInputMessage_RestPatch1
+	Patch(OFFS_CNWSMessage_HandlePlayerToServerInputMessage_RestPatch1+1, "\x24", 1),
+#endif
+
+#ifdef OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch1
+	//
+	// Convert 8-bit loop counters to 32-bit loop counters.
+	//
+
+	// xor bl, bl -> xor ebx, ebx
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch1, "\x31\xdb", 2),
+	// add bl, 1 -> inc ebx; nop; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch2, "\x43\x90\x90", 3),
+	// movzx eax, bl -> mov eax, ebx ; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToRemove_Patch3, "\x89\xd8\x90", 3),
+
+	// xor bl, bl -> xor ebx, ebx
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch1, "\x31\xdb", 2),
+	// add bl, 1 -> inc ebx; nop; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch2, "\x43\x90\x90", 3),
+	// movzx eax, bl -> mov eax, ebx ; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_KnownSpellsToAdd_Patch3, "\x89\xd8\x90", 3),
+
+	// xor bl, bl -> xor ebx, ebx
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch1, "\x31\xdb", 2),
+	// add bl, 1 -> inc ebx; nop; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch2, "\x43\x90\x90", 3),
+	// movzx edi, bl -> mov edi, ebx ; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToRemove_Patch3, "\x89\xdf\x90", 3),
+
+	// xor bl, bl -> xor ebx, ebx
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch1, "\x31\xdb", 2),
+	// add bl, 1 -> inc ebx; nop; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch2, "\x43\x90\x90", 3),
+	// movzx edi, bl -> mov edi, ebx ; nop
+	Patch(OFFS_CNWSMessage_WriteGameObjUpdate_PlayerUpdate_SlotsToAdd_Patch3, "\x89\xdf\x90", 3),
+#endif
+
+#ifdef OFFS_DisconnectPlayer
+	Patch(OFFS_DisconnectPlayer, "\xe9", 1),
+	Patch(OFFS_DisconnectPlayer+1, (relativefunc)BugFixDisconnectPlayer),
 #endif
 
 #endif
@@ -5884,5 +5930,30 @@ VOID TrackPlayerAccountName(__in const char * Name)
 	}
 	catch (std::bad_alloc)
 	{
+	}
+}
+
+__declspec(naked) void BugFixDisconnectPlayer()
+{
+	__asm
+	{
+		; //
+		; // Ensure that a valid player ID is passed through so that a BootPC
+		; // event on a disconnected creature does not crash the server due to
+		; // a DisconnectPlayer call on PLAYERID_INVALIDID.
+		; //
+
+		cmp     dword ptr [esp+04h], MAX_PLAYERS
+		jb      CallDisconnectPlayer
+
+		xor     eax, eax
+		ret     10h
+
+CallDisconnectPlayer:
+		push    esi
+		mov     esi, ecx
+		cmp     dword ptr [esi+7AB54h], 0
+		mov     eax, OFFS_DisconnectPlayer + 10
+		jmp     eax
 	}
 }
