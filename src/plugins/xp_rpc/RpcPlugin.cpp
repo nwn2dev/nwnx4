@@ -62,7 +62,7 @@ bool RpcPlugin::Init(char* nwnxhome) {
     logger = new LogNWNX(logfile);
 
     // Build log client; default is to use backup logger.
-    logger_ = new NWNX4::RPC::Log::LogClient(logger, nwnxhome);
+    logger_ = new NWNX4::RPC::Log::LogClient(nwnxhome);
     logger_->Info(header.c_str());
 
     // Setup yaml map for services.

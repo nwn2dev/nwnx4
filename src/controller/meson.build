@@ -20,7 +20,6 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
         'RPC/LogServiceImpl.cpp',
         '../RPC/LogConfig.cpp',
     ],
-
     win_subsystem: 'console',
     cpp_args: ['/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE'],
     include_directories: include_dirs,

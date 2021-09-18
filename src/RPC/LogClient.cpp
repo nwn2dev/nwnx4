@@ -4,6 +4,8 @@
 
 #include "LogClient.h"
 
+extern LogNWNX* logger;
+
 namespace NWNX4 {
     namespace RPC {
         namespace Log {
