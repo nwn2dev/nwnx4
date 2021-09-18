@@ -65,10 +65,9 @@ void CUDP::setPort(int port)
 
 void CUDP::setAddress(char *szAddress)
 {
-    inet_pton(AF_INET, szAddress, (PVOID) addr.sin_addr.s_addr);
-
-	if(addr.sin_addr.s_addr == INADDR_NONE) 	// The address wasn't in numeric form, resolve it
+	if(inet_pton(AF_INET, szAddress, (void*) addr.sin_addr.s_addr) != 1)
 	{
+		// The address wasn't in numeric form, resolve it
 		host = nullptr;
 		host = gethostbyname(szAddress);	// Get the IP address of the server and store it in host
 		if(host == nullptr)
