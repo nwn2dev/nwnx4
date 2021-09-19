@@ -7,7 +7,6 @@
 class GuiLog: public LogNWNX {
 public:
     GuiLog();
-protected:
     void LogStr(const char* message);
 };
 

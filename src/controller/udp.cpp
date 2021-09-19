@@ -54,8 +54,13 @@ CUDP::CUDP(char *szAddress, int port)
 
 CUDP::~CUDP()
 {
-	closesocket(s);
-	WSACleanup();
+    char buf;
+    int err = recv(s, &buf, 1, MSG_PEEK);
+    if (err != SOCKET_ERROR)
+    {
+        closesocket(s);
+        WSACleanup();
+    }
 }
 
 void CUDP::setPort(int port)

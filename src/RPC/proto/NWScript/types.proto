@@ -1,0 +1,29 @@
+syntax = 'proto3';
+
+package NWNX4.RPC.Proto.NWScript;
+
+message Float {
+  float value = 1;
+}
+message Int {
+  int32 value = 1;
+}
+
+message String {
+  string value = 1;
+}
+
+message Action {}
+message Command {}
+message Const {}
+message Effect {}
+message Event {}
+message ItemProperty {}
+message Location {}
+message Object {}
+// Exclusive to NWN:EE.
+// message SqlQuery
+message Struct {}
+message Talent {}
+message Vector {}
+message Void {}

@@ -26,10 +26,12 @@
 #include <cstring>
 #include <cwchar>
 #include <detours/detours.h>
+#include <future>
 #include "udp.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
 #include "../misc/ini.h"
+#include "RPC/LogService.h"
 
 #define arrayof(x)		(sizeof(x)/sizeof(x[0]))
 #define IDC_SENDMESSAGE_EDIT    0x3FC
@@ -75,8 +77,10 @@ private:
 	std::string nwninstalldir;
 	bool initialized;
 	bool shuttingDown;
+	NWNX4::RPC::Log::LogService* logService = nullptr;
+	std::future<void> logServiceConnection;
 
-	void setupTempDirectories();
+    void setupTempDirectories();
 
 	bool startServerProcessInternal();
 	bool checkProcessActive();

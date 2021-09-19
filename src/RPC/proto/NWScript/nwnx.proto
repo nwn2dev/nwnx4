@@ -1,0 +1,53 @@
+syntax = 'proto3';
+
+import "proto/NWScript/types.proto";
+
+package NWNX4.RPC.Proto.NWScript;
+
+service NWNXService {
+  rpc NWNXGetInt(NWNXGetIntRequest) returns (Int);
+  rpc NWNXSetInt(NWNXSetIntRequest) returns (Void);
+  rpc NWNXGetFloat(NWNXGetFloatRequest) returns (Float);
+  rpc NWNXSetFloat(NWNXSetFloatRequest) returns (Void);
+  rpc NWNXGetString(NWNXGetStringRequest) returns (String);
+  rpc NWNXSetString(NWNXSetStringRequest) returns (Void);
+}
+
+message NWNXGetIntRequest {
+  string sFunction = 1;
+  string sParam1 = 2;
+  int32 nParam2 = 3;
+}
+
+message NWNXSetIntRequest {
+  string sFunction = 1;
+  string sParam1 = 2;
+  int32 nParam2 = 3;
+  int32 nValue = 4;
+}
+
+message NWNXGetFloatRequest {
+  string sFunction = 1;
+  string sParam1 = 2;
+  int32 nParam2 = 3;
+}
+
+message NWNXSetFloatRequest {
+  string sFunction = 1;
+  string sParam1 = 2;
+  int32 nParam2 = 3;
+  float fValue = 4;
+}
+
+message NWNXGetStringRequest {
+  string sFunction = 1;
+  string sParam1 = 2;
+  int32 nParam2 = 3;
+}
+
+message NWNXSetStringRequest {
+  string sFunction = 1;
+  string sParam1 = 2;
+  int32 nParam2 = 3;
+  string sValue = 4;
+}

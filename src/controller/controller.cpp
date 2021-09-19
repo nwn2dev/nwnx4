@@ -73,6 +73,18 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 	}
 	logger->Trace("NWN2 install dir: %s", nwninstalldir.c_str());
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
+
+	// Create log service (if necessary).
+	try {
+        logService = new NWNX4::RPC::Log::LogService(".");
+        logServiceConnection = logService->StartAsync();
+	} catch (const std::exception& exception) {
+	    logger->Err(exception.what());
+    } catch (const char* exception) {
+        logger->Err(exception);
+    } catch (...) {
+	    logger->Err("Unknown error.");
+	}
 }
 
 NWNXController::~NWNXController()
@@ -81,6 +93,10 @@ NWNXController::~NWNXController()
 
 	if (udp)
 		delete udp;
+
+	if (logService != nullptr) {
+        delete logService;
+    }
 }
 
 void NWNXController::setupTempDirectories() {

@@ -87,6 +87,12 @@ MainFrame::MainFrame(wxWindow* parent, wxWindowID id, const wxString& caption, c
     Create( parent, id, caption, pos, size, style );
 }
 
+MainFrame::~MainFrame() {
+    if (controller != nullptr) {
+        delete controller;
+    }
+}
+
 /*!
  * MainFrame creator
  */
@@ -139,7 +145,7 @@ bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption,
 		worker->startServer();
 	}
 
-    return true;
+	return true;
 }
 
 /*!

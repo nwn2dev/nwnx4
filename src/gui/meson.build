@@ -1,4 +1,3 @@
-
 wx_args = ['/DwxUSE_GUI=1', '/DwxUSE_UNICODE']
 if get_option('buildtype') == 'release'
     wx_args += ['/D__WXMSWU__']
@@ -36,7 +35,12 @@ NWNx4Controller_exe = executable('NWNX4_Gui',
         'main.cpp',
         '../misc/log.cpp',
         'GuiLog.cpp',
+        '../controller/RPC/Service.cpp',
+        '../controller/RPC/LogService.cpp',
+        '../controller/RPC/LogServiceImpl.cpp',
+        '../RPC/LogConfig.cpp',
     ],
+
     win_subsystem: 'windows',
     cpp_args: wx_args,
     include_directories: include_dirs,
@@ -46,6 +50,7 @@ NWNx4Controller_exe = executable('NWNX4_Gui',
         cppcompiler.find_library('comctl32'),
         cppcompiler.find_library('rpcrt4'),
         cppcompiler.find_library('detours', dirs: lib_dirs),
+        nwnx_rpc_dep,
     ] + wx_dep,
     install: true,
 )

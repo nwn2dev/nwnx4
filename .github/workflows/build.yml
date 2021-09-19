@@ -11,6 +11,8 @@ jobs:
   build:
     name: Build
     runs-on: windows-latest
+    env:
+      VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -45,14 +47,27 @@ jobs:
         with:
           setupOnly: true
           doNotCache: true
-          vcpkgArguments: "--triplet=x86-windows-static-md --disable-metrics"
+          vcpkgArguments: "--triplet=x86-windows-static-md --disable-metrics --clean-after-build"
 
-      # Install vcpkg dependencies
-      - name: ↳ Install & build dependencies
+      - name: ↳ Setup NuGet cache for vcpkg'
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
+        shell: 'bash'
+        run: |
+          $(./vcpkg/vcpkg fetch nuget | tail -n 1) \
+            sources add \
+            -source "https://nuget.pkg.github.com/nwn2dev/index.json" \
+            -storepasswordincleartext \
+            -name "GitHub" \
+            -username "nwn2dev" \
+            -password "${{ secrets.GITHUB_TOKEN }}"
+
+      # Build vcpkg dependencies
+      - name: ↳ Build & install dependencies
+        if: steps.vcpkg_cache.outputs.cache-hit != 'true'
+        timeout-minutes: 120
         shell: bash
         run: |
-          vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics
+          vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics --clean-after-build
 
       - name: Meson Configure
         run: |
