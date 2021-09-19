@@ -23,8 +23,6 @@
 
 extern LogNWNX* logger;
 
-std::future<void> logServiceConnection;
-
 NWNXController::NWNXController(SimpleIniConfig* config)
 {
     this->config = config;
@@ -78,11 +76,15 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 
 	// Create log service (if necessary).
 	try {
-        logService = new NWNX4::RPC::Log::LogService(nwninstalldir.c_str());
+        logService = new NWNX4::RPC::Log::LogService(".");
         logServiceConnection = logService->StartAsync();
+	} catch (const std::exception& exception) {
+	    logger->Err(exception.what());
     } catch (const char* exception) {
         logger->Err(exception);
-    }
+    } catch (...) {
+	    logger->Err("Unknown error.");
+	}
 }
 
 NWNXController::~NWNXController()

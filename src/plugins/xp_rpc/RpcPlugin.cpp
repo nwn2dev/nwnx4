@@ -4,7 +4,7 @@
 
 #include "RpcPlugin.h"
 
-#define PLUGIN_VERSION "0.0.1"
+#define PLUGIN_VERSION "0.1.0"
 
 RpcPlugin *plugin;
 
@@ -40,8 +40,8 @@ void RpcPlugin::GetFunctionClass(char* fClass)
 
 RpcPlugin::RpcPlugin(): logged(false) {
     header =
-        "NWNX RPC Plugin " PLUGIN_VERSION "\n" \
-		"(c) 2021 by ihatemundays \n";
+        "NWNX4 RPC Plugin " PLUGIN_VERSION "\n" \
+		"(c) 2021 by ihatemundays (scottmunday84@gmail.com) \n";
 
     description = "A better way to build NWN2 microservices.";
 

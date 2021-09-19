@@ -77,7 +77,8 @@ private:
 	std::string nwninstalldir;
 	bool initialized;
 	bool shuttingDown;
-    NWNX4::RPC::Log::LogService* logService;
+	NWNX4::RPC::Log::LogService* logService = nullptr;
+	std::future<void> logServiceConnection;
 
     void setupTempDirectories();
 
