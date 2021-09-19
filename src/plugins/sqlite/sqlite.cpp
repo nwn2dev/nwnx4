@@ -313,3 +313,8 @@ const char *SQLite::GetErrorMessage()
 {
 	return sqlite3_errmsg(sdb);
 }
+
+int SQLite::GetLastInsertID()
+{
+	return sqlite3_last_insert_rowid(sdb);
+}

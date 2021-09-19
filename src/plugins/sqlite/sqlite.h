@@ -51,6 +51,7 @@ private:
 	void SafeFinalize(sqlite3_stmt** pStmt);
 	int GetErrno() override;
 	const char *GetErrorMessage() override;
+	int GetLastInsertID() override;
 };
 
 #endif
