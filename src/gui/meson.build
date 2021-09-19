@@ -40,6 +40,7 @@ NWNx4Controller_exe = executable('NWNX4_Gui',
         '../controller/RPC/LogServiceImpl.cpp',
         '../RPC/LogConfig.cpp',
     ],
+    nwnx_version,
 
     win_subsystem: 'windows',
     cpp_args: wx_args,
