@@ -170,10 +170,16 @@ jobs:
         shell: bash
         run: |
           # Configure nwnx.ini to load the module
-          sed -i -E 's|^nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g' /c/nwnx4/nwnx.ini
-          sed -i -E 's|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home C:/nwn2home|g' /c/nwnx4/nwnx.ini
-          sed -i -E 's|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g' /c/nwnx4/nwnx.ini
-          sed -i -E 's|^restartDelay\s*=.*$|restartDelay = 60|g' /c/nwnx4/nwnx.ini
+          sed -i -E '
+            s|^nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g;
+            s|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home C:/nwn2home|g;
+            s|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g;
+
+            s|^restartDelay\s*=.*$|restartDelay = 600|g;
+
+            s|^gamespyInterval\s*=.*$|gamespyInterval = 1|g;
+            s|^gamespyDelay\s*=.*$|gamespyDelay = 10|g;
+          ' /c/nwnx4/nwnx.ini
 
           # Use xp_mysql instead if xp_sqlite
           mv /c/nwnx4/xp_sqlite.dll /c/nwnx4/xp_sqlite.dll_
@@ -201,7 +207,7 @@ jobs:
           powershell -Command "Start-Process NWNX4_Controller.exe -ArgumentList '-verbose','-interactive' -Verb RunAs"
           # powershell -Command "Start-Process NWNX4_Gui.exe -Verb RunAs"
 
-          sleep 10
+          sleep 20
           echo "> $(date --rfc-3339=seconds --utc) Check NWNX4"
 
           # Check if nwn2server is online
