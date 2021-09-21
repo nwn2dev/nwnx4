@@ -74,6 +74,7 @@ jobs:
         continue-on-error: true
         with:
           languages: cpp
+          source-root: src
 
       - name: Meson Configure
         run: |
