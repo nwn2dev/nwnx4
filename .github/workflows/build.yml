@@ -69,6 +69,12 @@ jobs:
         run: |
           vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics --clean-after-build
 
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        continue-on-error: true
+        with:
+          languages: cpp
+
       - name: Meson Configure
         run: |
           meson setup builddir --backend=vs --buildtype=release --optimization=2 --strip
@@ -111,6 +117,10 @@ jobs:
         with:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
+        continue-on-error: true
 
   # --------------------------------------------------
 
