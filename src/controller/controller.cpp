@@ -267,13 +267,13 @@ void NWNXController::restartServerProcess()
 	if (restartCmd != "")
 	{
 		PROCESS_INFORMATION pi;
-		STARTUPINFO si;
+		STARTUPINFOA si;
 
 		ZeroMemory(&si,sizeof(si));
 		si.cb = sizeof(si);
 		logger->Info("* Starting maintenance file %s", restartCmd.c_str());
 		restartCmd = std::string("cmd.exe /c ") + restartCmd;
-		if (CreateProcess(nullptr, (LPTSTR)restartCmd.c_str(), nullptr, nullptr,FALSE, NORMAL_PRIORITY_CLASS, nullptr, nullptr, &si, &pi))
+		if (CreateProcessA(nullptr, (LPSTR)restartCmd.c_str(), nullptr, nullptr, FALSE, NORMAL_PRIORITY_CLASS, nullptr, nullptr, &si, &pi))
 		{
 			WaitForSingleObject( pi.hProcess, INFINITE );
 			CloseHandle( pi.hProcess );

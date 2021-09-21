@@ -69,6 +69,13 @@ jobs:
         run: |
           vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics --clean-after-build
 
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        continue-on-error: true
+        with:
+          languages: cpp
+          source-root: src
+
       - name: Meson Configure
         run: |
           meson setup builddir --backend=vs --buildtype=release --optimization=2 --strip
@@ -111,6 +118,10 @@ jobs:
         with:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
+        continue-on-error: true
 
   # --------------------------------------------------
 
@@ -170,10 +181,16 @@ jobs:
         shell: bash
         run: |
           # Configure nwnx.ini to load the module
-          sed -i -E 's|^nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g' /c/nwnx4/nwnx.ini
-          sed -i -E 's|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home C:/nwn2home|g' /c/nwnx4/nwnx.ini
-          sed -i -E 's|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g' /c/nwnx4/nwnx.ini
-          sed -i -E 's|^restartDelay\s*=.*$|restartDelay = 60|g' /c/nwnx4/nwnx.ini
+          sed -i -E '
+            s|^nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g;
+            s|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home C:/nwn2home|g;
+            s|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g;
+
+            s|^restartDelay\s*=.*$|restartDelay = 600|g;
+
+            s|^gamespyInterval\s*=.*$|gamespyInterval = 1|g;
+            s|^gamespyDelay\s*=.*$|gamespyDelay = 10|g;
+          ' /c/nwnx4/nwnx.ini
 
           # Use xp_mysql instead if xp_sqlite
           mv /c/nwnx4/xp_sqlite.dll /c/nwnx4/xp_sqlite.dll_
@@ -201,7 +218,7 @@ jobs:
           powershell -Command "Start-Process NWNX4_Controller.exe -ArgumentList '-verbose','-interactive' -Verb RunAs"
           # powershell -Command "Start-Process NWNX4_Gui.exe -Verb RunAs"
 
-          sleep 10
+          sleep 20
           echo "> $(date --rfc-3339=seconds --utc) Check NWNX4"
 
           # Check if nwn2server is online
@@ -250,12 +267,17 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v2
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
         with:
           name: nwnx4-${{ github.sha }}
           path: nwnx4/
 
-      - name: Get release info
+      - name: Compress release
+        run: |
+          zip -r nwnx4.zip nwnx4/
+
+      - name: Extract release info
         shell: bash
         id: rel_info
         run: |
@@ -271,27 +293,10 @@ jobs:
             echo "Not a tagged release"
           fi
 
-      - name: Create Release (if on tag)
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create draft release with artifact
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.rel_info.outputs.tag }}
-          release_name: ${{ steps.rel_info.outputs.tag }}
+          name: ${{ steps.rel_info.outputs.tag }}
           prerelease: ${{ steps.rel_info.outputs.prerelease }}
-
-      - name: Compress release
-        run: |
-          zip -r nwnx4.zip nwnx4/
-
-      - name: Upload Release Asset (if on tag)
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./nwnx4.zip
-          asset_name: nwnx4.zip
-          asset_content_type: application/zip
+          files: nwnx4.zip
+          draft: true
