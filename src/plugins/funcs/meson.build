@@ -18,6 +18,7 @@ shared_library('xp_funcs',
     ],
     include_directories: include_dirs,
     install: true,
+    install_dir: 'plugins',
 )
 
 install_data('nwnx_funcs.nss', install_dir: 'nwscript')

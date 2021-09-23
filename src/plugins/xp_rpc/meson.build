@@ -26,7 +26,8 @@ shared_library('xp_rpc',
         cppcompiler.find_library('detours', dirs: lib_dirs),
         nwnx_rpc_dep,
     ] + extra_dep,
-    install: true
+    install: true,
+    install_dir: 'plugins',
 )
 
-install_data('xp_rpc.yml', install_dir: '.')
+install_data('xp_rpc.yml', install_dir: 'config.example')

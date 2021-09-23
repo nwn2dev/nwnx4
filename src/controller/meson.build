@@ -34,6 +34,6 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
     install: true,
 )
 
-install_data('nwnx.ini', install_dir: '.')
-install_data('nwnx_restart.cmd', install_dir: '.')
+install_data('nwnx.ini', install_dir: 'config.example')
+install_data('nwnx_restart.cmd', install_dir: 'config.example')
 install_data('nwnx_include.nss', install_dir: 'nwscript')

@@ -18,9 +18,10 @@ shared_library('xp_bugfix',
         cppcompiler.find_library('ws2_32'),
     ],
     install: true,
+    install_dir: 'plugins',
 )
 
-install_data('xp_bugfix.ini', install_dir: '.')
+install_data('xp_bugfix.ini', install_dir: 'config.example')
 install_data('nwnx_bugfix.nss', install_dir: 'nwscript')
 
 install_data(meson.global_source_root() + '/lib/auroraserverdll/lib/AuroraServerMsgCheck.dll', install_dir: 'nwn2server-dll')

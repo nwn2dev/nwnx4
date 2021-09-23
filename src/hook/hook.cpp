@@ -561,198 +561,174 @@ void init()
     Plugin handling
 ***************************************************************************/
 
+// Used to parse comma-separated plugin list in nwnx.ini
+static std::vector<std::filesystem::path> ParsePluginsList(const std::string& list){
+	std::vector<std::filesystem::path> ret;
+
+	bool inValue = false; // true when the state machine is parsing a value
+	size_t start = 0;
+	size_t end = 0; // points to the last non-whitespace character of a value
+	for(size_t i = 0 ; i < list.size() ; i++){
+		// Skip all whitespaces
+		if(list[i] == ' ' || list[i] == '\t')
+			continue;
+
+		if(!inValue){
+			// Start parsing a value
+			start = i;
+			end = start;
+			inValue = true;
+		}
+		else{
+			if(list[i] == ','){
+				// Insert new element in array, stop parsing the value
+				ret.push_back(list.substr(start, end - start));
+				inValue = false;
+				start = i + 1;
+				end = start;
+			}
+			else{
+				// Advance end marker (non whitespace character)
+				end = i + 1;
+			}
+		}
+	}
+	if(inValue)
+		ret.push_back(list.substr(start, end - start));
+
+	return ret;
+}
+
 typedef Plugin* (WINAPI* GetPluginPointer)();
 typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
 
 // Called upon initialization (see above).
-// Loads all plugins based on a filename pattern
 //
 void loadPlugins()
 {
-	char fClass[128];
-    std::string filename;
-	std::string pattern("xp_*.dll");
-	auto dir = std::filesystem::directory_entry(*nwnxHome);
+	std::vector<std::filesystem::path> pluginList;
+	std::string pluginListStr;
+	if(!config->Read("plugin_list", &pluginListStr)){
+		// plugin_list not found in config
+		logger->Warn("No 'plugin_list' found in nwnx.ini. All plugins in the nwnx4 directory will be loaded. This behavior is not recommended !");
 
-    logger->Debug("Enumerating plugins in current directory");
+		// Add all plugins in nwnx4 dir to pluginList
+		auto dir = std::filesystem::directory_entry(*nwnxHome);
+		for(auto& file : std::filesystem::directory_iterator(dir.path())){
+			auto filename = file.path().filename().string();
 
-    for(auto& file : std::filesystem::directory_iterator(dir.path())){
-    	auto filename = file.path().filename().string();
-    	// TODO: handle case sensitivity
-    	if(filename.substr(0, 3) == "xp_" && filename.substr(filename.size() - 4) == ".dll"){
-        	logger->Debug("Trying to load plugin %s", filename.c_str());
+			if(filename.length() > 4
+			&& filename.substr(0, 3) == "xp_"
+			&& filename.substr(filename.size() - 4) == ".dll"){
+				pluginList.push_back(file);
+			}
+		}
+	}
+	else
+		pluginList = ParsePluginsList(pluginListStr);
 
-			HINSTANCE hDLL = LoadLibraryA(file.path().string().c_str()); // Warning: unconst cast
-			if (hDLL == nullptr)
+	for(auto& pluginPath : pluginList){
+		if(++pluginPath.begin() == pluginPath.end()){
+			// The plugin is provided as name only (no slashes), and must be
+			// stored in the ./plugins/ folder
+			pluginPath += ".dll";
+			pluginPath = "plugins" / pluginPath;
+		}
+		// If relative path, prepend the nwnx4 dir
+		if(pluginPath.is_relative())
+			pluginPath = std::filesystem::directory_entry(*nwnxHome) / pluginPath;
+
+		auto pluginPathStr = pluginPath.string();
+		auto pluginName = pluginPath.stem().string();
+		logger->Debug("Loading plugin %s (%s)", pluginName.c_str(), pluginPathStr.c_str());
+
+		// Load DLL file
+		HINSTANCE hDLL = LoadLibraryA(pluginPathStr.c_str());
+		if (hDLL == nullptr)
+		{
+			// Failed to load the plugin
+			char* lpMsgBuf;
+			DWORD dw = GetLastError();
+			FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM| FORMAT_MESSAGE_MAX_WIDTH_MASK ,
+				nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(LPSTR) &lpMsgBuf, 0, nullptr);
+
+			logger->Err("Loading plugin %s: Error %d. %s", pluginName.c_str(), dw, lpMsgBuf);
+			continue;
+		}
+
+		void* pGetPluginPointer;
+
+		// Search for V2 plugin function
+		pGetPluginPointer = GetProcAddress(hDLL, "GetPluginPointerV2");
+		if (pGetPluginPointer != nullptr)
+		{
+			// Load
+			Plugin* pPlugin = ((GetPluginPointer)pGetPluginPointer)();
+			if (pPlugin != nullptr)
 			{
-				LPVOID lpMsgBuf;
-				DWORD dw = GetLastError();
-				FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM| FORMAT_MESSAGE_MAX_WIDTH_MASK ,
-					nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-					(LPTSTR) &lpMsgBuf,	0, nullptr);
-
-				logger->Info("* Loading plugin %s: Error %d. %s", filename.c_str(), dw, lpMsgBuf);
+				if (!pPlugin->Init(nwnxHome->data()))
+					logger->Err("* Loading plugin %s: Error during plugin initialization.", pluginName.c_str());
+				else
+				{
+					char fClass[128];
+					pPlugin->GetFunctionClass(fClass);
+					if (plugins.find(fClass) == plugins.end())
+					{
+						logger->Info("* Loading plugin %s: Successfully registered as class: %s",
+							pluginName.c_str(), fClass);
+						plugins[fClass] = pPlugin;
+					}
+					else
+					{
+						logger->Warn("* Skipping plugin %s: Class %s already registered by another plugin.",
+							pluginName.c_str(), fClass);
+						FreeLibrary(hDLL);
+					}
+				}
 			}
 			else
+				logger->Err("* Loading plugin %s: Error while instancing plugin.", pluginName.c_str());
+
+			continue;
+		}
+
+		// Search for legacy plugin function
+		pGetPluginPointer = GetProcAddress(hDLL, "GetPluginPointer");
+		if (pGetPluginPointer != nullptr)
+		{
+			LegacyPlugin* pPlugin = ((GetLegacyPluginPointer)pGetPluginPointer)();
+			if (pPlugin != nullptr)
 			{
-				// create an instance of plugin
-				GetPluginPointer pGetPluginPointer = (GetPluginPointer)GetProcAddress(hDLL, "GetPluginPointerV2");
-				if (pGetPluginPointer)
-				{
-					Plugin* pPlugin = pGetPluginPointer();
-					if (pPlugin)
-					{
-						if (!pPlugin->Init(nwnxHome->data()))
-							logger->Info("* Loading plugin %s: Error during plugin initialization.", filename.c_str());
-						else
-						{
-							pPlugin->GetFunctionClass(fClass);
-							if (plugins.find(fClass) == plugins.end())
-							{
-								logger->Info("* Loading plugin %s: Successfully registered as class: %s",
-									filename.c_str(), fClass);
-								plugins[fClass] = pPlugin;
-							}
-							else
-							{
-								logger->Info("* Skipping plugin %s: Class %s already registered by another plugin.",
-									filename.c_str(), fClass);
-								FreeLibrary(hDLL);
-							}
-						}
-					}
-					else
-						logger->Info("* Loading plugin %s: Error while instancing plugin.", filename.c_str());
-				}
+				if (!pPlugin->Init(nwnxHome->data()))
+					logger->Err("* Loading plugin %s: [LEGACY] Error during plugin initialization.", pluginName.c_str());
 				else
+				{
+					char fClass[128];
+					pPlugin->GetFunctionClass(fClass);
+					if (plugins.find(fClass) == plugins.end())
 					{
-					GetLegacyPluginPointer pGetPluginPointer = (GetLegacyPluginPointer)GetProcAddress(hDLL, "GetPluginPointer");
-					if (pGetPluginPointer)
-					{
-						LegacyPlugin* pPlugin = pGetPluginPointer();
-						if (pPlugin)
-						{
-							if (!pPlugin->Init(nwnxHome->data()))
-								logger->Info("* Loading plugin %s: Error during plugin initialization.", filename.c_str());
-							else
-							{
-								pPlugin->GetFunctionClass(fClass);
-								if (plugins.find(fClass) == plugins.end())
-								{
-									logger->Info("* Loading plugin %s: Successfully registered as class: %s",
-										filename.c_str(), fClass);
-									legacyplugins[fClass] = pPlugin;
-								}
-								else
-								{
-									logger->Info("* Skipping plugin %s: Class %s already registered by another plugin.",
-										filename.c_str(), fClass);
-									FreeLibrary(hDLL);
-								}
-							}
-						}
-						else
-							logger->Info("* Loading plugin %s: Error while instancing plugin.", filename.c_str());
+						logger->Info("* Loading plugin %s: [LEGACY] Successfully registered as class: %s",
+							pluginName.c_str(), fClass);
+						legacyplugins[fClass] = pPlugin;
 					}
 					else
-						logger->Info("* Loading plugin %s: Error. Could not retrieve class object pointer.", filename.c_str());
+					{
+						logger->Warn("* Skipping plugin %s: [LEGACY] Class %s already registered by another plugin.",
+							pluginName.c_str(), fClass);
+						FreeLibrary(hDLL);
+					}
 				}
-				//	logger->Info("* Loading plugin %s: Error. The plugin is not " 					"compatible with this version of NWNX."), filename);
 			}
-    	}
-    }
+			else
+				logger->Err("* Loading plugin %s: [LEGACY] Error while instancing plugin.", pluginName.c_str());
 
-  //   if (!dir.IsOpened())
-  //   {
-  //       // deal with the error here - wxDir would already log an error message
-  //       // explaining the exact reason of the failure
-  //       return;
-  //   }
+			continue;
+		}
 
-  //   bool cont = dir.GetFirst(&filename, pattern, wxDIR_FILES);
-  //   while (cont)
-  //   {
-  //       logger->Debug("Trying to load plugin %s", filename);
-
-		// HINSTANCE hDLL = LoadLibrary(dir.GetName() + wxT("\\") + filename);
-		// if (hDLL == nullptr)
-		// {
-		// 	LPVOID lpMsgBuf;
-		// 	DWORD dw = GetLastError();
-		// 	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM| FORMAT_MESSAGE_MAX_WIDTH_MASK ,
-		// 		nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		// 		(LPTSTR) &lpMsgBuf,	0, nullptr);
-
-		// 	logger->Info("* Loading plugin %s: Error %d. %s", filename, dw, lpMsgBuf);
-		// }
-		// else
-		// {
-		// 	// create an instance of plugin
-		// 	GetPluginPointer pGetPluginPointer = (GetPluginPointer)GetProcAddress(hDLL, "GetPluginPointerV2");
-		// 	if (pGetPluginPointer)
-		// 	{
-		// 		Plugin* pPlugin = pGetPluginPointer();
-		// 		if (pPlugin)
-		// 		{
-		// 			if (!pPlugin->Init((char*)nwnxHome->c_str()))
-		// 				logger->Info("* Loading plugin %s: Error during plugin initialization.", filename);
-		// 			else
-		// 			{
-		// 				pPlugin->GetFunctionClass(fClass);
-		// 				if (plugins.find(fClass) == plugins.end())
-		// 				{
-		// 					logger->Info("* Loading plugin %s: Successfully registered as class: %s",
-		// 						filename, fClass);
-		// 					plugins[fClass] = pPlugin;
-		// 				}
-		// 				else
-		// 				{
-		// 					logger->Info("* Skipping plugin %s: Class %s already registered by another plugin.",
-		// 						filename, fClass);
-		// 					FreeLibrary(hDLL);
-		// 				}
-		// 			}
-		// 		}
-		// 		else
-		// 			logger->Info("* Loading plugin %s: Error while instancing plugin.", filename);
-		// 	}
-		// 	else
-		// 		{
-		// 		GetLegacyPluginPointer pGetPluginPointer = (GetLegacyPluginPointer)GetProcAddress(hDLL, "GetPluginPointer");
-		// 		if (pGetPluginPointer)
-		// 		{
-		// 			LegacyPlugin* pPlugin = pGetPluginPointer();
-		// 			if (pPlugin)
-		// 			{
-		// 				if (!pPlugin->Init((char*)nwnxHome->c_str()))
-		// 					logger->Info("* Loading plugin %s: Error during plugin initialization.", filename);
-		// 				else
-		// 				{
-		// 					pPlugin->GetFunctionClass(fClass);
-		// 					if (plugins.find(fClass) == plugins.end())
-		// 					{
-		// 						logger->Info("* Loading plugin %s: Successfully registered as class: %s",
-		// 							filename, fClass);
-		// 						legacyplugins[fClass] = pPlugin;
-		// 					}
-		// 					else
-		// 					{
-		// 						logger->Info("* Skipping plugin %s: Class %s already registered by another plugin.",
-		// 							filename, fClass);
-		// 						FreeLibrary(hDLL);
-		// 					}
-		// 				}
-		// 			}
-		// 			else
-		// 				logger->Info("* Loading plugin %s: Error while instancing plugin.", filename);
-		// 		}
-		// 		else
-		// 			logger->Info("* Loading plugin %s: Error. Could not retrieve class object pointer.", filename);
-		// 	}
-		// 	//	logger->Info("* Loading plugin %s: Error. The plugin is not " 					"compatible with this version of NWNX."), filename);
-		// }
-  //       cont = dir.GetNext(&filename);
-  //   }
+		// No compatible API found
+		logger->Info("* Loading plugin %s: Error. Could not retrieve class object pointer.", pluginName.c_str());
+	}
 }
 
 /***************************************************************************
