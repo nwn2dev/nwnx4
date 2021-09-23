@@ -180,25 +180,26 @@ jobs:
       - name: "Configure NWNX4"
         shell: bash
         run: |
+          cd /c/nwnx4/
+          cp config.example/* .
+
           # Configure nwnx.ini to load the module
           sed -i -E '
             s|^nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g;
             s|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home C:/nwn2home|g;
             s|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g;
 
-            s|^restartDelay\s*=.*$|restartDelay = 600|g;
+            s|plugin_list\s*=.*$|plugin_list = xp_bugfix,xp_fastboot,xp_funcs,xp_mysql,xp_objectattributes,xp_pickpocket,xp_profiler,xp_rpc,xp_srvadmin,xp_time|g;
 
+            s|^restartDelay\s*=.*$|restartDelay = 600|g;
             s|^gamespyInterval\s*=.*$|gamespyInterval = 1|g;
             s|^gamespyDelay\s*=.*$|gamespyDelay = 10|g;
-          ' /c/nwnx4/nwnx.ini
+          ' nwnx.ini
 
-          # Use xp_mysql instead if xp_sqlite
-          mv /c/nwnx4/xp_sqlite.dll /c/nwnx4/xp_sqlite.dll_
-
-          cp /c/nwnx4/nwn2server-dll/* /c/nwnx4_nwn2server/
+          cp nwn2server-dll/* /c/nwnx4_nwn2server/
 
           echo "======================================== nwnx.ini"
-          cat /c/nwnx4/nwnx.ini
+          cat nwnx.ini
           echo "========================================"
 
       # - name: "Disable windows defender"
