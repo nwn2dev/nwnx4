@@ -185,7 +185,7 @@ jobs:
 
           # Configure nwnx.ini to load the module
           sed -i -E '
-            s|^nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g;
+            s|^\s*#?\s*nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g;
             s|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home %NWNX4_DIR%/../nwn2home|g;
             s|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g;
 
