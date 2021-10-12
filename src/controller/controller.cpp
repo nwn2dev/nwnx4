@@ -121,8 +121,6 @@ Author:
 			"Location", // Steam NWN2
 		};
 
-		FoundIt = false;
-
 		for (size_t i = 0; i < _countof( ValueNames ); i += 1)
 		{
 			NameBufferSize = sizeof( NameBuffer ) - sizeof( NameBuffer[ 0 ] );
