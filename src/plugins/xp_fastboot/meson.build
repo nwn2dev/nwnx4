@@ -10,4 +10,5 @@ shared_library('xp_fastboot',
     link_args: ['/dynamicbase', '/nxcompat'],
     include_directories: include_dirs,
     install: true,
+    install_dir: 'plugins',
 )

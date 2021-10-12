@@ -10,7 +10,8 @@ shared_library('xp_pickpocket',
         cppcompiler.find_library('detours', dirs: lib_dirs),
     ],
     install: true,
+    install_dir: 'plugins',
 )
 
-install_data('xp_pickpocket.ini', install_dir: '.')
+install_data('xp_pickpocket.ini', install_dir: 'config.example')
 install_data('nwnx_pickpocket.nss', install_dir: 'nwscript')

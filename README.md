@@ -1,8 +1,8 @@
 
 # NWNX4
 
-NWNX4 is a launcher for NWN2Server that injects code into the server process, in order
-to provide additional features and bug fixes.
+NWNX4 is a launcher for NWN2Server that injects code into the server process,
+in order to provide additional features and bug fixes.
 
 ## Requirements
 You must install:
@@ -12,24 +12,43 @@ You must install:
 
 ## Usage
 
-1. Download ans extract the [NWNX4 zip file](https://github.com/nwn2dev/nwnx4/releases) in any directory
-2. Copy files inside the `nwn2server-dll/` folder to your game installation directory
-3. (Optional) Copy the `.nss` files inside the `nwscript/` folder to your
-   module folder, or import `nwscript/nwnx.erf` into your module with the NWN2
-   toolset
-4. Edit `nwnx.ini`, at least:
-    + `nwn2`: full or relative path to the NWN2 install folder
-    + `parameters`: nwn2server command line arguments. Examples:
-        * `-module YourModuleName` if your module is a .mod file
-        * `-moduledir YourModuleName` if your module is a directory
-5. Delete or rename either `xp_mysql.dll` or `xp_sqlite.dll`
-6. Configure your plugins (`xp_*.ini` files). Most plugins come with
-   convenient defaults, but you may need to tweak some of them.
-7. Start NWNX4:
+### First installation
+
+1. Download and extract the [NWNX4 zip
+   file](https://github.com/nwn2dev/nwnx4/releases) in any directory
+2. Copy files inside the `nwn2server-dll/` folder to your game installation
+   directory (where the `nwn2server.exe` file is located)
+3. Copy all files from the `config.example/` folder to your nwnx4 folder (i.e.
+   to their parent directory)
+4. Customize the configuration files you just copied to suit your needs:
+    - `nwnx.ini`:
+        + `plugin_list`: the list of all nwnx4 plugins that will be loaded.
+          You may want to add or remove some of them.
+        + `nwn2`: full or relative path to the NWN2 install folder
+        + `parameters`: nwn2server command line arguments. Examples:
+            * `-module YourModuleName` if your module is a .mod file
+            * `-moduledir YourModuleName` if your module is a directory
+    - `xp_*.ini`: these are the plugins configuration files. Most plugins are
+      shipped with convenient defaults, but you may need to tweak some of
+      them. Note that the presence of a plugin configuration file does not
+      mean the plugin will be loaded (see `plugin_list` in `nwnx.ini`).
+5. (Optional) Copy the `.nss` files inside the `nwscript/` folder to your
+   module folder, **or** import `nwscript/nwnx.erf` into your module using the
+   NWN2 toolset
+6. Start NWNX4:
     + Run `NWNX4_GUI.exe` for the GUI version
     + Run `NWNX4_Controller.exe -interactive` in a shell for the command-line
       version.
 
+### Updating NWNX4
+
+1. Download and extract the [NWNX4 zip
+   file](https://github.com/nwn2dev/nwnx4/releases) into your existing nwnx4
+   directory, and overwrite everything
+2. Only configuration files inside `config.example/` are updated. The existing
+   configuration files in the NWNX4 folder are not overwritten. You may need
+   to manually update the existing configuration files (see the [release
+   notes](https://github.com/nwn2dev/nwnx4/releases)).
 
 ## About
 

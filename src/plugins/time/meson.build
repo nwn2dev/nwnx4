@@ -10,6 +10,7 @@ shared_library('xp_time',
         cppcompiler.find_library('detours', dirs: lib_dirs),
     ],
     install: true,
+    install_dir: 'plugins',
 )
 
 install_data('nwnx_time.nss', install_dir: 'nwscript')

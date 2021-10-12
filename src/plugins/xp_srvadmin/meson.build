@@ -9,6 +9,7 @@ shared_library('xp_srvadmin',
     link_args: ['/dynamicbase', '/nxcompat'],
     include_directories: include_dirs,
     install: true,
+    install_dir: 'plugins',
 )
 
 install_data('nwnx_srvadmin.nss', install_dir: 'nwscript')

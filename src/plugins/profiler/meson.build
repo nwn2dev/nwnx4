@@ -12,4 +12,5 @@ shared_library('xp_profiler',
         cppcompiler.find_library('detours', dirs: lib_dirs),
     ],
     install: true,
+    install_dir: 'plugins',
 )

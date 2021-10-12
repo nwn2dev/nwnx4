@@ -32,8 +32,9 @@ shared_library('xp_mysql',
         cppcompiler.find_library('ws2_32'),
     ] + extra_libs,
     install: true,
+    install_dir: 'plugins',
 )
 
-install_data('xp_mysql.ini', install_dir: '.')
+install_data('xp_mysql.ini', install_dir: 'config.example')
 install_data('nwnx_sql.nss', install_dir: 'nwscript')
 install_data('nwnx_mysql_errors.nss', install_dir: 'nwscript')
