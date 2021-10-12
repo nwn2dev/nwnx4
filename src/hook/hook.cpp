@@ -568,33 +568,38 @@ static std::vector<std::filesystem::path> ParsePluginsList(const std::string& li
 	bool inValue = false; // true when the state machine is parsing a value
 	size_t start = 0;
 	size_t end = 0; // points to the last non-whitespace character of a value
-	for(size_t i = 0 ; i < list.size() ; i++){
+	for (size_t i = 0; i < list.size(); i++) {
 		// Skip all whitespaces
-		if(list[i] == ' ' || list[i] == '\t')
-			continue;
+		if (list[i] == ' ' || list[i] == '\t') {
+		    continue;
+		}
 
-		if(!inValue){
+		if (!inValue) {
 			// Start parsing a value
 			start = i;
 			end = start;
 			inValue = true;
+
+			continue;
 		}
-		else{
-			if(list[i] == ','){
-				// Insert new element in array, stop parsing the value
-				ret.push_back(list.substr(start, end - start));
-				inValue = false;
-				start = i + 1;
-				end = start;
-			}
-			else{
-				// Advance end marker (non whitespace character)
-				end = i + 1;
-			}
+
+		if (list[i] == ',') {
+            // Insert new element in array, stop parsing the value
+            ret.push_back(list.substr(start, end - start));
+            inValue = false;
+            start = i + 1;
+            end = start;
+
+            continue;
 		}
+
+		// Advance end marker (non whitespace character)
+		end = i + 1;
 	}
-	if(inValue)
-		ret.push_back(list.substr(start, end - start));
+
+	if (inValue) {
+	    ret.push_back(list.substr(start, end - start));
+	}
 
 	return ret;
 }
