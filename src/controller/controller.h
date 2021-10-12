@@ -69,6 +69,8 @@ public:
 private:
 	SimpleIniConfig* config;
 
+	char m_nwnx4Dir[MAX_PATH];
+
 	CUDP *udp;
 	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;

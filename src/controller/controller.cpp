@@ -30,6 +30,10 @@ NWNXController::NWNXController(SimpleIniConfig* config)
     // Setup temporary directories.
     this->setupTempDirectories();
 
+	// Set nwnx4 dir env variable
+	GetCurrentDirectoryA(MAX_PATH, m_nwnx4Dir);
+	SetEnvironmentVariableA("NWNX4_DIR", m_nwnx4Dir);
+
     tick = 0;
 	initialized = false;
 	shuttingDown = false;
@@ -166,15 +170,22 @@ bool NWNXController::startServerProcessInternal()
 		return false;
 	}
 
-	logger->Trace("Starting: %s %s", exePath.c_str(), parameters.c_str());
-	logger->Trace("with %s", szDllPath);
-
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 	SetLastError(0);
 
-	std::string params = "nwn2server.exe " + parameters;
+	char params[MAX_PATH];
+	strcpy(params, "nwn2server.exe ");
+	strncat(params, parameters.c_str(), MAX_PATH);
 
-	if (!DetourCreateProcessWithDllExA(exePath.c_str(), (LPSTR)params.c_str(),
+	auto envRes = DoEnvironmentSubstA(params, MAX_PATH);
+	if(!HIWORD(envRes)){
+		logger->Err("Could not substitute environment variables in NWN2Server command line: %s", params);
+	}
+
+	logger->Trace("Starting: %s\\%s", nwninstalldir.c_str(), params);
+	logger->Trace("with %s", szDllPath);
+
+	if (!DetourCreateProcessWithDllExA(exePath.c_str(), params,
                                     nullptr, nullptr, TRUE, dwFlags, nullptr, nwninstalldir.c_str(),
                                     &si, &pi, szDllPath, nullptr))
 	{
@@ -198,7 +209,7 @@ bool NWNXController::startServerProcessInternal()
 		{0xb6, 0xd7, 0x00, 0x60, 0x97, 0xb0, 0x10, 0xe3}
 	};
 
-	GetCurrentDirectoryA(MAX_PATH, shmem.nwnx_home);
+	strcpy(shmem.nwnx_home, m_nwnx4Dir);
 	logger->Trace("Injecting NWNX home directory as '%s'", shmem.nwnx_home);
 
 	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {
