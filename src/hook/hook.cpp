@@ -571,16 +571,16 @@ static std::vector<std::filesystem::path> ParsePluginsList(const std::string& li
 	for (size_t i = 0; i < list.size(); i++) {
 		// Skip all whitespaces
 		if (list[i] == ' ' || list[i] == '\t') {
-            continue;
+		    continue;
 		}
 
 		if (!inValue) {
-            // Start parsing a value
-            start = i;
-            end = start;
-            inValue = true;
+		    // Start parsing a value
+		    start = i;
+		    end = start;
+		    inValue = true;
 
-            continue;
+		    continue;
 		}
 
 		if (list[i] == ',') {
