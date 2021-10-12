@@ -23,6 +23,143 @@
 
 extern LogNWNX* logger;
 
+static std::string GetNwn2InstallPath()
+/*++
+
+Routine Description:
+
+	This routine attempts to auto detect the NWN2 installation path from the
+	registry.
+
+Arguments:
+
+	None.
+
+Return Value:
+
+	The routine returns the game installation path if successful.  Otherwise,
+	an std::exception is raised.
+
+Environment:
+
+	User mode.
+
+Author:
+
+	Copyright (c) Ken Johnson (Skywing). All rights reserved.
+	https://github.com/SkywingvL/nwn2dev-public/blob/master/NWNScriptConsole/AppParams.cpp#L310
+
+--*/
+{
+	HKEY  Key;
+	CHAR  NameBuffer[ MAX_PATH + 1 ];
+	DWORD NameBufferSize;
+	LONG  Status;
+
+	Status = RegOpenKeyEx(
+		HKEY_LOCAL_MACHINE,
+		L"SOFTWARE\\Obsidian\\NWN 2\\Neverwinter",
+		REG_OPTION_RESERVED,
+#ifdef _WIN64
+		KEY_QUERY_VALUE | KEY_WOW64_32KEY,
+#else
+		KEY_QUERY_VALUE,
+#endif
+		&Key);
+
+	if (Status != NO_ERROR)
+	{
+		Status = RegOpenKeyEx(
+			HKEY_LOCAL_MACHINE,
+			L"SOFTWARE\\GOG.com\\GOGNWN2COMPLETE",
+			REG_OPTION_RESERVED,
+#ifdef _WIN64
+			KEY_QUERY_VALUE | KEY_WOW64_32KEY,
+#else
+			KEY_QUERY_VALUE,
+#endif
+			&Key);
+
+		if (Status == NO_ERROR)
+		{
+			NameBufferSize = sizeof( NameBuffer ) - sizeof( NameBuffer[ 0 ] );
+
+			Status = RegQueryValueExA(
+				Key,
+				"PATH",
+				NULL,
+				NULL,
+				(LPBYTE) NameBuffer,
+				&NameBufferSize);
+
+			RegCloseKey( Key );
+			Key = NULL;
+
+			if (Status == NO_ERROR)
+			{
+				//
+				// Strip trailing null byte if it exists.
+				//
+
+				if ((NameBufferSize > 0) &&
+					(NameBuffer[ NameBufferSize - 1 ] == '\0'))
+					NameBufferSize -= 1;
+
+				return std::string( NameBuffer, NameBufferSize );
+			}
+		}
+
+		throw std::exception( "Unable to open NWN2 registry key" );
+	}
+
+	try
+	{
+		bool                FoundIt;
+		static const char * ValueNames[ ] =
+		{
+			"Path",     // Retail NWN2
+			"Location", // Steam NWN2
+		};
+
+		for (size_t i = 0; i < _countof( ValueNames ); i += 1)
+		{
+			NameBufferSize = sizeof( NameBuffer ) - sizeof( NameBuffer[ 0 ] );
+
+			Status = RegQueryValueExA(
+				Key,
+				ValueNames[ i ],
+				NULL,
+				NULL,
+				(LPBYTE) NameBuffer,
+				&NameBufferSize);
+
+			if (Status != NO_ERROR)
+				continue;
+
+			//
+			// Strip trailing null byte if it exists.
+			//
+
+			if ((NameBufferSize > 0) &&
+				(NameBuffer[ NameBufferSize - 1 ] == '\0'))
+				NameBufferSize -= 1;
+
+			RegCloseKey( Key );
+			Key = NULL;
+
+			return std::string( NameBuffer, NameBufferSize );
+		}
+
+		throw std::exception( "Unable to read Path from NWN2 registry key" );
+	}
+	catch (...)
+	{
+		if (Key != NULL)
+			RegCloseKey( Key );
+		throw;
+	}
+}
+
 NWNXController::NWNXController(SimpleIniConfig* config)
 {
     this->config = config;
@@ -72,8 +209,13 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 
 	if (!config->Read("nwn2", &nwninstalldir))
 	{
-		logger->Info("* NWN2 installation directory not found. Check your nwnx.ini file.");
-		return;
+		try{
+			nwninstalldir = GetNwn2InstallPath();
+		}
+		catch(std::exception){
+			logger->Info("* NWN2 installation directory not found. Check your nwnx.ini file.");
+			return;
+		}
 	}
 	logger->Trace("NWN2 install dir: %s", nwninstalldir.c_str());
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
