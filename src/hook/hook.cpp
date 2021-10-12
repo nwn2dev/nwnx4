@@ -562,7 +562,7 @@ void init()
 ***************************************************************************/
 
 // Used to parse comma-separated plugin list in nwnx.ini
-static std::vector<std::filesystem::path> ParsePluginsList(const std::string& list){
+static std::vector<std::filesystem::path> ParsePluginsList(const std::string& list) {
 	std::vector<std::filesystem::path> ret;
 
 	bool inValue = false; // true when the state machine is parsing a value
@@ -571,26 +571,26 @@ static std::vector<std::filesystem::path> ParsePluginsList(const std::string& li
 	for (size_t i = 0; i < list.size(); i++) {
 		// Skip all whitespaces
 		if (list[i] == ' ' || list[i] == '\t') {
-		    continue;
+            continue;
 		}
 
 		if (!inValue) {
-			// Start parsing a value
-			start = i;
-			end = start;
-			inValue = true;
+            // Start parsing a value
+            start = i;
+            end = start;
+            inValue = true;
 
-			continue;
+            continue;
 		}
 
 		if (list[i] == ',') {
-            // Insert new element in array, stop parsing the value
-            ret.push_back(list.substr(start, end - start));
-            inValue = false;
-            start = i + 1;
-            end = start;
+		    // Insert new element in array, stop parsing the value
+		    ret.push_back(list.substr(start, end - start));
+		    inValue = false;
+		    start = i + 1;
+		    end = start;
 
-            continue;
+		    continue;
 		}
 
 		// Advance end marker (non whitespace character)
