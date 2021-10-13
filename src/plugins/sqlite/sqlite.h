@@ -52,6 +52,8 @@ private:
 	int GetErrno() override;
 	const char *GetErrorMessage() override;
 	int GetLastInsertID() override;
+	bool SQLite::WriteScorcoData(BYTE* pData, int Length) override;
+	BYTE* SQLite::ReadScorcoData(char *param, int *size) override;
 };
 
 #endif

@@ -19,6 +19,8 @@
 
 #include "sqlite.h"
 
+#include "nwn2heap.h"
+
 #include <filesystem>
 
 /***************************************************************************
@@ -320,4 +322,89 @@ const char *SQLite::GetErrorMessage()
 int SQLite::GetLastInsertID()
 {
 	return sqlite3_last_insert_rowid(sdb);
+}
+
+bool SQLite::WriteScorcoData(BYTE* pData, int Length)
+{
+	logger->Info("* SCO query: %s", scorcoSQL);
+
+	// End any previous SQL statement
+	SafeFinalize(&pStmt);
+
+	// Prepare new SQL statement
+	auto rc = sqlite3_prepare_v2(sdb, scorcoSQL, -1, &pStmt, nullptr);
+	if (rc != SQLITE_OK)
+	{
+		logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL, sqlite3_errmsg(sdb));
+		SafeFinalize(&pStmt);
+		return false;
+	}
+
+	// Bind blob
+	rc = sqlite3_bind_blob(pStmt, 1, pData, Length, SQLITE_STATIC);
+	if (rc != SQLITE_OK)
+	{
+		logger->Err("! SQL Error: Cannot bind blob: %s", sqlite3_errmsg(sdb));
+		SafeFinalize(&pStmt);
+		return false;
+	}
+
+	// execute step
+	rc = sqlite3_step(pStmt);
+	switch(rc & 0xff)
+	{
+		case SQLITE_DONE:
+			logger->Trace("* Step: SQLITE_DONE");
+			SafeFinalize(&pStmt);
+			break;
+
+		case SQLITE_ERROR:
+			logger->Err("! SQL Error: %s (%d)", sqlite3_errmsg(sdb), sqlite3_errcode(sdb));
+			SafeFinalize(&pStmt);
+			return false;
+	}
+
+	return true;
+}
+
+BYTE* SQLite::ReadScorcoData(char *param, int *size)
+{
+	logger->Info("* RCO query: %s", scorcoSQL);
+
+	// Prepare SQL statement
+	if (strcmp(param, "FETCHMODE") != 0){
+		SafeFinalize(&pStmt);
+
+		auto rc = sqlite3_prepare_v2(sdb, scorcoSQL, -1, &pStmt, nullptr);
+		if (rc != SQLITE_OK)
+		{
+			logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL, sqlite3_errmsg(sdb));
+			SafeFinalize(&pStmt);
+			return false;
+		}
+	}
+
+	Fetch(nullptr);
+
+	auto value = sqlite3_column_blob(pStmt, 1);
+	if (value)
+	{
+		auto length = sqlite3_column_bytes(pStmt, 1);
+
+		NWN2_HeapMgr *pHeapMgr = NWN2_HeapMgr::Instance();
+		NWN2_Heap *pHeap = pHeapMgr->GetDefaultHeap();
+		void* buf = pHeap->Allocate(length);
+
+		if (!buf) return nullptr;
+
+		memcpy(buf, value, length);
+		*size = length;
+
+		return (BYTE*)buf;
+	}
+	else
+	{
+		logger->Info("* Empty RCO resultset");
+		return nullptr;
+	}
 }
