@@ -36,10 +36,10 @@ public:
 private:
 	std::string dbfile;
 	bool firstfetch;
+	bool wrapTransaction;
 
 	sqlite3 *sdb;
 	sqlite3_stmt* pStmt;
-	sqlite3_stmt* pNewStmt;
 
 	bool Connect();
 	void Disconnect();
