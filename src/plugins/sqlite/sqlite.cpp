@@ -297,7 +297,7 @@ void SQLite::SafeFinalize(sqlite3_stmt** pStmt)
 
 void SQLite::GetEscapeString(char* str, char* buffer)
 {
-	if (*str == nullptr)
+	if (*str == '\0')
 	{
 		nwnxcpy(buffer, "");
 		return;
