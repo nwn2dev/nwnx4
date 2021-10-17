@@ -36,10 +36,10 @@ public:
 private:
 	std::string dbfile;
 	bool firstfetch;
+	bool wrapTransaction;
 
 	sqlite3 *sdb;
 	sqlite3_stmt* pStmt;
-	sqlite3_stmt* pNewStmt;
 
 	bool Connect();
 	void Disconnect();
@@ -48,10 +48,14 @@ private:
 	int GetData(int iCol, char* buffer) override;
 	int GetAffectedRows() override;
 	void GetEscapeString(char* str, char* buffer) override;
-	void SafeFinalize(sqlite3_stmt** pStmt);
 	int GetErrno() override;
 	const char *GetErrorMessage() override;
 	int GetLastInsertID() override;
+	bool SQLite::WriteScorcoData(BYTE* pData, int Length) override;
+	BYTE* SQLite::ReadScorcoData(char *param, int *size) override;
+
+	/// Free *pStmt if possible
+	static void SafeFinalize(sqlite3_stmt** pStmt);
 };
 
 #endif
