@@ -62,11 +62,11 @@ SQLite::SQLite()
 		"NWNX SQLite Plugin V.1.1.0\n" \
 		"(c) 2007 by Ingmar Stieger (Papillon)\n" \
 		"visit us at http://www.nwnx.org\n" \
-		"(built using SQLite 3.3.17)\n";
+		"(built using SQLite " SQLITE_VERSION ")\n";
 
 	description =
 		"This plugin provides database storage. It uses " \
-	    "SQLite 3.3.17 as databaserver server and therefore is " \
+	    "SQLite " SQLITE_VERSION " as database server and therefore is " \
 		"very ease to configure and maintain.";
 
 	subClass = "SQLite";
@@ -83,11 +83,12 @@ SQLite::~SQLite()
 
 bool SQLite::Init(char* nwnxhome)
 {
+	// Read config
 	SetupLogAndIniFile(nwnxhome);
 	config->Read("file", &dbfile, std::string("sqlite.db"));
 	config->Read("wrap_transaction", &wrapTransaction, false);
 
-	// Make sqlite path relative to nwnx directory
+	// Make sqlite database path relative to nwnx directory
 	auto path = std::filesystem::path(dbfile);
 	if(path.is_relative())
 		path = std::filesystem::path(nwnxhome) / dbfile;
@@ -178,7 +179,8 @@ bool SQLite::Execute(char* query)
 
 		return FALSE;
 	}
-	// execute step
+
+	// execute query
 	rc = sqlite3_step(pNewStmt);
 	switch(rc & 0xff)
 	{
@@ -234,11 +236,13 @@ int SQLite::Fetch(char* buffer)
 	int rc;
 	if (firstfetch)
 	{
+		// sqlite3_step has already been called in SQLite::Execute
 		firstfetch = false;
 		rc = SQLITE_ROW;	
 	}
 	else
 	{
+		// Execute step again to go to next result
 		logger->Trace("* Fetch: fetching next result row");
 		rc = sqlite3_step(pStmt);
 		if ((rc & 0xff) == SQLITE_ERROR)
@@ -249,12 +253,14 @@ int SQLite::Fetch(char* buffer)
 
 	if ((rc & 0xff) == SQLITE_ROW)
 	{
-		return 1;
+		// There is a row available
+		return true;
 	}
 	else
 	{
+		// No more rows / there was an error
 		SafeFinalize(&pStmt);
-		return 0;
+		return false;
 	}
 }
 
@@ -262,6 +268,7 @@ int SQLite::GetData(int iCol, char* buffer)
 {
 	const char* pCol;
 
+	// Check that a statement has been executed previously
 	if (!pStmt)
 	{
 		logger->Trace("* GetData: No valid statement prepared.");
@@ -272,14 +279,16 @@ int SQLite::GetData(int iCol, char* buffer)
 	logger->Trace("* GetData: Get column %d, buffer size %d bytes", iCol, MAX_BUFFER);
 
 	pCol = (const char*) sqlite3_column_text(pStmt, iCol);
-	if (pCol)
+	if (pCol != nullptr)
 	{
+		// There is some data
 		nwnxcpy(buffer, pCol);
 		logger->Info("* Returning: %s", buffer);
 		return 0;
 	}
 	else
 	{
+		// There is no data / value is null
 		nwnxcpy(buffer, "");
 		logger->Info("* Returning: (empty)");
 		return -1;
@@ -288,7 +297,7 @@ int SQLite::GetData(int iCol, char* buffer)
 
 void SQLite::SafeFinalize(sqlite3_stmt** pStmt)
 {
-	if (*pStmt)
+	if (*pStmt != nullptr)
 	{
 		sqlite3_finalize(*pStmt);
 		*pStmt = nullptr;
@@ -303,7 +312,6 @@ void SQLite::GetEscapeString(char* str, char* buffer)
 		return;
 	}
 
-	size_t len = strlen(str);
 	char* to = sqlite3_mprintf("%q", str);
 	nwnxcpy(buffer, to);
 	sqlite3_free(to);
@@ -340,7 +348,7 @@ bool SQLite::WriteScorcoData(BYTE* pData, int Length)
 		return false;
 	}
 
-	// Bind blob
+	// Bind blob parameter
 	rc = sqlite3_bind_blob(pStmt, 1, pData, Length, SQLITE_STATIC);
 	if (rc != SQLITE_OK)
 	{
@@ -354,6 +362,7 @@ bool SQLite::WriteScorcoData(BYTE* pData, int Length)
 	switch(rc & 0xff)
 	{
 		case SQLITE_DONE:
+			// successfully inserted
 			logger->Trace("* Step: SQLITE_DONE");
 			SafeFinalize(&pStmt);
 			break;
@@ -382,23 +391,29 @@ BYTE* SQLite::ReadScorcoData(char *param, int *size)
 			SafeFinalize(&pStmt);
 			return false;
 		}
+		firstfetch = false;
 	}
 
+	// Execute step
 	Fetch(nullptr);
 
+	// Extract raw object data
 	auto value = sqlite3_column_blob(pStmt, 1);
-	if (value)
+	if (value != nullptr)
 	{
-		auto length = sqlite3_column_bytes(pStmt, 1);
+		auto valueLen = sqlite3_column_bytes(pStmt, 1);
 
 		NWN2_HeapMgr *pHeapMgr = NWN2_HeapMgr::Instance();
 		NWN2_Heap *pHeap = pHeapMgr->GetDefaultHeap();
-		void* buf = pHeap->Allocate(length);
+		void* buf = pHeap->Allocate(valueLen);
 
-		if (!buf) return nullptr;
+		// Could not allocate memory
+		if (buf == nullptr)
+			return nullptr;
 
-		memcpy(buf, value, length);
-		*size = length;
+		// Copy raw object data to nwn2
+		memcpy(buf, value, valueLen);
+		*size = valueLen;
 
 		return (BYTE*)buf;
 	}
