@@ -5,9 +5,7 @@
 // to inclusion statement
 #define _CRT_RAND_S
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
+#include <memory>
 
 #ifdef WIN32
 #include <windows.h>
@@ -21,22 +19,24 @@
 class CPickpocket : public Plugin
 {
 public:
-	CPickpocket(void);
-	virtual ~CPickpocket(void);
-	
-public:
-	bool Init(char* nwnxhome);
-	int GetInt(char* sFunction, char* sParam1, int nParam2);
-	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue);
-	float GetFloat(char* sFunction, char* sParam1, int nParam2);
-	void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue);
-	char* GetString(char* sFunction, char* sParam1, int nParam2);
-	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue);
-	void GetFunctionClass(char* fClass);
+	static constexpr char FunctionClass[] = "PICK";
 
 public:
-	LogNWNX* logger;
-	SimpleIniConfig* config;
+	CPickpocket();
+	~CPickpocket();
+	
+	bool Init(char* nwnxhome) final;
+	int GetInt(char* sFunction, char* sParam1, int nParam2) final;
+	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) final;
+	float GetFloat(char* sFunction, char* sParam1, int nParam2) final;
+	void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) final;
+	char* GetString(char* sFunction, char* sParam1, int nParam2) final;
+	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) final;
+	void GetFunctionClass(char* fClass) final;
+
+private:
+	std::unique_ptr<LogNWNX> logger;
+	std::unique_ptr<SimpleIniConfig> config;
 
 	std::string execScript;
 };

@@ -1,146 +1,158 @@
 #include "Pickpocket.h"
 #include <detours/detours.h>
+#include <bit>
+#include <cassert>
+#include <charconv>
+#include <optional>
+#include <string_view>
 
-// 1.13
-// g_pVirtualMachine
-//#define NWN2_OFFSET_CVIRTUALMACHINE 0x00856FA4
-// CVirtualMachine::RunScript(with script params)
-//#define NWN2_OFFSET_RUNSCRIPT		0x00747090
-// CNWSCreature::AIActionPickPocket
-//#define NWN2_OFFSET_AIACTIONPICKPOCKET	0x004983D0
-
-// 1.21
-// g_pVirtualMachine
-//#define NWN2_OFFSET_CVIRTUALMACHINE 0x0085D2A4
-// CVirtualMachine::RunScript(with script params)
-//#define NWN2_OFFSET_RUNSCRIPT		0x0074D500
-// CNWSCreature::AIActionPickPocket
-//#define NWN2_OFFSET_AIACTIONPICKPOCKET	0x00499B20
-
-
-// 1.22
-// g_pVirtualMachine
-//#define NWN2_OFFSET_CVIRTUALMACHINE 0x0085D2A4
-// CVirtualMachine::RunScript(with script params)
-//#define NWN2_OFFSET_RUNSCRIPT		0x0074D370
-// CNWSCreature::AIActionPickPocket
-//#define NWN2_OFFSET_AIACTIONPICKPOCKET	0x00499AD0
-
-// 1.23
-// g_pVirtualMachine
-#define NWN2_OFFSET_CVIRTUALMACHINE 0x00864424
-// CVirtualMachine::RunScript(with script params)
-#define NWN2_OFFSET_RUNSCRIPT		0x0072B050
-// CNWSCreature::AIActionPickPocket
-#define NWN2_OFFSET_AIACTIONPICKPOCKET	0x005CF5E0
-
-
-struct CExoArrayList 
+namespace
 {
-	void *buf;
-	int length;
-	int arraylength;
-};
-struct CExoString
-{
-	char *buf;
-	int len; 
-};
 
-//struct CScriptParameterWrapper
-//{
-//	enum ParameterType
-//	{
-//		PT_INT = 0,
-//		PT_FLOAT,
-//		PT_STRING,
-//		PT_OBJECTTAG,
-//		PT_UNKNOWN
-//	};
-//
-//	void        * __VFN_table;
-//	int           m_iIntParameter;
-//	float         m_fFloatParameter;
-//	CExoString    m_cStringParameter;
-//	ParameterType m_eType;
-//};
+	// 1.23
+	// g_pVirtualMachine
+	constexpr uintptr_t NWN2_OFFSET_CVIRTUALMACHINE = 0x00864424;
+	// CVirtualMachine::ExecuteScript
+	constexpr uintptr_t NWN2_OFFSET_EXECUTESCRIPT = 0x0072B380;
+	// CNWSCreature::AIActionPickPocket
+	constexpr uintptr_t NWN2_OFFSET_AIACTIONPICKPOCKET = 0x005CF5E0;
 
-CExoArrayList g_scriptArray = {NULL, 0, 0};
-CExoString g_scriptVar;
+	using ObjectId_t = uint32_t;
+	ObjectId_t ObjectId_Invalid = 0x7F000000;
 
-char pszScript[128];
-
-
-int (__stdcall *pRunScript)(CExoString *, unsigned long oid, CExoArrayList const &varArray, int unk, unsigned int Enum) = (int (__stdcall *)(CExoString *, unsigned long oid, CExoArrayList const &varArray, int unk, unsigned int Enum))NWN2_OFFSET_RUNSCRIPT;
-
-int (__stdcall *Orig_AIActionPickPocket)(void *pActionNode) = (int (__stdcall *)(void *))NWN2_OFFSET_AIACTIONPICKPOCKET;
-
-
-DWORD dwThisOID = -1;
-DWORD dwTargetOID = -1;
-DWORD dwHalt = 0;
-int __stdcall AIActionPickPocket(void *pActionNode)
-{
-	_asm
+	struct CExoString
 	{
-		pushad
+		char *buf;
+		int capacity;
+	};
+	struct CNWSCreature
+	{
+		std::byte pad_0004[156]; //0x004
+		ObjectId_t objectId; //0x0A0
 
-		mov			eax, [ecx + 0xA0]
-		mov			dwThisOID, eax
-		
-		mov			eax, pActionNode
-		mov			eax, [eax + 0x44]
-		mov			dwTargetOID, eax
+		virtual void Function0();
+	};
+	struct ActionNode
+	{
+		std::byte pad_0004[68]; //0x000
+		ObjectId_t targetObjectId; //0x044
+	};
+	struct CVirtualMachine
+	{
 
-		mov			dwHalt,	0
-		
-		mov			ecx, NWN2_OFFSET_CVIRTUALMACHINE
-		mov			ecx, [ecx]
+	};
+
+	using CVirtualMachine_ExecuteScript_t = BOOL(__thiscall*)(CVirtualMachine* thisVM,
+		const CExoString& scriptName, ObjectId_t objectId, uint32_t unknown1, uint32_t unknown2);
+	CVirtualMachine_ExecuteScript_t CVirtualMachine_ExecuteScript =
+		std::bit_cast<CVirtualMachine_ExecuteScript_t>(NWN2_OFFSET_EXECUTESCRIPT);
+
+	using CNWSCreature_AIActionPickPocket_t = int(__thiscall*)(CNWSCreature* thisPtr, ActionNode& actionNode);
+	CNWSCreature_AIActionPickPocket_t CNWSCreature_AIActionPickPocket =
+		std::bit_cast<CNWSCreature_AIActionPickPocket_t>(NWN2_OFFSET_AIACTIONPICKPOCKET);
+	CNWSCreature_AIActionPickPocket_t CNWSCreature_AIActionPickPocket_Trampoline = nullptr;
+
+	auto ScriptName = std::string();
+	auto ScriptVar = CExoString();
+	ObjectId_t TargetOid = ObjectId_Invalid;
+	bool HaltPickPocket = false;
+
+	CVirtualMachine* GetNwn2VirtualMachine()
+	{
+		const auto vm = std::bit_cast<CVirtualMachine**>(NWN2_OFFSET_CVIRTUALMACHINE);
+		return *vm;
 	}
-	
-	pRunScript(&g_scriptVar, dwThisOID, g_scriptArray, 1, 0);
 
-	_asm
+	int __fastcall CNWSCreature_AIActionPickPocket_Hook(
+		CNWSCreature* thisPtr, void* /*edx*/, ActionNode& actionNode)
 	{
-		popad
-		leave
-	}
-	if(dwHalt != 0)
-	{
-		_asm
+		HaltPickPocket = false;
+		TargetOid = actionNode.targetObjectId;
+
+		const auto vm = GetNwn2VirtualMachine();
+		assert(vm);
+		CVirtualMachine_ExecuteScript(vm, ScriptVar, thisPtr->objectId, 1, 0);
+
+		TargetOid = ObjectId_Invalid;
+
+		if (HaltPickPocket)
 		{
-			mov eax, 3
-			ret 4
+			// The script wants to prevent pickpocketing
+			return 3;
+		}
+		else
+		{
+			// Allow pickpocketing by default
+			return CNWSCreature_AIActionPickPocket_Trampoline(thisPtr, actionNode);
 		}
 	}
 
-	_asm
+	void DetourAttachTransaction(PVOID* ppPointer,
+		PVOID pDetour,
+		PDETOUR_TRAMPOLINE* ppRealTrampoline)
 	{
-		jmp Orig_AIActionPickPocket
+		try
+		{
+			constexpr char errorMsg[] = "DetourAttachTransaction failure";
+			if (DetourTransactionBegin() != NO_ERROR)
+			{
+				throw std::runtime_error(errorMsg);
+			}
+			if (DetourUpdateThread(GetCurrentThread()) != NO_ERROR)
+			{
+				throw std::runtime_error(errorMsg);
+			}
+			if (DetourAttachEx(ppPointer, pDetour, ppRealTrampoline, nullptr, nullptr) != NO_ERROR)
+			{
+				throw std::runtime_error(errorMsg);
+			}
+			if (DetourTransactionCommit() != NO_ERROR)
+			{
+				throw std::runtime_error(errorMsg);
+			}
+		}
+		catch (const std::runtime_error &)
+		{
+			DetourTransactionAbort();
+			throw;
+		}
 	}
-}
-int HookFunctions()
-{
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	int detour_success = DetourAttach(&(PVOID&)Orig_AIActionPickPocket, AIActionPickPocket) == 0;
-	detour_success |= DetourTransactionCommit() == 0;
 
-	return detour_success;
-}
+	void HookFunctions()
+	{
+		auto aiPickPocketAction = CNWSCreature_AIActionPickPocket;
+		DetourAttachTransaction(std::bit_cast<PVOID*>(&aiPickPocketAction),
+			CNWSCreature_AIActionPickPocket_Hook,
+			std::bit_cast<PDETOUR_TRAMPOLINE*>(&CNWSCreature_AIActionPickPocket_Trampoline));
+	}
 
-CPickpocket* plugin;
+	std::optional<int> StringToInt(std::string_view s, int base = 10)
+	{
+		auto intval = int();
+		const auto [p, ec] = std::from_chars(s.data(), s.data() + std::size(s), intval, base);
+		if (ec == std::errc())
+		{
+			return intval;
+		}
+		else
+		{
+			return {};
+		}
+	}
+
+	auto plugin = std::unique_ptr<CPickpocket>();
+}
 
 DLLEXPORT Plugin* GetPluginPointerV2()
 {
-	return plugin;
+	return plugin.get();
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
-		plugin = new CPickpocket;
+		plugin = std::make_unique<CPickpocket>();
 
 		char szPath[MAX_PATH];
 		GetModuleFileNameA(hModule, szPath, MAX_PATH);
@@ -148,13 +160,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 	}
 	else if (ul_reason_for_call == DLL_PROCESS_DETACH)
 	{
-		delete plugin;
-		plugin = NULL;
+		plugin.reset();
 	}
 	return TRUE;
 }
 
-CPickpocket::CPickpocket(void)
+CPickpocket::CPickpocket()
 {
 	header =
 		"NWNX OnPickpocket Plugin V.0.0.2\n" \
@@ -164,7 +175,7 @@ CPickpocket::CPickpocket(void)
 
 	description = "This plugin provides script access onpickpocketting.";
 
-	subClass = "PICK";
+	subClass = FunctionClass;
 	version = "0.0.1";
 }
 
@@ -179,7 +190,7 @@ bool CPickpocket::Init(char* nwnxhome)
 	logfile.append("\\");
 	logfile.append(GetPluginFileName());
 	logfile.append(".txt");
-	logger = new LogNWNX(logfile);
+	logger = std::make_unique<LogNWNX>(logfile);
 	logger->Info(header.c_str());
 
 	/* Ini file */
@@ -189,8 +200,8 @@ bool CPickpocket::Init(char* nwnxhome)
 	inifile.append(".ini");
 	logger->Trace("* reading inifile %s", inifile.c_str());
 
-	config = new SimpleIniConfig(inifile);
-	logger->Configure(config);
+	config = std::make_unique<SimpleIniConfig>(inifile);
+	logger->Configure(config.get());
 
 	if (!config->Read("script", &execScript) )
 	{
@@ -198,14 +209,21 @@ bool CPickpocket::Init(char* nwnxhome)
 		return false;
 	}
 
-	strncpy(pszScript, execScript.c_str(), 127);
-	g_scriptVar.len = (int)strlen(pszScript);
-	g_scriptVar.buf = pszScript;
-
-	if(!HookFunctions())
+	if (!execScript.empty())
 	{
-		logger->Info("* Hooking error.");
-		return false;
+		ScriptName = execScript;
+		ScriptVar.buf = ScriptName.data();
+		ScriptVar.capacity = std::ssize(ScriptName) + 1;
+
+		try
+		{
+			HookFunctions();
+		}
+		catch (const std::runtime_error&)
+		{
+			logger->Info("* Hooking error.");
+			return false;
+		}
 	}
 
 	logger->Info("* Plugin initialized.");
@@ -213,39 +231,55 @@ bool CPickpocket::Init(char* nwnxhome)
 	return true;
 }
 
-int CPickpocket::GetInt(char* sFunction, char* sParam1, int nParam2)
+int CPickpocket::GetInt(char* sFunction, [[maybe_unused]] char* sParam1, int nParam2)
 {
-	int iFuncID = atoi(sFunction);
-
-	switch(iFuncID)
+	const auto functionId = StringToInt(sFunction);
+	if (functionId)
 	{
-		case 0: return dwTargetOID;
-		case 1: dwHalt = nParam2; break;
+		switch (*functionId)
+		{
+		case 0: return static_cast<int>(TargetOid);
+		case 1: HaltPickPocket = nParam2; break;
+		}
 	}
+
 	return 0;
 }
-void CPickpocket::SetInt(char* sFunction, char* sParam1, int nParam2, int nValue)
+void CPickpocket::SetInt([[maybe_unused]] char* sFunction,
+	[[maybe_unused]] char* sParam1,
+	[[maybe_unused]] int nParam2,
+	[[maybe_unused]] int nValue)
 {
-	int iFuncID = atoi(sFunction);
+
 }
-float CPickpocket::GetFloat(char* sFunction, char* sParam1, int nParam2)
+float CPickpocket::GetFloat([[maybe_unused]] char* sFunction,
+	[[maybe_unused]] char* sParam1,
+	[[maybe_unused]] int nParam2)
 {
 	return 0.0f;
 }
-void CPickpocket::SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue)
+void CPickpocket::SetFloat([[maybe_unused]] char* sFunction,
+	[[maybe_unused]] char* sParam1,
+	[[maybe_unused]] int nParam2,
+	[[maybe_unused]] float fValue)
 {
-}
-char* CPickpocket::GetString(char* sFunction, char* sParam1, int nParam2)
-{
-	int iFuncID = atoi(sFunction);
 
-	return "";
 }
-void CPickpocket::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue)
+char* CPickpocket::GetString([[maybe_unused]] char* sFunction,
+	[[maybe_unused]] char* sParam1,
+	[[maybe_unused]] int nParam2)
 {
-	int iFuncID = atoi(sFunction);
+	return nullptr;
+}
+void CPickpocket::SetString([[maybe_unused]] char* sFunction,
+	[[maybe_unused]] char* sParam1,
+	[[maybe_unused]] int nParam2,
+	[[maybe_unused]] char* sValue)
+{
+
 }
 void CPickpocket::GetFunctionClass(char* fClass)
 {
-	strncpy_s(fClass, 128, "PICK", 4);
+	static constexpr auto cls = std::string_view(FunctionClass);
+	strncpy_s(fClass, 128, cls.data(), std::size(cls));
 }
