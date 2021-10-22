@@ -18,7 +18,7 @@ namespace
 	constexpr uintptr_t NWN2_OFFSET_AIACTIONPICKPOCKET = 0x005CF5E0;
 
 	using ObjectId_t = uint32_t;
-	ObjectId_t ObjectId_Invalid = 0x7F000000;
+	constexpr ObjectId_t ObjectId_Invalid = 0x7F000000;
 
 	struct CExoString
 	{
