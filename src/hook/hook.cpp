@@ -417,6 +417,14 @@ DWORD FindHook()
 void init()
 {
     unsigned char* hookAt;
+	// Add nwn2server-dll to DLL search path
+	if(!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)){
+		logger->Err("* SetDefaultDllDirectories failed (%d)", GetLastError());
+	}
+	auto path = std::wstring(nwnxHome->begin(), nwnxHome->end()) + L"\\nwn2server-dll";
+	if(!AddDllDirectory(path.c_str())){
+		logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
+	}
 
 	auto logfile = std::string(*nwnxHome) + "\\nwnx.txt";
 	logger = new LogNWNX(logfile);
