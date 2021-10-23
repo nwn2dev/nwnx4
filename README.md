@@ -16,11 +16,9 @@ You must install:
 
 1. Download and extract the [NWNX4 zip
    file](https://github.com/nwn2dev/nwnx4/releases) in any directory
-2. Copy files inside the `nwn2server-dll/` folder to your game installation
-   directory (where the `nwn2server.exe` file is located)
-3. Copy all files from the `config.example/` folder to your nwnx4 folder (i.e.
+2. Copy all files from the `config.example/` folder to your nwnx4 folder (i.e.
    to their parent directory)
-4. Customize the configuration files you just copied to suit your needs:
+3. Customize the configuration files you just copied to suit your needs:
     - `nwnx.ini`:
         + `plugin_list`: the list of all nwnx4 plugins that will be loaded.
           You may want to add or remove some of them.
@@ -32,10 +30,10 @@ You must install:
       shipped with convenient defaults, but you may need to tweak some of
       them. Note that the presence of a plugin configuration file does not
       mean the plugin will be loaded (see `plugin_list` in `nwnx.ini`).
-5. (Optional) Copy the `.nss` files inside the `nwscript/` folder to your
+4. (Optional) Copy the `.nss` files inside the `nwscript/` folder to your
    module folder, **or** import `nwscript/nwnx.erf` into your module using the
    NWN2 toolset
-6. Start NWNX4:
+5. Start NWNX4:
     + Run `NWNX4_GUI.exe` for the GUI version
     + Run `NWNX4_Controller.exe -interactive` in a shell for the command-line
       version.
