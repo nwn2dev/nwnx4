@@ -420,7 +420,7 @@ void init()
 	if(!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)){
 		logger->Err("* SetDefaultDllDirectories failed (%d)", GetLastError());
 	}
-	auto path = std::wstring(nwnxHome->begin(), nwnxHome->end()) + L"\\nwn2server-dll";
+	auto path = std::filesystem::path(*nwnxHome) / "nwn2server-dll";
 	if(!AddDllDirectory(path.c_str())){
 		logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
 	}
@@ -448,7 +448,7 @@ void init()
 	logger->Configure(config);
 
 	bool missingFunction = false;
-    unsigned char* hookAt;
+	unsigned char* hookAt;
 	hookAt = FindPattern(SET_NWNX_GETINT);
 	if (hookAt)
 	{
