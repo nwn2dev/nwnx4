@@ -200,8 +200,6 @@ jobs:
             s|^gamespyDelay\s*=.*$|gamespyDelay = 10|g;
           ' nwnx.ini
 
-          cp nwn2server-dll/* /c/nwnx4_nwn2server/
-
           echo "======================================== nwnx.ini"
           cat nwnx.ini
           echo "========================================"

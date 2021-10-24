@@ -416,7 +416,14 @@ DWORD FindHook()
 
 void init()
 {
-    unsigned char* hookAt;
+	// Add nwn2server-dll to DLL search path
+	if(!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)){
+		logger->Err("* SetDefaultDllDirectories failed (%d)", GetLastError());
+	}
+	auto path = std::filesystem::path(*nwnxHome) / "nwn2server-dll";
+	if(!AddDllDirectory(path.c_str())){
+		logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
+	}
 
 	auto logfile = std::string(*nwnxHome) + "\\nwnx.txt";
 	logger = new LogNWNX(logfile);
@@ -429,18 +436,19 @@ void init()
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
 	{
-		logger->Info("* SetEvent failed (%d)", GetLastError());
+		logger->Err("* SetEvent failed (%d)", GetLastError());
 		return;
 	}
 	CloseHandle(shmem->ready_event);
 
 	// open ini file
 	auto inifile = *nwnxHome + "\\nwnx.ini";
-	logger->Trace("Reading inifile %s", inifile.c_str());
+	logger->Debug("Reading inifile %s", inifile.c_str());
 	config = new SimpleIniConfig(inifile);
 	logger->Configure(config);
 
 	bool missingFunction = false;
+	unsigned char* hookAt;
 	hookAt = FindPattern(SET_NWNX_GETINT);
 	if (hookAt)
 	{
@@ -450,7 +458,7 @@ void init()
 	}
 	else
 	{
-		logger->Debug("NWNXGetInt NOT FOUND!");
+		logger->Err("NWNXGetInt NOT FOUND!");
 		missingFunction = true;
 	}
 
@@ -463,7 +471,7 @@ void init()
 	}
 	else
 	{
-		logger->Debug("NWNXGetFloat NOT FOUND!");
+		logger->Err("NWNXGetFloat NOT FOUND!");
 		missingFunction = true;
 	}
 
@@ -476,7 +484,7 @@ void init()
 	}
 	else
 	{
-		logger->Debug("NWNXGetString NOT FOUND!");
+		logger->Err("NWNXGetString NOT FOUND!");
 		missingFunction = true;
 	}
 
@@ -489,7 +497,7 @@ void init()
 	}
 	else
 	{
-		logger->Debug("NWNXSetInt NOT FOUND!");
+		logger->Err("NWNXSetInt NOT FOUND!");
 		missingFunction = true;
 	}
 
@@ -502,7 +510,7 @@ void init()
 	}
 	else
 	{
-		logger->Debug("NWNXSetFloat NOT FOUND!");
+		logger->Err("NWNXSetFloat NOT FOUND!");
 		missingFunction = true;
 	}
 
@@ -515,7 +523,7 @@ void init()
 	}
 	else
 	{
-		logger->Debug("NWNXSetString NOT FOUND!");
+		logger->Err("NWNXSetString NOT FOUND!");
 		missingFunction = true;
 	}
 
@@ -531,17 +539,16 @@ void init()
 		logger->Debug("SetLocalString hooked at 0x%x", oldHookAt);
 	else
 	{
-		logger->Debug("SetLocalString NOT FOUND!");
+		logger->Err("SetLocalString NOT FOUND!");
 		missingFunction = true;
 	}
 
 	if (missingFunction)
-		logger->Info(
+		logger->Err(
 			"!! One or more functions could not be hooked.\n"
 			"!! Please check the system requirements (NWN2 1.06 or later) for this \n"
 			"!! version of NWNX4, and come to our forums to get help or eventual updates.\n");
 
-	logger->Info("* Loading plugins...");
 	loadPlugins();
 
 	// Suppress general protection fault error box
@@ -611,6 +618,8 @@ typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
 //
 void loadPlugins()
 {
+	logger->Info("* Loading plugins...");
+
 	std::vector<std::filesystem::path> pluginList;
 	std::string pluginListStr;
 	if(!config->Read("plugin_list", &pluginListStr)){
