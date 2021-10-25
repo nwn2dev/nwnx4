@@ -58,7 +58,7 @@ jobs:
             -source "https://nuget.pkg.github.com/nwn2dev/index.json" \
             -storepasswordincleartext \
             -name "GitHub" \
-            -username "nwn2dev" \
+            -username "${{ github.actor }}" \
             -password "${{ secrets.GITHUB_TOKEN }}"
 
       # Build vcpkg dependencies
