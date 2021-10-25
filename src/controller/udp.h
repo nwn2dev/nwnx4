@@ -28,13 +28,13 @@
 class CUDP
 {
 public:
-	CUDP(char *szAddress, int iPort);
+	CUDP(const char *szAddress, int iPort);
 	~CUDP();
-	void sendMessage(char* message);
+	void sendMessage(const char* message);
 	int getMessage(char* message, int len);
 
 	void setPort(int port);
-	void setAddress(char *szAddress);
+	void setAddress(const char *szAddress);
 
 protected:
 

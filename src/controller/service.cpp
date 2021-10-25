@@ -62,7 +62,8 @@ BOOL installservice(int serviceNo)
 	swprintf(serviceName, 64, L"NWNX4-%d", serviceNo);
 	swprintf(displayName, 64, L"NWNX4 Service %d", serviceNo);
 	swprintf(cmdLine, MAX_PATH, L"%s -serviceno %d -runservice", szPath, serviceNo);
-	sdBuf.lpDescription = L"Neverwinter Nights Extender 4 service instance";
+    // non-const cast: we can assume ChangeServiceConfig2 does not write to this
+	sdBuf.lpDescription = (wchar_t*)L"Neverwinter Nights Extender 4 service instance";
 
     schService = CreateService(
         schSCManager,              // SCManager database

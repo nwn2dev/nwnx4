@@ -25,7 +25,7 @@
 
 #include "udp.h"
 
-CUDP::CUDP(char *szAddress, int port)
+CUDP::CUDP(const char *szAddress, int port)
 {
 	// Load Winsock
 	WSAStartup(MAKEWORD(1,1), &wsda);
@@ -68,7 +68,7 @@ void CUDP::setPort(int port)
 	addr.sin_port = htons(port);
 }
 
-void CUDP::setAddress(char *szAddress)
+void CUDP::setAddress(const char *szAddress)
 {
 	if(inet_pton(AF_INET, szAddress, (void*) addr.sin_addr.s_addr) != 1)
 	{
@@ -84,7 +84,7 @@ void CUDP::setAddress(char *szAddress)
 	}
 }
 
-void CUDP::sendMessage(char* message)
+void CUDP::sendMessage(const char* message)
 {
 	sendto(s, message, (int)strlen(message), 0, (struct sockaddr *) &addr, sizeof(addr));
 }

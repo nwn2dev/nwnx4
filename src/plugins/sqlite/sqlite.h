@@ -51,8 +51,8 @@ private:
 	int GetErrno() override;
 	const char *GetErrorMessage() override;
 	int GetLastInsertID() override;
-	bool SQLite::WriteScorcoData(BYTE* pData, int Length) override;
-	BYTE* SQLite::ReadScorcoData(char *param, int *size) override;
+	bool WriteScorcoData(BYTE* pData, int Length) override;
+	BYTE* ReadScorcoData(char *param, int *size) override;
 
 	/// Free *pStmt if possible
 	static void SafeFinalize(sqlite3_stmt** pStmt);
