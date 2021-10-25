@@ -18,7 +18,6 @@
 
 ***************************************************************************/
 
-#include "stdwx.h"
 #include "mainframe.h"
 #include "nwnx.h"
 #include "DlgAbout.h"

@@ -1,7 +1,6 @@
 #ifndef MAIN_GUI_LOG_H
 #define MAIN_GUI_LOG_H
 
-#include "stdwx.h"
 #include "../misc/log.h"
 
 class GuiLog: public LogNWNX {

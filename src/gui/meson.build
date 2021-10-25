@@ -23,9 +23,8 @@ else
     ]
 endif
 
-NWNx4Controller_exe = executable('NWNX4_Gui',
+NWNx4Gui_exe = executable('NWNX4_Gui',
     [
-        'stdwx.cpp',
         'mainframe.cpp',
         '../controller/controller.cpp',
         '../controller/udp.cpp',
@@ -41,6 +40,7 @@ NWNx4Controller_exe = executable('NWNX4_Gui',
         '../RPC/LogConfig.cpp',
     ],
     nwnx_version,
+    cpp_pch : 'pch/pch.h',
 
     win_subsystem: 'windows',
     cpp_args: wx_args,

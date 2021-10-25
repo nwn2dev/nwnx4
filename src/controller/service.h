@@ -18,7 +18,6 @@
 
 ***************************************************************************/
 
-#include "stdafx.h"
 #include "controller.h"
 #include "../misc/log.h"
 
