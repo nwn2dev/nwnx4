@@ -16,7 +16,7 @@
 #include "../../misc/ini.h"
 
 
-class CPickpocket : public Plugin
+class CPickpocket final : public Plugin
 {
 public:
 	static constexpr char FunctionClass[] = "PICK";
@@ -25,14 +25,14 @@ public:
 	CPickpocket();
 	~CPickpocket();
 	
-	bool Init(char* nwnxhome) final;
-	int GetInt(char* sFunction, char* sParam1, int nParam2) final;
-	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) final;
-	float GetFloat(char* sFunction, char* sParam1, int nParam2) final;
-	void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) final;
-	char* GetString(char* sFunction, char* sParam1, int nParam2) final;
-	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) final;
-	void GetFunctionClass(char* fClass) final;
+	bool Init(char* nwnxhome) override;
+	int GetInt(char* sFunction, char* sParam1, int nParam2) override;
+	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) override;
+	float GetFloat(char* sFunction, char* sParam1, int nParam2) override;
+	void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) override;
+	char* GetString(char* sFunction, char* sParam1, int nParam2) override;
+	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) override;
+	void GetFunctionClass(char* fClass) override;
 
 private:
 	std::unique_ptr<LogNWNX> logger;

@@ -1,4 +1,6 @@
 #include "Pickpocket.h"
+#include "../../NWN2Lib/NWN2.h"
+#include "../../NWN2Lib/NWN2Common.h"
 #include <detours/detours.h>
 #include <bit>
 #include <cassert>
@@ -17,25 +19,10 @@ namespace
 	// CNWSCreature::AIActionPickPocket
 	constexpr uintptr_t NWN2_OFFSET_AIACTIONPICKPOCKET = 0x005CF5E0;
 
-	using ObjectId_t = uint32_t;
-	constexpr ObjectId_t ObjectId_Invalid = 0x7F000000;
-
-	struct CExoString
-	{
-		char *buf;
-		int capacity;
-	};
-	struct CNWSCreature
-	{
-		std::byte pad_0004[156]; //0x004
-		ObjectId_t objectId; //0x0A0
-
-		virtual void Function0();
-	};
 	struct ActionNode
 	{
 		std::byte pad_0004[68]; //0x000
-		ObjectId_t targetObjectId; //0x044
+		NWN::OBJECTID targetObjectId; //0x044
 	};
 	struct CVirtualMachine
 	{
@@ -43,18 +30,18 @@ namespace
 	};
 
 	using CVirtualMachine_ExecuteScript_t = BOOL(__thiscall*)(CVirtualMachine* thisVM,
-		const CExoString& scriptName, ObjectId_t objectId, uint32_t unknown1, uint32_t unknown2);
+		const NWN::CExoString& scriptName, NWN::OBJECTID objectId, uint32_t unknown1, uint32_t unknown2);
 	CVirtualMachine_ExecuteScript_t CVirtualMachine_ExecuteScript =
 		std::bit_cast<CVirtualMachine_ExecuteScript_t>(NWN2_OFFSET_EXECUTESCRIPT);
 
-	using CNWSCreature_AIActionPickPocket_t = int(__thiscall*)(CNWSCreature* thisPtr, ActionNode& actionNode);
+	using CNWSCreature_AIActionPickPocket_t = int(__thiscall*)(NWN::CNWSCreature* thisPtr,
+		ActionNode& actionNode);
 	CNWSCreature_AIActionPickPocket_t CNWSCreature_AIActionPickPocket =
 		std::bit_cast<CNWSCreature_AIActionPickPocket_t>(NWN2_OFFSET_AIACTIONPICKPOCKET);
 	CNWSCreature_AIActionPickPocket_t CNWSCreature_AIActionPickPocket_Trampoline = nullptr;
 
 	auto ScriptName = std::string();
-	auto ScriptVar = CExoString();
-	ObjectId_t TargetOid = ObjectId_Invalid;
+	NWN::OBJECTID TargetOid = NWN::INVALIDOBJID;
 	bool HaltPickPocket = false;
 
 	CVirtualMachine* GetNwn2VirtualMachine()
@@ -64,16 +51,20 @@ namespace
 	}
 
 	int __fastcall CNWSCreature_AIActionPickPocket_Hook(
-		CNWSCreature* thisPtr, void* /*edx*/, ActionNode& actionNode)
+		NWN::CNWSCreature* thisPtr, void* /*edx*/, ActionNode& actionNode)
 	{
 		HaltPickPocket = false;
 		TargetOid = actionNode.targetObjectId;
 
+		const NWN::CExoString script = {
+			.m_sString = ScriptName.data(),
+			.m_nBufferLength = std::size(ScriptName) + 1
+		};
 		const auto vm = GetNwn2VirtualMachine();
 		assert(vm);
-		CVirtualMachine_ExecuteScript(vm, ScriptVar, thisPtr->objectId, 1, 0);
+		CVirtualMachine_ExecuteScript(vm, script, thisPtr->m_idSelf, 1, 0);
 
-		TargetOid = ObjectId_Invalid;
+		TargetOid = NWN::INVALIDOBJID;
 
 		if (HaltPickPocket)
 		{
@@ -173,7 +164,7 @@ CPickpocket::CPickpocket()
 		"big help from Skywing\n\n" \
 		"FOR USE WITH 1.23 NWN2SERVER ONLY!\n";
 
-	description = "This plugin provides script access onpickpocketting.";
+	description = "This plugin provides script access on pickpocketting.";
 
 	subClass = FunctionClass;
 	version = "0.0.1";
@@ -212,8 +203,6 @@ bool CPickpocket::Init(char* nwnxhome)
 	if (!execScript.empty())
 	{
 		ScriptName = execScript;
-		ScriptVar.buf = ScriptName.data();
-		ScriptVar.capacity = std::ssize(ScriptName) + 1;
 
 		try
 		{
