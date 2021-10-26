@@ -3,7 +3,7 @@ project(
     ['cpp', 'c'],
     default_options : [
         # 'default_library=static',
-        'cpp_std=c++latest',
+        'cpp_std=c++20',
         'bindir=.',
         'libdir=.',
         'datadir=.',
