@@ -22,7 +22,6 @@
 #if !defined(CONTROLLER_H_INCLUDED)
 #define CONTROLLER_H_INCLUDED
 
-#include "stdafx.h"
 #include <cstring>
 #include <cwchar>
 #include <detours/detours.h>

@@ -18,12 +18,9 @@
 
 ***************************************************************************/
 
-#include "stdwx.h"
 #include "dlgabout.h"
 #include "res/nwnx4_logo.xpm"
 #include "../nwnx_version.h"
-
-#include "wx/statbmp.h"
 
 AboutDialog::AboutDialog(
 	wxWindow *parent,

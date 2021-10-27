@@ -199,7 +199,7 @@ char* RpcPlugin::GetString(char* sFunction, char* sParam1, int nParam2) {
     if (client == nullptr) {
         logger_->Warn("%s client not found.", sFunction);
 
-        return "";
+        return nullptr;
     }
 
     logger_->Info("Invoked NWNXGetString.");

@@ -11,6 +11,7 @@ shared_library('xp_bugfix',
         'Reflector.cpp',
         'StackTracer.cpp',
     ],
+    cpp_args: ['/permissive'],
     link_args: ['/dynamicbase', '/nxcompat'],
     include_directories: include_dirs,
     dependencies: [

@@ -23,9 +23,7 @@
 ////@begin includes
 ////@end includes
 
-#include "stdwx.h"
 #include "mainframe.h"
-#include "wx/mimetype.h"
 #include "dlgabout.h"
 
 ////@begin XPM images

@@ -31,8 +31,8 @@ public:
 class NWN2_HeapMgr
 {
 public:
-	__declspec( dllimport ) static NWN2_HeapMgr * __cdecl NWN2_HeapMgr::Instance(void);
-	__declspec( dllimport ) NWN2_Heap * __thiscall NWN2_HeapMgr::GetDefaultHeap(void);
+	__declspec( dllimport ) static NWN2_HeapMgr * __cdecl Instance(void);
+	__declspec( dllimport ) NWN2_Heap * __thiscall GetDefaultHeap(void);
 };
 
 //__declspec( dllimport ) void * __thiscall NWN2_Heap::Allocate(unsigned int);

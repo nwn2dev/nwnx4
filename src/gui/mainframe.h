@@ -31,12 +31,6 @@
  * Includes
  */
 
-////@begin includes
-#include "wx/frame.h"
-////@end includes
-
-#include "wx/fileconf.h"
-#include "wx/thread.h"
 #include "../controller/controller.h"
 #include "worker.h"
 #include "GuiLog.h"

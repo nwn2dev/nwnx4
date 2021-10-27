@@ -21,6 +21,7 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
         '../RPC/LogConfig.cpp',
     ],
     nwnx_version,
+    cpp_pch : 'pch/pch.h',
 
     win_subsystem: 'console',
     cpp_args: ['/D_CONSOLE', '/D_CRT_SECURE_NO_DEPRECATE'],

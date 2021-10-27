@@ -1,5 +1,5 @@
 /* XPM */
-static char * nwnx4_logo_xpm[] = {
+static const char * nwnx4_logo_xpm[] = {
 "80 80 257 2",
 "  	c None",
 ". 	c #E7E7E7",

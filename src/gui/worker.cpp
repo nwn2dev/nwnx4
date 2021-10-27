@@ -18,7 +18,6 @@
 
 ***************************************************************************/
 
-#include "stdwx.h"
 #include "worker.h"
 
 NWNXWorker::NWNXWorker(NWNXController* controller, wxFrame* mainFrame)

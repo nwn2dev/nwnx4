@@ -21,7 +21,6 @@
 #ifndef NWNX_H
 #define NWNX_H
 
-#include "wx/fileconf.h"
 
 enum
 { GUI_EXIT	= wxID_HIGHEST + 1,

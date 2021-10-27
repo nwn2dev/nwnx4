@@ -389,7 +389,7 @@ BYTE* SQLite::ReadScorcoData(char *param, int *size)
 		{
 			logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL, sqlite3_errmsg(sdb));
 			SafeFinalize(&pStmt);
-			return false;
+			return nullptr;
 		}
 		firstfetch = false;
 	}
