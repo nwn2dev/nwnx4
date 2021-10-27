@@ -105,3 +105,70 @@ create a `NWNX4.sln` that you can open with Visual Studio:
 ```ps
 meson setup --backend=vs2019 vsbuild
 ```
+
+
+# How to: Distribute nwnx4 with your module
+
+This section will guide you through the process of creating a folder / zip
+file containing everything players will need to quickly run a NWN2 server with
+your custom content, for single-player or multi-player usage.
+
+## Skeleton
+
+Download this repository and copy the `package-skel` directory to any
+location. This folder contains some handy scripts, and the base structure for
+your package, that you will need to configure and fill with your content.
+
+```
+package-skel\
+├── ClientExtension\  Contains Skywing's Client Extension
+├── home\             Replaces Documents\Neverwinter Nights 2.
+├── nwnx4\            Contains NWNX4 files and config
+├── start-game.bat    Launcher for the game (with the client extension)
+└── start-server.bat  Launcher for the server (with nwnx4)
+```
+
+## NWNX4
+
+Download the [nwnx4 zip file](https://github.com/nwn2dev/nwnx4/releases), and
+extract it into `package-skel\nwnx4\`.
+
+You must configure NWNX4 as explained in nwnx4's
+[README.md](https://github.com/nwn2dev/nwnx4#first-installation).
+
+In order to run nwnx4 in a portable manner, you must add `-home
+"$NWNX4_DIR\..\home"` to the `parameters` variable. Other arguments are
+recommended but not required:
+
+```ini
+# Configure the parameters to auto-start your module
+# -home <DIR>           The provided path will replace the Documents\Neverwinter Nights 2\ folder
+# -moduledir <MODNAME>  Your module name (if you're saving in directory mode)
+# -module <MODNAME>     Your module name without the .mod extension (if you're not in directory mode)
+# -publicserver         Disable server online advertising
+# -maxclients           Maximum number of connected players
+parameters = -home "$NWNX4_DIR\..\home" -moduledir YourModule -publicserver 0 -maxclients 1
+```
+
+## Game launcher
+
+Skywing's Client Extension can automatically detect NWN2 installation
+directory (and provides a better NWN2 player experience). [Download it from
+the
+NWVault](https://neverwintervault.org/project/nwn2/other/nwn2-client-extension)
+and extract the zip into the `package-skel\ClientExtension\` folder.
+
+By default, `start-game.bat` will:
+1. Copy `nwn2.ini` and `nwn2player.ini` from `Documents\Neverwinter Nights 2\`
+   to `package-skel\home\` (so player game settings are kept). If these files
+   are already present in the home folder, they will not be overwritten. You
+   can use this behavior to provide your own custom `nwn2player.ini`.
+2. Launch the game using the Client Extension
+3. Automatically connect to the server at `127.0.0.1:5121`
+
+
+## Custom content
+
+You must install your custom content (modules, campaigns, haks, tlks,
+override, ...) inside the `package-skel\home\` folder. This custom content
+will be used by both the server and the game client.
