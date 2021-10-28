@@ -21,12 +21,12 @@
 #if !defined(LEGACY_PLUGIN_H_INCLUDED)
 #define LEGACY_PLUGIN_H_INCLUDED
 
+#define NOMINMAX
 #include <windows.h>
 #include <string>
+#include <string_view>
 
 #define MAX_BUFFER 64*1024
-
-using namespace std;
 
 class LegacyPlugin
 {
@@ -41,29 +41,29 @@ public:
 	virtual const char* DoRequest(char *gameObject, char* request, char* parameters) = 0;
 
 	// Process query functions like GET_VERSION, ...
-	void ProcessQueryFunction(string function, char* buffer);
+	void ProcessQueryFunction(std::string_view function, char* buffer);
 
 	// Return the function class of the plugin in fClass
 	virtual void GetFunctionClass(char* fClass);
 
 	// Plugin file name functions
-	char* GetPluginFileName();
-	char* GetPluginFullPath();
-	void SetPluginFullPath(char* fileName);
+	const char* GetPluginFileName();
+	const char* GetPluginFullPath();
+	void SetPluginFullPath(std::string_view p);
 
 	// Copy a plugin response into the buffer provided by NWN
-	void nwnxcpy(char* buffer, const char* response);
+	void nwnxcpy(char* buffer, std::string_view response);
 	void nwnxcpy(char* buffer, const char* response, size_t len);
 
 protected:
-	string header;
-	string subClass;
-	string version;
-	string description;
+	std::string header;
+	std::string subClass;
+	std::string version;
+	std::string description;
 
 private:
-	char *pluginFileName;
-	char *pluginFullPath;
+	std::string pluginFileName;
+	std::string pluginFullPath;
 };
 
 #endif

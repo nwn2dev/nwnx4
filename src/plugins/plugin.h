@@ -20,12 +20,12 @@
 
 #pragma once
 
+#define NOMINMAX
 #include <windows.h>
 #include <string>
+#include <string_view>
 
 #define MAX_BUFFER 64*1024
-
-using namespace std;
 
 class Plugin
 {
@@ -41,32 +41,32 @@ public:
 	virtual void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) { return; }
 	virtual float GetFloat(char* sFunction, char* sParam1, int nParam2) { return 0.0; }
 	virtual void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) { return; }
-	virtual char* GetString(char* sFunction, char* sParam1, int nParam2) { return NULL; }
+	virtual char* GetString(char* sFunction, char* sParam1, int nParam2) { return nullptr; }
 	virtual void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) { return; }
 
 	// Process query functions like GET_VERSION, ...
-	string ProcessQueryFunction(string function);
+	std::string ProcessQueryFunction(std::string_view function);
 
 	// Return the function class of the plugin in fClass
 	virtual void GetFunctionClass(char* fClass);
 
 	// Plugin file name functions
-	char* GetPluginFileName();
-	char* GetPluginFullPath();
-	void SetPluginFullPath(char* fileName);
+	const char* GetPluginFileName();
+	const char* GetPluginFullPath();
+	void SetPluginFullPath(std::string_view p);
 
 	// Copy a plugin response into the buffer provided by NWN
-	void nwnxcpy(char* buffer, const char* response);
+	void nwnxcpy(char* buffer, std::string_view response);
 	void nwnxcpy(char* buffer, const char* response, size_t len);
 
 protected:
-	string header;
-	string subClass;
-	string version;
-	string description;
-	char returnBuffer[MAX_BUFFER];
+	std::string header;
+	std::string subClass;
+	std::string version;
+	std::string description;
+	char returnBuffer[MAX_BUFFER] = {0};
 
 private:
-	char *pluginFileName;
-	char *pluginFullPath;
+	std::string pluginFileName;
+	std::string pluginFullPath;
 };

@@ -19,11 +19,12 @@
  ***************************************************************************/
 
 #include "../plugins/legacy_plugin.h"
+#include <algorithm>
+#include <filesystem>
+#include <cassert>
 
 LegacyPlugin::LegacyPlugin()
 {
-	pluginFileName = NULL;
-	pluginFullPath = NULL;
 }
 
 LegacyPlugin::~LegacyPlugin()
@@ -35,7 +36,7 @@ bool LegacyPlugin::Init(char* parameter)
 	return true;
 }
 
-void LegacyPlugin::ProcessQueryFunction(string function, char* buffer)
+void LegacyPlugin::ProcessQueryFunction(std::string_view function, char* buffer)
 {
 	if (function == "GET_SUBCLASS")
 		nwnxcpy(buffer, subClass.c_str());
@@ -47,55 +48,43 @@ void LegacyPlugin::ProcessQueryFunction(string function, char* buffer)
 
 void LegacyPlugin::GetFunctionClass(char* fClass)
 {
-	fClass = NULL;
+	assert(fClass);
+	fClass[0] = '\0';
 }
 
-char* LegacyPlugin::GetPluginFileName()
+const char* LegacyPlugin::GetPluginFileName()
 {
-	return pluginFileName;
+	return pluginFileName.c_str();
 }
 
-char* LegacyPlugin::GetPluginFullPath()
+const char* LegacyPlugin::GetPluginFullPath()
 {
-	return pluginFullPath;
+	return pluginFullPath.c_str();
 }
 
-void LegacyPlugin::SetPluginFullPath(char* fileName)
+void LegacyPlugin::SetPluginFullPath(std::string_view p)
 {
-	// TODO: replace with _splitpath
-	pluginFullPath = strdup(fileName);
+	const auto fullPath = std::filesystem::path(p);
+	pluginFullPath = fullPath.string();
 
-	// extract filename from full path
-	int len = (int)strlen(fileName) - 1;
-	if (len > 0)
+	if (fullPath.has_stem())
 	{
-		int begin = -1, end = -1;
-		for (int i = len; i >= 0; i--)
-		{
-			if ((end == -1) && (fileName[i] == '.'))
-				end = i;
-			else if ((begin == -1) && (fileName[i] == '\\'))
-				begin = i + 1;
-		}
-
-		if (end > begin)
-		{
-			pluginFileName = new char[MAX_PATH];
-			strncpy(pluginFileName, fileName + begin, min(MAX_PATH,  end - begin + 1));
-		}
+		pluginFileName = fullPath.stem().string();
 	}
 }
 
-void LegacyPlugin::nwnxcpy(char* buffer, const char* response)
+void LegacyPlugin::nwnxcpy(char* buffer, std::string_view response)
 {
-	nwnxcpy(buffer, response, strlen(response));
+	assert(buffer);
+	constexpr auto maxSize = static_cast<size_t>(MAX_BUFFER - 1);
+	const auto r = response.substr(0, maxSize);
+	std::ranges::copy(r, buffer);
+	buffer[std::size(r)] = '\0';
 }
 
 void LegacyPlugin::nwnxcpy(char* buffer, const char* response, size_t len)
 {
-	if (len > MAX_BUFFER)
-		len = MAX_BUFFER - 1;
-
-	memcpy(buffer, response, len);
-	buffer[len] = 0x0;
+	assert(buffer);
+	assert(response);
+	nwnxcpy(buffer, { response, len });
 }
