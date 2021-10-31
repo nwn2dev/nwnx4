@@ -31,8 +31,13 @@
 class LegacyPlugin
 {
 public:
-	LegacyPlugin();
-	virtual ~LegacyPlugin();
+	LegacyPlugin() = default;
+	virtual ~LegacyPlugin() = default;
+
+	LegacyPlugin(const LegacyPlugin&) = delete;
+	LegacyPlugin& operator=(const LegacyPlugin&) = delete;
+	LegacyPlugin(LegacyPlugin&&) = delete;
+	LegacyPlugin& operator=(LegacyPlugin&&) = delete;
 
 	// Called when a plugin DLL gets loaded.
 	virtual bool Init(char*);

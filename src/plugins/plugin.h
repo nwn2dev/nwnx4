@@ -30,8 +30,13 @@
 class Plugin
 {
 public:
-	Plugin();
-	virtual ~Plugin();
+	Plugin() = default;
+	virtual ~Plugin() = default;
+
+	Plugin(const Plugin&) = delete;
+	Plugin& operator=(const Plugin&) = delete;
+	Plugin(Plugin&&) = delete;
+	Plugin& operator=(Plugin&&) = delete;
 
 	// Called when a plugin DLL gets loaded.
 	virtual bool Init(char*);

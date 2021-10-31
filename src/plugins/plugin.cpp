@@ -23,14 +23,6 @@
 #include <filesystem>
 #include <cassert>
 
-Plugin::Plugin()
-{
-}
-
-Plugin::~Plugin()
-{
-}
-
 bool Plugin::Init(char* parameter)
 {
 	return true;
@@ -67,11 +59,14 @@ const char* Plugin::GetPluginFullPath()
 void Plugin::SetPluginFullPath(std::string_view p)
 {
 	const auto fullPath = std::filesystem::path(p);
-	pluginFullPath = fullPath.string();
-
 	if (fullPath.has_stem())
 	{
+		pluginFullPath = fullPath.string();
 		pluginFileName = fullPath.stem().string();
+	}
+	else
+	{
+		throw std::runtime_error("SetPluginFullPath: input path has no stem.");
 	}
 }
 

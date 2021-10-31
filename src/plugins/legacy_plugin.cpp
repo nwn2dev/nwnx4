@@ -23,14 +23,6 @@
 #include <filesystem>
 #include <cassert>
 
-LegacyPlugin::LegacyPlugin()
-{
-}
-
-LegacyPlugin::~LegacyPlugin()
-{
-}
-
 bool LegacyPlugin::Init(char* parameter)
 {
 	return true;
@@ -65,11 +57,14 @@ const char* LegacyPlugin::GetPluginFullPath()
 void LegacyPlugin::SetPluginFullPath(std::string_view p)
 {
 	const auto fullPath = std::filesystem::path(p);
-	pluginFullPath = fullPath.string();
-
 	if (fullPath.has_stem())
 	{
+		pluginFullPath = fullPath.string();
 		pluginFileName = fullPath.stem().string();
+	}
+	else
+	{
+		throw std::runtime_error("SetPluginFullPath: input path has no stem.");
 	}
 }
 
