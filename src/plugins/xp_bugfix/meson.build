@@ -13,6 +13,7 @@ shared_library('xp_bugfix',
     ],
     cpp_args: ['/permissive'],
     link_args: ['/dynamicbase', '/nxcompat'],
+    vs_module_defs: 'xp_bugfix.def',
     include_directories: include_dirs,
     dependencies: [
         cppcompiler.find_library('dbghelp'),
