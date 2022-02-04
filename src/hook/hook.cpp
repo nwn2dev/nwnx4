@@ -43,7 +43,7 @@ std::filesystem::path nwnxUserDir;
 std::filesystem::path nwnxInstallDir;
 SimpleIniConfig* config;
 
-char returnBuffer[MAX_BUFFER];
+char hookReturnBuffer[MAX_BUFFER];
 
 HMODULE g_Module;
 volatile LONG g_InCrash;
@@ -223,16 +223,16 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			if (index < cplugins.size()) {
 				auto p = cplugins.begin();
 				std::advance(p, index);
-				strncpy_s(returnBuffer, MAX_BUFFER, p->first.c_str(), p->first.size());
-				return returnBuffer;
+				strncpy_s(hookReturnBuffer, MAX_BUFFER, p->first.c_str(), p->first.size());
+				return hookReturnBuffer;
 			}
 
 			index -= cplugins.size();
 			if (index < plugins.size()) {
 				auto p = plugins.begin();
 				std::advance(p, index);
-				strncpy_s(returnBuffer, MAX_BUFFER, p->first.c_str(), p->first.size());
-				return returnBuffer;
+				strncpy_s(hookReturnBuffer, MAX_BUFFER, p->first.c_str(), p->first.size());
+				return hookReturnBuffer;
 			}
 			return nullptr;
 		} else if (function == "GET PLUGIN INFO") {
@@ -244,8 +244,8 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 				auto p = cplugins.begin();
 				std::advance(p, index);
 				auto info = p->second->GetInfo();
-				strncpy_s(returnBuffer, MAX_BUFFER, info.c_str(), info.size());
-				return returnBuffer;
+				strncpy_s(hookReturnBuffer, MAX_BUFFER, info.c_str(), info.size());
+				return hookReturnBuffer;
 			}
 
 			index -= cplugins.size();
@@ -264,8 +264,8 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 				auto p = cplugins.begin();
 				std::advance(p, index);
 				auto version = p->second->GetVersion();
-				strncpy_s(returnBuffer, MAX_BUFFER, version.c_str(), version.size());
-				return returnBuffer;
+				strncpy_s(hookReturnBuffer, MAX_BUFFER, version.c_str(), version.size());
+				return hookReturnBuffer;
 			}
 
 			index -= cplugins.size();
@@ -284,9 +284,9 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	// CPlugin forwarding
 	auto cpluginIt = cplugins.find(sPlugin);
 	if (cpluginIt != cplugins.end()) {
-		returnBuffer[0] = '\0';
-		cpluginIt->second->GetString(sFunction, sParam1, nParam2, returnBuffer, MAX_BUFFER);
-		return returnBuffer;
+		hookReturnBuffer[0] = '\0';
+		cpluginIt->second->GetString(sFunction, sParam1, nParam2, hookReturnBuffer, MAX_BUFFER);
+		return hookReturnBuffer;
 	}
 
 	// Plugin class forwarding

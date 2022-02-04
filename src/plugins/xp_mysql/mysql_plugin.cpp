@@ -18,6 +18,10 @@
  ***************************************************************************/
 
 #include "mysql_plugin.h"
+
+#include <cassert>
+#include <mysql/errmsg.h>
+
 #include "nwn2heap.h"
 
 /***************************************************************************
@@ -65,7 +69,15 @@ MySQL::MySQL()
 	row    = NULL;
 }
 
-MySQL::~MySQL() { Disconnect(); }
+MySQL::~MySQL()
+{
+	Disconnect();
+
+	// Clean prepared statement data if any
+	for (size_t i = 0; i < m_prepStmts.size(); i++) {
+		FreeResBuffer(i + 1);
+	}
+}
 
 bool MySQL::Init(char* nwnxhome)
 {
@@ -142,7 +154,7 @@ bool MySQL::Execute(char* query)
 
 	if (!connection) {
 		if (!Reconnect()) {
-			logger->Info("! Error: Not connected.");
+			logger->Err("! Error: Not connected.");
 			return FALSE;
 		}
 	}
@@ -221,13 +233,13 @@ bool MySQL::Execute(char* query)
 int MySQL::Fetch(char* buffer)
 {
 	if (!connection) {
-		logger->Info("! Error (Fetch): Not connected.");
+		logger->Err("! Error (Fetch): Not connected.");
 		return -1;
 	}
 
 	// If the parameter is NEXT, try to load the next
 	// resultset from the last multi-statement query.
-	// If it is	empty, try to fetch the next row
+	// If it is empty, try to fetch the next row
 	// from the current resultset.
 	if (strcmp(buffer, "NEXT") == 0) {
 		logger->Trace("* Trying to fetch the next resultset");
@@ -405,4 +417,546 @@ BYTE* MySQL::ReadScorcoData(char* param, int* size)
 		mysql_free_result(rcoresult);
 		return NULL;
 	}
+}
+
+int MySQL::PrepPrepareStatement(const char* query)
+{
+	auto stmtID = m_prepStmts.size() + 1;
+	logger->Info("[Stmt %d] Prepare query: %s", stmtID, query);
+
+	// init and prepare statement
+	auto stmt = mysql_stmt_init(&mysql);
+	if (mysql_stmt_prepare(stmt, query, -1) != 0) {
+		logger->Err("[Stmt %d] Failed to prepare statement. Error %d: %s", stmtID,
+		            mysql_stmt_errno(stmt), mysql_stmt_error(stmt));
+		mysql_stmt_close(stmt); // ignore closing error, just deallocate
+		return 0;
+	}
+
+	// Get number of params
+	unsigned int paramsCount = mysql_stmt_param_count(stmt);
+
+	// Store statement info
+	auto& stmtInfo = m_prepStmts.emplace_back(new PreparedStmtInfo {
+	    .stmt                  = stmt,
+	    .query                 = std::string {query},
+	    .params                = std::vector<MYSQL_BIND> {paramsCount},
+	    .paramsBufferRealSizes = std::vector<size_t> {},
+	    .results               = {},
+	    .resBuffer             = {},
+	});
+
+	// Init params content
+	auto& params = stmtInfo->params;
+	memset(params.data(), 0, sizeof(MYSQL_BIND) * paramsCount);
+	logger->Debug("[Stmt %d]     Allocated %d parameters", stmtID, paramsCount);
+
+	stmtInfo->paramsBufferRealSizes.resize(paramsCount, 0);
+
+	return stmtID;
+}
+
+inline bool MySQL::CheckAndAllocBind(int& stmtID, int& index, size_t requiredBufferSize)
+{
+	if (stmtID < 1 || stmtID > m_prepStmts.size()) {
+		logger->Err("[Stmt %d] PrepBind: Invalid statement ID", stmtID);
+		return false;
+	}
+	auto& stmtInfo = m_prepStmts[stmtID - 1];
+
+	if (index < 1 || index > stmtInfo->params.size()) {
+		logger->Err("[Stmt %d] PrepBind: invalid bind param index %d. Must be between 1 and %d",
+		            stmtID, index, stmtInfo->params.size());
+		return false;
+	}
+
+	assert(stmtInfo->params.size() == stmtInfo->paramsBufferRealSizes.size());
+	auto& param         = stmtInfo->params[index - 1];
+	auto& paramRealSize = stmtInfo->paramsBufferRealSizes[index - 1];
+
+	if (requiredBufferSize > 0) {
+		// Delete if needed
+		if (param.buffer != nullptr && paramRealSize < requiredBufferSize) {
+			delete param.buffer;
+			param.buffer = nullptr;
+		}
+
+		// Allocate buffer for storing the value
+		if (param.buffer == nullptr) {
+			param.buffer  = new uint8_t[requiredBufferSize];
+			paramRealSize = requiredBufferSize;
+		}
+	}
+
+	return true;
+}
+
+bool MySQL::PrepBindString(int stmtID, int index, const char* value)
+{
+	auto len = strnlen(value, MAX_BUFFER) + 1;
+
+	if (!CheckAndAllocBind(stmtID, index, len))
+		return false;
+
+	auto& param = m_prepStmts[stmtID - 1]->params[index - 1];
+
+	param.buffer_type   = MYSQL_TYPE_STRING;
+	param.buffer_length = len;
+	strncpy((char*)param.buffer, value, len);
+
+	logger->Info("[Stmt %d] PrepBindString: Set field %d to: %.*s", stmtID, index,
+	             param.buffer_length, param.buffer);
+	return true;
+}
+
+bool MySQL::PrepBindInt(int stmtID, int index, int value)
+{
+	if (!CheckAndAllocBind(stmtID, index, sizeof(value)))
+		return false;
+
+	auto& param = m_prepStmts[stmtID - 1]->params[index - 1];
+
+	param.buffer_type               = MYSQL_TYPE_LONG;
+	param.buffer_length             = 0;
+	*(decltype(value)*)param.buffer = value;
+
+	logger->Info("[Stmt %d] PrepBindInt: Set field %d to: %d", stmtID, index, param.buffer_length,
+	             param.buffer);
+	return true;
+}
+
+bool MySQL::PrepBindFloat(int stmtID, int index, float value)
+{
+	if (!CheckAndAllocBind(stmtID, index, sizeof(value)))
+		return false;
+
+	auto& param = m_prepStmts[stmtID - 1]->params[index - 1];
+
+	param.buffer_type               = MYSQL_TYPE_FLOAT;
+	param.buffer_length             = 0;
+	*(decltype(value)*)param.buffer = value;
+
+	logger->Info("[Stmt %d] PrepBindFloat: Set field %d to: %f", stmtID, index, param.buffer_length,
+	             param.buffer);
+	return true;
+}
+
+bool MySQL::PrepBindNull(int stmtID, int index)
+{
+	if (!CheckAndAllocBind(stmtID, index, 0))
+		return false;
+
+	auto& param = m_prepStmts[stmtID - 1]->params[index - 1];
+
+	param.buffer_type   = MYSQL_TYPE_NULL;
+	param.buffer_length = 0;
+	param.buffer        = nullptr;
+
+	logger->Info("[Stmt %d] PrepBindNull: Set field %d to: NULL", stmtID, index,
+	             param.buffer_length);
+	return true;
+}
+
+void MySQL::FreeResBuffer(int stmtID)
+{
+	logger->Debug("[Stmt %d] Freeing result buffer", stmtID);
+
+	auto& stmtInfo = m_prepStmts[stmtID - 1];
+	stmtInfo->results.clear();
+	stmtInfo->results.shrink_to_fit();
+
+	stmtInfo->resBuffer.reset();
+}
+
+bool MySQL::AllocateResBuffer(int stmtID)
+{
+	auto& stmtInfo = m_prepStmts[stmtID - 1];
+
+	auto fieldsCount = mysql_stmt_field_count(stmtInfo->stmt);
+	auto resMeta     = mysql_stmt_result_metadata(stmtInfo->stmt); // Allocates memory
+
+	if (fieldsCount > 0) {
+		auto fields = mysql_fetch_fields(resMeta);
+
+		// Allocate the buffer for storing results
+		// We only allocate one buffer for storing buffer lengths and data
+
+		// Calculate total buffer size
+		size_t resBufferSize = 0;
+		for (size_t i = 0; i < fieldsCount; i++)
+			resBufferSize += sizeof(unsigned long) + fields[i].length;
+
+		// Allocate resBufferSize of memory for storing result data
+		auto& resBuffer = stmtInfo->resBuffer.emplace();
+		resBuffer.resize(resBufferSize, 0);
+
+		// Initialize result structs to point to the allocated buffer
+		stmtInfo->results.resize(fieldsCount);
+		memset(stmtInfo->results.data(), 0, sizeof(MYSQL_BIND) * stmtInfo->results.size());
+
+		logger->Debug("[Stmt %d] Allocating buffer of %llu bytes for %d result fields", stmtID,
+		              resBuffer.size(), fieldsCount);
+
+		auto resBufferOffset = 0;
+		for (size_t i = 0; i < fieldsCount; i++) {
+			logger->Debug("[Stmt %d]     field %d: type=%d length=%d", stmtID, i, fields[i].type,
+			              fields[i].length);
+			stmtInfo->results[i].buffer_type   = fields[i].type;
+			stmtInfo->results[i].buffer_length = fields[i].length;
+
+			stmtInfo->results[i].length = (unsigned long*)&resBuffer[resBufferOffset];
+			resBufferOffset += sizeof(unsigned long);
+
+			stmtInfo->results[i].buffer = (char*)&resBuffer[resBufferOffset];
+			resBufferOffset += fields[i].length;
+		}
+
+		// Bind result structs
+		if (mysql_stmt_bind_result(stmtInfo->stmt, stmtInfo->results.data()) != 0) {
+			logger->Err("[Stmt %d] AllocateResBuffer: Failed to bind results. Error %d: %s", stmtID,
+			            mysql_stmt_errno(stmtInfo->stmt), mysql_stmt_error(stmtInfo->stmt));
+		}
+
+		// Cache results
+		if (mysql_stmt_store_result(stmtInfo->stmt)) {
+			logger->Err("[Stmt %d] AllocateResBuffer: Failed to cache results. Error %d: %s",
+			            stmtID, mysql_stmt_errno(stmtInfo->stmt), mysql_stmt_error(stmtInfo->stmt));
+			if (mysql_stmt_errno(stmtInfo->stmt) == CR_COMMANDS_OUT_OF_SYNC) {
+				logger->Err("[Stmt %d]     Did you execute the prepared statement?", stmtID);
+			}
+			return false;
+		}
+
+	} else {
+		logger->Debug("[Stmt %d] Allocating nothing, as statement provides no results.", stmtID);
+	}
+
+	mysql_free_result(resMeta);
+
+	return true;
+}
+
+bool MySQL::PrepExecute(int stmtID)
+{
+	if (stmtID < 1 || stmtID > m_prepStmts.size()) {
+		logger->Err("[Stmt %d] PrepExecute: invalid statement ID", stmtID);
+		return false;
+	}
+
+	logger->Info("[Stmt %d] PrepExecute: execute stmt", stmtID);
+
+	auto& stmt = m_prepStmts[stmtID - 1]->stmt;
+
+	// Free results if any
+	if (mysql_stmt_free_result(stmt) != 0) {
+		logger->Err("[Stmt %d] PrepExecute mysql_stmt_free_result error %d: %s", stmtID,
+		            mysql_stmt_errno(stmt), mysql_stmt_error(stmt));
+	}
+	// Bind params
+	if (mysql_stmt_bind_param(stmt, m_prepStmts[stmtID - 1]->params.data()) != 0) {
+		logger->Err("[Stmt %d] PrepExecute mysql_stmt_bind_param error %d: %s", stmtID,
+		            mysql_stmt_errno(stmt), mysql_stmt_error(stmt));
+	}
+	// Execute
+	if (mysql_stmt_execute(stmt) != 0) {
+		logger->Err("[Stmt %d] PrepExecute mysql_stmt_execute error %d: %s", stmtID,
+		            mysql_stmt_errno(stmt), mysql_stmt_error(stmt));
+		return false;
+	}
+
+	// Clean results if any. They will be filled & bound on first fetch
+	FreeResBuffer(stmtID);
+
+	return true;
+}
+
+bool MySQL::PrepFetch(int stmtID)
+{
+	if (stmtID < 1 || stmtID > m_prepStmts.size()) {
+		logger->Err("[Stmt %d] PrepExecute: invalid statement ID", stmtID);
+		return false;
+	}
+	auto& stmtInfo = m_prepStmts[stmtID - 1];
+
+	if (!stmtInfo->resBuffer.has_value()) {
+		if (!AllocateResBuffer(stmtID))
+			return false;
+	}
+
+	// Fetch row
+	auto res = mysql_stmt_fetch(stmtInfo->stmt);
+	switch (res) {
+		case 0:
+			logger->Debug("[Stmt %d] PrepFetch returns a row.", stmtID);
+			return true;
+		case MYSQL_NO_DATA:
+			logger->Debug("[Stmt %d] PrepFetch returns no row.", stmtID);
+			FreeResBuffer(stmtID);
+			return false;
+		case MYSQL_DATA_TRUNCATED:
+			logger->Err("[Stmt %d] PrepFetch truncated data", stmtID);
+
+			for (size_t i = 0; i < stmtInfo->results.size(); i++) {
+				auto& bind = stmtInfo->results[i];
+				if (bind.length == nullptr)
+					logger->Err("[Stmt %d]     Result %d is NULL bytes instead of %d", stmtID,
+					            i + 1, bind.buffer_length);
+				else if (*bind.length != bind.buffer_length)
+					logger->Err("[Stmt %d]     Result %d is %d bytes instead of %d", stmtID, i + 1,
+					            *bind.length, bind.buffer_length);
+			}
+			return false;
+		default:
+			logger->Err("[Stmt %d] PrepFetch mysql_stmt_fetch returned %d. Error %d: %s", stmtID,
+			            res, mysql_stmt_errno(stmtInfo->stmt), mysql_stmt_error(stmtInfo->stmt));
+			if (mysql_stmt_errno(stmtInfo->stmt) == CR_COMMANDS_OUT_OF_SYNC) {
+				logger->Err("[Stmt %d]     Did you execute the prepared statement?", stmtID);
+			}
+			return false;
+	}
+	return true;
+}
+
+char* MySQL::PrepGetDataString(int stmtID, int index, char* buffer)
+{
+	if (stmtID < 1 || stmtID > m_prepStmts.size()) {
+		logger->Err("[Stmt %d] PrepGetDataString: invalid statement ID", stmtID);
+		return nullptr;
+	}
+	auto& stmtInfo = m_prepStmts[stmtID - 1];
+
+	if (index < 1 || index > stmtInfo->results.size()) {
+		logger->Err(
+		    "[Stmt %d] PrepGetDataString: invalid bind result index %d. Must be between 1 and %d",
+		    stmtID, index, stmtInfo->results.size());
+		return nullptr;
+	}
+	auto& result = stmtInfo->results[index - 1];
+
+	switch (result.buffer_type) {
+		case MYSQL_TYPE_TINY:
+			snprintf(buffer, MAX_BUFFER, "%hhd", *(signed char*)result.buffer);
+			break;
+		case MYSQL_TYPE_SHORT:
+			snprintf(buffer, MAX_BUFFER, "%hd", *(short*)result.buffer);
+			break;
+		case MYSQL_TYPE_LONG:
+		case MYSQL_TYPE_INT24:
+			snprintf(buffer, MAX_BUFFER, "%d", *(int*)result.buffer);
+			break;
+		case MYSQL_TYPE_LONGLONG:
+			snprintf(buffer, MAX_BUFFER, "%lld", *(long long int*)result.buffer);
+			break;
+
+		case MYSQL_TYPE_FLOAT:
+			snprintf(buffer, MAX_BUFFER, "%f", *(float*)result.buffer);
+			break;
+		case MYSQL_TYPE_DOUBLE:
+			snprintf(buffer, MAX_BUFFER, "%f", *(double*)result.buffer);
+			break;
+
+		case MYSQL_TYPE_DATETIME:
+		case MYSQL_TYPE_TIMESTAMP: {
+			const auto dt = (MYSQL_TIME*)result.buffer;
+			snprintf(buffer, MAX_BUFFER, "%04d-%02d-%02dT%02d:%02d:%02d.%03d", dt->year, dt->month,
+			         dt->day, dt->hour, dt->minute, dt->second, dt->second_part);
+		} break;
+		case MYSQL_TYPE_TIME: {
+			const auto dt = (MYSQL_TIME*)result.buffer;
+			snprintf(buffer, MAX_BUFFER, "%02d:%02d:%02d.%03d", dt->hour, dt->minute, dt->second,
+			         dt->second_part);
+		} break;
+		case MYSQL_TYPE_DATE: {
+			const auto dt = (MYSQL_TIME*)result.buffer;
+			snprintf(buffer, MAX_BUFFER, "%04d-%02d-%02d", dt->year, dt->month, dt->day);
+		} break;
+
+		case MYSQL_TYPE_STRING:
+		case MYSQL_TYPE_VARCHAR:
+		case MYSQL_TYPE_VAR_STRING:
+
+		case MYSQL_TYPE_BIT:
+		case MYSQL_TYPE_BLOB:
+		case MYSQL_TYPE_TINY_BLOB:
+		case MYSQL_TYPE_MEDIUM_BLOB:
+		case MYSQL_TYPE_LONG_BLOB:
+		case MYSQL_TYPE_ENUM:
+			buffer = (char*)result.buffer;
+			break;
+
+		case MYSQL_TYPE_NULL:
+		case MYSQL_TYPE_JSON:
+		case MYSQL_TYPE_GEOMETRY:
+			logger->Err("[Stmt %d] PrepGetDataString(%d): Unsupported SQL type %d", stmtID, index,
+			            result.buffer_type);
+			return nullptr;
+
+		default:
+			logger->Err("[Stmt %d] PrepGetDataString(%d): Unknown SQL type %d", stmtID, index,
+			            result.buffer_type);
+			return nullptr;
+	}
+
+	logger->Debug("[Stmt %d] PrepGetDataStr(%d): Returned field value: %s", stmtID, index, buffer);
+	return buffer;
+}
+
+int MySQL::PrepGetDataInt(int stmtID, int index)
+{
+	if (stmtID < 1 || stmtID > m_prepStmts.size()) {
+		logger->Err("[Stmt %d] PrepGetDataInt: invalid statement ID", stmtID);
+		return false;
+	}
+	auto& stmtInfo = m_prepStmts[stmtID - 1];
+
+	if (index < 1 || index > stmtInfo->results.size()) {
+		logger->Err(
+		    "[Stmt %d] PrepGetDataInt: invalid bind result index %d. Must be between 1 and %d",
+		    stmtID, index, stmtInfo->results.size());
+		return false;
+	}
+	auto& result = stmtInfo->results[index - 1];
+
+	int res = 0;
+
+	switch (result.buffer_type) {
+		case MYSQL_TYPE_TINY:
+			res = *(signed char*)result.buffer;
+			break;
+		case MYSQL_TYPE_SHORT:
+			res = *(short*)result.buffer;
+			break;
+		case MYSQL_TYPE_LONG:
+		case MYSQL_TYPE_INT24:
+			res = *(int*)result.buffer;
+			break;
+		case MYSQL_TYPE_LONGLONG:
+			logger->Warn(
+			    "[Stmt %d] PrepGetDataInt(%d): NWN2 cannot handle integer values outside of the "
+			    "signed 32bit range. Consider retrieving this value as a string to avoid integer "
+			    "overflows, or reduce the size of the column type.",
+			    stmtID, index);
+			res = *(long long int*)result.buffer;
+			break;
+
+		case MYSQL_TYPE_FLOAT:
+		case MYSQL_TYPE_DOUBLE:
+			logger->Err(
+			    "[Stmt %d] PrepGetDataInt(%d): Cannot convert float to int (loss of precision)",
+			    stmtID, index);
+			return 0;
+
+		case MYSQL_TYPE_DATETIME:
+		case MYSQL_TYPE_TIMESTAMP:
+		case MYSQL_TYPE_TIME:
+		case MYSQL_TYPE_DATE:
+			logger->Err("[Stmt %d] PrepGetDataInt(%d): Cannot convert a date / time / datetime / "
+			            "timestamp to int",
+			            stmtID, index);
+			return 0;
+
+		case MYSQL_TYPE_STRING:
+		case MYSQL_TYPE_VARCHAR:
+		case MYSQL_TYPE_VAR_STRING:
+		case MYSQL_TYPE_ENUM:
+
+		case MYSQL_TYPE_BIT:
+		case MYSQL_TYPE_BLOB:
+		case MYSQL_TYPE_TINY_BLOB:
+		case MYSQL_TYPE_MEDIUM_BLOB:
+		case MYSQL_TYPE_LONG_BLOB:
+			logger->Err("[Stmt %d] PrepGetDataInt(%d): Cannot convert text to int", stmtID, index);
+			return 0;
+
+		case MYSQL_TYPE_NULL:
+		case MYSQL_TYPE_JSON:
+		case MYSQL_TYPE_GEOMETRY:
+			logger->Err("[Stmt %d] PrepGetDataInt(%d): Unsupported SQL type %d", stmtID, index,
+			            result.buffer_type);
+			return 0;
+
+		default:
+			logger->Err("[Stmt %d] PrepGetDataInt(%d): Unknown SQL type %d", stmtID, index,
+			            result.buffer_type);
+			return 0;
+	}
+
+	logger->Debug("[Stmt %d] PrepGetDataInt(%d): Returned field value: %d", stmtID, index, res);
+	return res;
+}
+
+float MySQL::PrepGetDataFloat(int stmtID, int index)
+{
+	if (stmtID < 1 || stmtID > m_prepStmts.size()) {
+		logger->Err("[Stmt %d] PrepGetDataFloat: invalid statement ID", stmtID);
+		return false;
+	}
+	auto& stmtInfo = m_prepStmts[stmtID - 1];
+
+	if (index < 1 || index > stmtInfo->results.size()) {
+		logger->Err(
+		    "[Stmt %d] PrepGetDataFloat: invalid bind result index %d. Must be between 1 and %d",
+		    stmtID, index, stmtInfo->results.size());
+		return false;
+	}
+	auto& result = stmtInfo->results[index - 1];
+
+	float res = 0;
+
+	switch (result.buffer_type) {
+		case MYSQL_TYPE_TINY:
+		case MYSQL_TYPE_SHORT:
+		case MYSQL_TYPE_LONG:
+		case MYSQL_TYPE_INT24:
+		case MYSQL_TYPE_LONGLONG:
+			logger->Err(
+			    "[Stmt %d] PrepGetDataFloat(%d): Cannot convert int to float (loss of precision)",
+			    stmtID, index);
+			return 0;
+
+		case MYSQL_TYPE_FLOAT:
+			res = *(float*)result.buffer;
+			break;
+		case MYSQL_TYPE_DOUBLE:
+			res = *(double*)result.buffer;
+			break;
+
+		case MYSQL_TYPE_DATETIME:
+		case MYSQL_TYPE_TIMESTAMP:
+		case MYSQL_TYPE_TIME:
+		case MYSQL_TYPE_DATE:
+			logger->Err("[Stmt %d] PrepGetDataFloat(%d): Cannot convert a date / time / datetime / "
+			            "timestamp to float",
+			            stmtID, index);
+			return 0;
+
+		case MYSQL_TYPE_STRING:
+		case MYSQL_TYPE_VARCHAR:
+		case MYSQL_TYPE_VAR_STRING:
+		case MYSQL_TYPE_ENUM:
+
+		case MYSQL_TYPE_BIT:
+		case MYSQL_TYPE_BLOB:
+		case MYSQL_TYPE_TINY_BLOB:
+		case MYSQL_TYPE_MEDIUM_BLOB:
+		case MYSQL_TYPE_LONG_BLOB:
+			logger->Err("[Stmt %d] PrepGetDataFloat(%d): Cannot convert text to float", stmtID,
+			            index);
+			return 0;
+
+		case MYSQL_TYPE_NULL:
+		case MYSQL_TYPE_JSON:
+		case MYSQL_TYPE_GEOMETRY:
+			logger->Err("[Stmt %d] PrepGetDataFloat(%d): Unsupported SQL type %d", stmtID, index,
+			            result.buffer_type);
+			return 0;
+
+		default:
+			logger->Err("[Stmt %d] PrepGetDataFloat(%d): Unknown SQL type %d", stmtID, index,
+			            result.buffer_type);
+			return 0;
+	}
+
+	logger->Debug("[Stmt %d] PrepGetDataFloat(%d): Returned field value: %d", stmtID, index, res);
+	return res;
 }

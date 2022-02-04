@@ -19,11 +19,6 @@ const int SQL_SUCCESS = 1;
 /* Function prototypes              */
 /************************************/
 
-// Create the SQL tables required for the SetPersistentXXX and
-// GetPersistentXXX functions, if they don't already exist. You can call this
-// function in the OnModuleLoad script.
-void SQLCreateTables();
-
 // Execute statement in sSQL
 // returns: SQL_SUCCESS if the query was successful
 //          SQL_ERROR if an error has occurred
@@ -40,6 +35,7 @@ int SQLFetch(string mode = " ");
 
 // Return value of column iCol in the current row of result set sResultSetName
 // Maximum column size: 65KByte
+// First column is iCol=1
 string SQLGetData(int iCol);
 
 int SQLGetDataInt(int iCol){        return StringToInt(SQLGetData(iCol));   }
@@ -67,6 +63,73 @@ int SQLGetErrno();
 // Return a string containing the error message for the most recently invoked API function that failed
 string SQLGetErrorMessage();
 
+// Replace special characters (like ') in a database compatible way
+string SQLEncodeSpecialChars(string sString);
+
+// Execute statement in sSQL using SCO/RCO
+void SQLSCORCOExec(string sSQL);
+
+//Store object in DB using SCO hook
+void SQLStoreObject(object oObject);
+
+//Retrieve object from DB using RCO hook
+object SQLRetrieveObject(location lLocation, object oOwner = OBJECT_INVALID, string sMode="-");
+
+//
+// --- Prepared statements ---
+//
+
+// Prepare a SQL query, and return a unique statement ID for later use
+// sSQL:    SQL query
+// Returns: A Prepared statement ID (> 0). 0 in case of error.
+int SQLPrepPrepareStatement(string sSQL);
+
+// Bind a string value to a parameter of a prepared statement
+// nStatementID: Prepared statement ID. Must be > 0
+// nParam:       Parameter index. Starts at 1
+// sValue:       Parameter value. The value must not be escaped.
+void SQLPrepBindString(int nStatementID, int nParam, string sValue);
+// Bind an int value to a parameter of a prepared statement
+// nStatementID: Prepared statement ID. Must be > 0
+// nParam:       Parameter index. Starts at 1
+// nValue:       Parameter value
+void SQLPrepBindInt(int nStatementID, int nParam, int nValue);
+// Bind a float value to a parameter of a prepared statement
+// nStatementID: Prepared statement ID. Must be > 0
+// nParam:       Parameter index. Starts at 1
+// fValue:       Parameter value
+void SQLPrepBindFloat(int nStatementID, int nParam, float fValue);
+// Bind a vector value to a parameter of a prepared statement
+// nStatementID: Prepared statement ID. Must be > 0
+// nParam:       Parameter index. Starts at 1
+// vValue:       Parameter value. Note that the vector is automatically converted to string using SQLVectorToString.
+void SQLPrepBindVector(int nStatementID, int nParam, vector vValue);
+// Bind a null value to a parameter of a prepared statement
+// nStatementID: Prepared statement ID. Must be > 0
+// nParam:       Parameter index. Starts at 1
+void SQLPrepBindNull(int nStatementID, int nParam);
+
+// Execute a prepared statement. Make sure that all parameters are properly bound
+// nStatementID: Prepared statement ID. Must be > 0
+// Returns:      TRUE on success
+int SQLPrepExecute(int nStatementID);
+
+// Fetch a row of a prepared statement result. Make sure you called SQLPrepExecute first
+// nStatementID: Prepared statement ID. Must be > 0
+// Returns:      TRUE if there is a row to fetch
+int SQLPrepFetch(int nStatementID);
+
+// Returns the string value of a colu
+string SQLPrepGetString(int nStatementID, int nCol);
+//
+int SQLPrepGetInt(int nStatementID, int nCol);
+//
+float SQLPrepGetFloat(int nStatementID, int nCol);
+
+//
+// --- Useful wrappers ---
+//
+
 // Return a string value when given a location
 string SQLLocationToString(location lLocation);
 
@@ -78,6 +141,11 @@ string SQLVectorToString(vector vVector);
 
 // Return a vector value when given the string form of the vector
 vector SQLStringToVector(string sVector);
+
+// Create the SQL tables required for the SetPersistentXXX and
+// GetPersistentXXX functions, if they don't already exist. You can call this
+// function in the OnModuleLoad script.
+void SQLCreateTables();
 
 // Set oObject's persistent string variable sVarName to sValue
 // Optional parameters:
@@ -164,23 +232,16 @@ object GetPersistentObject(object oObject, string sVarName, object oOwner = OBJE
 //   sTable: Name of the table where variable is stored (default: pwdata)
 void DeletePersistentVariable(object oObject, string sVarName, string sTable = "pwdata");
 
-// Replace special characters (like ') in a database compatible way
-string SQLEncodeSpecialChars(string sString);
-
-// Execute statement in sSQL using SCO/RCO
-void SQLSCORCOExec(string sSQL);
-
-//Store object in DB using SCO hook
-void SQLStoreObject(object oObject);
-
-//Retrieve object from DB using RCO hook
-object SQLRetrieveObject(location lLocation, object oOwner = OBJECT_INVALID, string sMode="-");
 
 /************************************/
 /* Implementation                   */
 /************************************/
 
 void SQLCreateTables(){
+    if(GetLocalInt(GetModule(), "NWNXSQL_INIT"))
+        return;
+    SetLocalInt(GetModule(), "NWNXSQL_INIT", TRUE);
+
     string sSubClass = NWNXGetString("SQL", "GET SUBCLASS", "", 0);
 
     if(sSubClass == "MySQL"){
@@ -204,6 +265,9 @@ void SQLCreateTables(){
             + "  PRIMARY KEY (`player`,`tag`,`name`)"
             + ") ENGINE=MyISAM DEFAULT CHARSET=utf8"
         );
+
+        // Makes Get/SetPersistentXXX functions use prepared statements
+        SetLocalInt(GetModule(), "NWNXSQL_USEPREP", TRUE);
     }
     else if(sSubClass == "SQLite"){
         SQLExecDirect("CREATE TABLE IF NOT EXISTS `pwdata` ("
@@ -226,6 +290,8 @@ void SQLCreateTables(){
             + "  PRIMARY KEY (`player`,`tag`,`name`)"
             + ")"
         );
+
+        SetLocalInt(GetModule(), "NWNXSQL_USEPREP", FALSE);
     }
 }
 
@@ -290,8 +356,8 @@ object SQLRetrieveObject(location lLocation, object oOwner = OBJECT_INVALID, str
 
 string SQLVectorToString(vector vVector)
 {
-    return "#POSITION_X#" + FloatToString(vVector.x) + "#POSITION_Y#" + FloatToString(vVector.y) +
-        "#POSITION_Z#" + FloatToString(vVector.z) + "#END#";
+    return "#POSITION_X#" + FloatToString(vVector.x, 0) + "#POSITION_Y#" + FloatToString(vVector.y, 0) +
+        "#POSITION_Z#" + FloatToString(vVector.z, 0) + "#END#";
 }
 
 vector SQLStringToVector(string sVector)
@@ -327,9 +393,9 @@ string SQLLocationToString(location lLocation)
 
     if (GetIsObjectValid(oArea))
         sReturnValue =
-            "#AREA#" + GetTag(oArea) + "#POSITION_X#" + FloatToString(vPosition.x) +
-            "#POSITION_Y#" + FloatToString(vPosition.y) + "#POSITION_Z#" +
-            FloatToString(vPosition.z) + "#ORIENTATION#" + FloatToString(fOrientation) + "#END#";
+            "#AREA#" + GetTag(oArea) + "#POSITION_X#" + FloatToString(vPosition.x, 0) +
+            "#POSITION_Y#" + FloatToString(vPosition.y, 0) + "#POSITION_Z#" +
+            FloatToString(vPosition.z, 0) + "#ORIENTATION#" + FloatToString(fOrientation, 0) + "#END#";
 
     return sReturnValue;
 }
@@ -385,8 +451,8 @@ void SetPersistentString(object oObject, string sVarName, string sValue, int iEx
 
     if (GetIsPC(oObject))
     {
-        sPlayer = SQLEncodeSpecialChars(GetPCPlayerName(oObject));
-        sTag = SQLEncodeSpecialChars(GetName(oObject));
+        sPlayer = GetPCPlayerName(oObject);
+        sTag = GetName(oObject);
     }
     else
     {
@@ -394,29 +460,58 @@ void SetPersistentString(object oObject, string sVarName, string sValue, int iEx
         sTag = GetTag(oObject);
     }
 
-    sVarName = SQLEncodeSpecialChars(sVarName);
-    sValue = SQLEncodeSpecialChars(sValue);
-
-    string sSQL = "SELECT player FROM " + sTable + " WHERE player='" + sPlayer +
-        "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-    SQLExecDirect(sSQL);
-
-    if (SQLFetch() == SQL_SUCCESS)
+    if(GetLocalInt(GetModule(), "NWNXSQL_USEPREP"))
     {
-        // row exists
-        sSQL = "UPDATE " + sTable + " SET val='" + sValue +
-            "',expire=" + IntToString(iExpiration) + " WHERE player='" + sPlayer +
-            "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-        SQLExecDirect(sSQL);
+        int nStmtID = GetLocalInt(GetModule(), "NWNXSQL_SETPERS_" + sTable);
+        if(nStmtID <= 0){
+            nStmtID = SQLPrepPrepareStatement(
+                "INSERT INTO `" + sTable + "` (`player`,`tag`,`name`,`val`,`expire`) VALUES (?,?,?,?,?)"
+                + " ON DUPLICATE KEY UPDATE `val`=VALUES(`val`), `expire`=VALUES(`expire`)"
+            );
+            SetLocalInt(GetModule(), "NWNXSQL_SETPERS_" + sTable, nStmtID);
+        }
+        SQLPrepBindString(nStmtID, 1, sPlayer);
+        SQLPrepBindString(nStmtID, 2, sTag);
+        SQLPrepBindString(nStmtID, 3, sVarName);
+        SQLPrepBindString(nStmtID, 4, sValue);
+        SQLPrepBindInt(nStmtID, 5, iExpiration);
+        SQLPrepExecute(nStmtID);
     }
-    else
-    {
-        // row doesn't exist
-        sSQL = "INSERT INTO " + sTable + " (player,tag,name,val,expire) VALUES" +
-            "('" + sPlayer + "','" + sTag + "','" + sVarName + "','" +
-            sValue + "'," + IntToString(iExpiration) + ")";
-        SQLExecDirect(sSQL);
+    else{
+        sVarName = SQLEncodeSpecialChars(sVarName);
+        sValue = SQLEncodeSpecialChars(sValue);
+        sPlayer = SQLEncodeSpecialChars(sPlayer);
+        sTag = SQLEncodeSpecialChars(sTag);
+
+
+        SQLExecDirect(
+            "INSERT INTO `" + sTable + "` (`player`,`tag`,`name`,`val`,`expire`) VALUES ('"
+                + sPlayer + "','" + sTag + "','" + sVarName + "','" + sValue + "'," + IntToString(iExpiration) + ")"
+            + " ON DUPLICATE KEY UPDATE `val`=VALUES(`val`), `expire`=VALUES(`expire`)"
+        );
+
+        // string sSQL = "SELECT player FROM " + sTable + " WHERE player='" + sPlayer +
+        //     "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
+        // SQLExecDirect(sSQL);
+
+        // if (SQLFetch() == SQL_SUCCESS)
+        // {
+        //     // row exists
+        //     sSQL = "UPDATE " + sTable + " SET val='" + sValue +
+        //         "',expire=" + IntToString(iExpiration) + " WHERE player='" + sPlayer +
+        //         "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
+        //     SQLExecDirect(sSQL);
+        // }
+        // else
+        // {
+        //     // row doesn't exist
+        //     sSQL = "INSERT INTO " + sTable + " (player,tag,name,val,expire) VALUES" +
+        //         "('" + sPlayer + "','" + sTag + "','" + sVarName + "','" +
+        //         sValue + "'," + IntToString(iExpiration) + ")";
+        //     SQLExecDirect(sSQL);
+        // }
     }
+
 }
 
 string GetPersistentString(object oObject, string sVarName, string sTable = "pwdata")
@@ -426,8 +521,8 @@ string GetPersistentString(object oObject, string sVarName, string sTable = "pwd
 
     if (GetIsPC(oObject))
     {
-        sPlayer = SQLEncodeSpecialChars(GetPCPlayerName(oObject));
-        sTag = SQLEncodeSpecialChars(GetName(oObject));
+        sPlayer = GetPCPlayerName(oObject);
+        sTag = GetName(oObject);
     }
     else
     {
@@ -435,24 +530,47 @@ string GetPersistentString(object oObject, string sVarName, string sTable = "pwd
         sTag = GetTag(oObject);
     }
 
-    sVarName = SQLEncodeSpecialChars(sVarName);
+    if(GetLocalInt(GetModule(), "NWNXSQL_USEPREP"))
+    {
+        int nStmtID = GetLocalInt(GetModule(), "NWNXSQL_GETPERS_" + sTable);
+        if(nStmtID <= 0){
+            nStmtID = SQLPrepPrepareStatement("SELECT `val` FROM `" + sTable + "` WHERE `player`=? AND `tag`=? AND `name`=?");
+            SetLocalInt(GetModule(), "NWNXSQL_GETPERS_" + sTable, nStmtID);
+        }
+        SQLPrepBindString(nStmtID, 1, sPlayer);
+        SQLPrepBindString(nStmtID, 2, sTag);
+        SQLPrepBindString(nStmtID, 3, sVarName);
+        SQLPrepExecute(nStmtID);
 
-    string sSQL = "SELECT val FROM " + sTable + " WHERE player='" + sPlayer +
-        "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-    SQLExecDirect(sSQL);
-
-    if (SQLFetch() == SQL_SUCCESS)
-        return SQLGetData(1);
+        if(SQLPrepFetch(nStmtID) == SQL_SUCCESS)
+            return SQLPrepGetString(nStmtID, 1);
+    }
     else
     {
-        return "";
-        // If you want to convert your existing persistent data to SQL, this
-        // would be the place to do it. The requested variable was not found
-        // in the database, you should
-        // 1) query it's value using your existing persistence functions
-        // 2) save the value to the database using SetPersistentString()
-        // 3) return the string value here.
+        sVarName = SQLEncodeSpecialChars(sVarName);
+        sPlayer = SQLEncodeSpecialChars(sPlayer);
+        sTag = SQLEncodeSpecialChars(sTag);
+
+        string sSQL = "SELECT `val` FROM `" + sTable + "` WHERE `player`='" + sPlayer +
+            "' AND `tag`='" + sTag + "' AND `name`='" + sVarName + "'";
+        SQLExecDirect(sSQL);
+
+        if (SQLFetch() == SQL_SUCCESS)
+            return SQLGetData(1);
+        else
+        {
+            return "";
+            // If you want to convert your existing persistent data to SQL, this
+            // would be the place to do it. The requested variable was not found
+            // in the database, you should
+            // 1) query it's value using your existing persistence functions
+            // 2) save the value to the database using SetPersistentString()
+            // 3) return the string value here.
+        }
     }
+
+    return "";
+
 }
 
 void SetPersistentInt(object oObject, string sVarName, int iValue, int iExpiration =
@@ -463,30 +581,31 @@ void SetPersistentInt(object oObject, string sVarName, int iValue, int iExpirati
 
 int GetPersistentInt(object oObject, string sVarName, string sTable = "pwdata")
 {
-    string sPlayer;
-    string sTag;
+    return StringToInt(GetPersistentString(oObject, sVarName, sTable));
+    // string sPlayer;
+    // string sTag;
 
-    if (GetIsPC(oObject))
-    {
-        sPlayer = SQLEncodeSpecialChars(GetPCPlayerName(oObject));
-        sTag = SQLEncodeSpecialChars(GetName(oObject));
-    }
-    else
-    {
-        sPlayer = "~";
-        sTag = GetTag(oObject);
-    }
+    // if (GetIsPC(oObject))
+    // {
+    //     sPlayer = SQLEncodeSpecialChars(GetPCPlayerName(oObject));
+    //     sTag = SQLEncodeSpecialChars(GetName(oObject));
+    // }
+    // else
+    // {
+    //     sPlayer = "~";
+    //     sTag = GetTag(oObject);
+    // }
 
-    sVarName = SQLEncodeSpecialChars(sVarName);
+    // sVarName = SQLEncodeSpecialChars(sVarName);
 
-    string sSQL = "SELECT val FROM " + sTable + " WHERE player='" + sPlayer +
-        "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-    SQLExecDirect(sSQL);
+    // string sSQL = "SELECT val FROM " + sTable + " WHERE player='" + sPlayer +
+    //     "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
+    // SQLExecDirect(sSQL);
 
-    if (SQLFetch() == SQL_SUCCESS)
-        return StringToInt(SQLGetData(1));
-    else
-        return 0;
+    // if (SQLFetch() == SQL_SUCCESS)
+    //     return StringToInt(SQLGetData(1));
+    // else
+    //     return 0;
 }
 
 void SetPersistentFloat(object oObject, string sVarName, float fValue, int iExpiration =
@@ -497,30 +616,31 @@ void SetPersistentFloat(object oObject, string sVarName, float fValue, int iExpi
 
 float GetPersistentFloat(object oObject, string sVarName, string sTable = "pwdata")
 {
-    string sPlayer;
-    string sTag;
+    return StringToFloat(GetPersistentString(oObject, sVarName, sTable));
+    // string sPlayer;
+    // string sTag;
 
-    if (GetIsPC(oObject))
-    {
-        sPlayer = SQLEncodeSpecialChars(GetPCPlayerName(oObject));
-        sTag = SQLEncodeSpecialChars(GetName(oObject));
-    }
-    else
-    {
-        sPlayer = "~";
-        sTag = GetTag(oObject);
-    }
+    // if (GetIsPC(oObject))
+    // {
+    //     sPlayer = SQLEncodeSpecialChars(GetPCPlayerName(oObject));
+    //     sTag = SQLEncodeSpecialChars(GetName(oObject));
+    // }
+    // else
+    // {
+    //     sPlayer = "~";
+    //     sTag = GetTag(oObject);
+    // }
 
-    sVarName = SQLEncodeSpecialChars(sVarName);
+    // sVarName = SQLEncodeSpecialChars(sVarName);
 
-    string sSQL = "SELECT val FROM " + sTable + " WHERE player='" + sPlayer +
-        "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-    SQLExecDirect(sSQL);
+    // string sSQL = "SELECT val FROM " + sTable + " WHERE player='" + sPlayer +
+    //     "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
+    // SQLExecDirect(sSQL);
 
-    if (SQLFetch() == SQL_SUCCESS)
-        return StringToFloat(SQLGetData(1));
-    else
-        return 0.0f;
+    // if (SQLFetch() == SQL_SUCCESS)
+    //     return StringToFloat(SQLGetData(1));
+    // else
+    //     return 0.0f;
 }
 
 void SetPersistentLocation(object oObject, string sVarName, location lLocation, int iExpiration =
@@ -640,4 +760,43 @@ void DeletePersistentVariable(object oObject, string sVarName, string sTable = "
 string SQLEncodeSpecialChars(string sString)
 {
     return NWNXGetString("SQL", "GET ESCAPE STRING", sString, 0);
+}
+
+
+int SQLPrepPrepareStatement(string sSQL){
+    return NWNXGetInt("SQL", "PSPrep", sSQL, 0);
+}
+
+void SQLPrepBindString(int nStatementID, int nParam, string sValue){
+    NWNXSetString("SQL", "PSBindS", "", ((nParam & 0xFF) << 24) | (nStatementID & 0x00FFFFFF), sValue);
+}
+void SQLPrepBindInt(int nStatementID, int nParam, int nValue){
+    NWNXSetInt("SQL", "PSBindI", "", ((nParam & 0xFF) << 24) | (nStatementID & 0x00FFFFFF), nValue);
+}
+void SQLPrepBindFloat(int nStatementID, int nParam, float fValue){
+    NWNXSetFloat("SQL", "PSBindF", "", ((nParam & 0xFF) << 24) | (nStatementID & 0x00FFFFFF), fValue);
+}
+void SQLPrepBindVector(int nStatementID, int nParam, vector vValue){
+    NWNXSetString("SQL", "PSBindF", "", ((nParam & 0xFF) << 24) | (nStatementID & 0x00FFFFFF), SQLVectorToString(vValue));
+}
+void SQLPrepBindNull(int nStatementID, int nParam){
+    NWNXSetInt("SQL", "PSBindN", "", ((nParam & 0xFF) << 24) | (nStatementID & 0x00FFFFFF), 0);
+}
+
+int SQLPrepExecute(int nStatementID){
+    return NWNXGetInt("SQL", "PSExec", "", nStatementID);
+}
+
+int SQLPrepFetch(int nStatementID){
+    return NWNXGetInt("SQL", "PSFetch", "", nStatementID);
+}
+
+string SQLPrepGetString(int nStatementID, int nCol){
+    return NWNXGetString("SQL", "PSGetS", "", ((nCol & 0xFF) << 24) | (nStatementID & 0x00FFFFFF));
+}
+int SQLPrepGetInt(int nStatementID, int nCol){
+    return NWNXGetInt("SQL", "PSGetI", "", ((nCol & 0xFF) << 24) | (nStatementID & 0x00FFFFFF));
+}
+float SQLPrepGetFloat(int nStatementID, int nCol){
+    return NWNXGetFloat("SQL", "PSGetF", "", ((nCol & 0xFF) << 24) | (nStatementID & 0x00FFFFFF));
 }

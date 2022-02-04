@@ -73,11 +73,29 @@ void DBPlugin::GetFunctionClass(char* fClass)
 	}
 }
 
+void DBPlugin::SetInt(char* sFunction, char* sParam1, int nParam2, int nValue)
+{
+	logger->Trace("* Plugin SetInt(%s, %s, %d, %d)", sFunction, sParam1, nParam2, nValue);
+
+	std::string_view function {sFunction};
+	if (function == "PSBindI") {
+		int col    = (nParam2 >> 24) & 0xFF;
+		int stmtID = nParam2 & 0x00FFFFFF;
+		PrepBindInt(stmtID, col, nValue);
+	} else if (function == "PSBindN") {
+		int col    = (nParam2 >> 24) & 0xFF;
+		int stmtID = nParam2 & 0x00FFFFFF;
+		PrepBindNull(stmtID, col);
+	} else {
+		logger->Err("! Unknown SetInt function '%s'", sFunction);
+	}
+}
+
 int DBPlugin::GetInt(char* sFunction, char* sParam1, int nParam2)
 {
-	logger->Trace("* Plugin GetInt(0x%x, %s, %d)", 0x0, sParam1, nParam2);
+	logger->Trace("* Plugin GetInt(%s, %s, %d)", sFunction, sParam1, nParam2);
 
-	std::string function(sFunction);
+	std::string_view function {sFunction};
 
 	if (function == "") {
 		logger->Info("* Function not specified.");
@@ -94,15 +112,64 @@ int DBPlugin::GetInt(char* sFunction, char* sParam1, int nParam2)
 		return GetErrno();
 	else if (function == "GET INSID")
 		return GetLastInsertID();
+	else if (function == "PSPrep")
+		return PrepPrepareStatement(sParam1);
+	else if (function == "PSFetch")
+		return PrepFetch(nParam2);
+	else if (function == "PSExec")
+		return PrepExecute(nParam2);
+	else if (function == "PSGetI") {
+		int col    = (nParam2 >> 24) & 0xFF;
+		int stmtID = nParam2 & 0x00FFFFFF;
+		return PrepGetDataInt(stmtID, col);
+	} else {
+		logger->Err("! Unknown GetInt function '%s'", sFunction);
+		return -1;
+	}
+
+	return 0;
+}
+
+void DBPlugin::SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue)
+{
+	logger->Trace("* Plugin SetFloat(%s, %s, %d, %f)", sFunction, sParam1, nParam2, fValue);
+
+	std::string_view function {sFunction};
+	if (function == "PSBindF") {
+		int col    = (nParam2 >> 24) & 0xFF;
+		int stmtID = nParam2 & 0x00FFFFFF;
+		PrepBindFloat(stmtID, col, fValue);
+	} else {
+		logger->Err("! Unknown SetFloat function '%s'", sFunction);
+	}
+}
+float DBPlugin::GetFloat(char* sFunction, char* sParam1, int nParam2)
+{
+	logger->Trace("* Plugin GetFloat(%s, %s, %d)", sFunction, sParam1, nParam2);
+
+	std::string_view function {sFunction};
+
+	if (function == "") {
+		logger->Info("* Function not specified.");
+		return -1;
+	}
+	if (function == "PSGetF") {
+		int col    = (nParam2 >> 24) & 0xFF;
+		int stmtID = nParam2 & 0x00FFFFFF;
+		return PrepGetDataFloat(stmtID, col);
+	} else {
+		logger->Err("! Unknown GetFloat function '%s'", sFunction);
+		return -1;
+	}
 
 	return 0;
 }
 
 void DBPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue)
 {
-	logger->Trace("* Plugin SetString(0x%x, %s, %d, %s)", 0x0, sParam1, nParam2, sValue);
+	logger->Trace("* Plugin SetString(%s, %s, %d, %s)", sFunction, sParam1, nParam2, sValue);
 
-	std::string function(sFunction);
+	std::string_view function {sFunction};
 
 	if (function == "") {
 		logger->Info("* Function not specified.");
@@ -113,14 +180,19 @@ void DBPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sVal
 		Execute(sParam1);
 	else if (function == "SETSCORCOSQL")
 		SetScorcoSQL(sParam1);
+	else if (function == "PSBindS") {
+		int col    = (nParam2 >> 24) & 0xFF;
+		int stmtID = nParam2 & 0x00FFFFFF;
+		PrepBindString(stmtID, col, sValue);
+	} else
+		logger->Err("! Unknown SetString function '%s'", sFunction);
 }
 
 char* DBPlugin::GetString(char* sFunction, char* sParam1, int nParam2)
 {
-	logger->Trace("* Plugin GetString(0x%x, %s, %d)", 0x0, sParam1, nParam2);
+	logger->Trace("* Plugin GetString(%s, %s, %d)", sFunction, sParam1, nParam2);
 
-	std::string function(sFunction);
-	// std::string param1(sParam1);
+	std::string_view function {sFunction};
 
 	if (function == "") {
 		logger->Info("* Function not specified.");
@@ -128,43 +200,137 @@ char* DBPlugin::GetString(char* sFunction, char* sParam1, int nParam2)
 	}
 
 	if (function == "GETDATA") {
-		GetData(nParam2, returnBuffer);
+		GetData(nParam2, this->returnBuffer);
 	} else if (function == "GET ESCAPE STRING")
-		GetEscapeString(sParam1, returnBuffer);
+		GetEscapeString(sParam1, this->returnBuffer);
 	else if (function == "GET ERROR MESSAGE")
 		return (char*)GetErrorMessage();
-	else {
+	else if (function == "PSGetS") {
+		int col    = (nParam2 >> 24) & 0xFF;
+		int stmtID = nParam2 & 0x00FFFFFF;
+		return PrepGetDataString(stmtID, col, this->returnBuffer);
+	} else {
 		// Process generic functions
-		std::string query = ProcessQueryFunction(function.c_str());
+		std::string query = ProcessQueryFunction(sFunction);
 		if (query != "") {
-			sprintf_s(returnBuffer, MAX_BUFFER, "%s", query.c_str());
+			sprintf_s(this->returnBuffer, MAX_BUFFER, "%s", query.c_str());
 		} else {
-			logger->Info("* Unknown function '%s' called.", function.c_str());
+			logger->Info("* Unknown function '%s' called.", sFunction);
 			return NULL;
 		}
 	}
 
-	return returnBuffer;
+	return this->returnBuffer;
 }
 
-bool DBPlugin::Execute(char* query) { return FALSE; }
+bool DBPlugin::Execute(char* query)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return FALSE;
+}
 
-int DBPlugin::GetAffectedRows() { return -1; }
+int DBPlugin::GetAffectedRows()
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return -1;
+}
 
-int DBPlugin::GetLastInsertID() { return 0; }
+int DBPlugin::GetLastInsertID()
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return 0;
+}
 
-int DBPlugin::Fetch(char* buffer) { return -1; }
+int DBPlugin::Fetch(char* buffer)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return -1;
+}
 
-int DBPlugin::GetData(int iCol, char* buffer) { return -1; }
+int DBPlugin::GetData(int iCol, char* buffer)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return -1;
+}
 
-int DBPlugin::GetErrno() { return 0; }
+int DBPlugin::GetErrno()
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return 0;
+}
 
-const char* DBPlugin::GetErrorMessage() { return NULL; }
+const char* DBPlugin::GetErrorMessage()
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return NULL;
+}
 
-void DBPlugin::GetEscapeString(char* str, char* buffer) { }
+void DBPlugin::GetEscapeString(char* str, char* buffer)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+}
 
-bool DBPlugin::WriteScorcoData(BYTE* pData, int Length) { return 0; }
+bool DBPlugin::WriteScorcoData(BYTE* pData, int Length)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return 0;
+}
 
-BYTE* DBPlugin::ReadScorcoData(char* param, int* size) { return NULL; }
+BYTE* DBPlugin::ReadScorcoData(char* param, int* size)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return NULL;
+}
 
 void DBPlugin::SetScorcoSQL(const char* request) { scorcoSQL = request; }
+
+int DBPlugin::PrepPrepareStatement(const char* query)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return -1;
+}
+bool DBPlugin::PrepBindString(int stmtID, int index, const char* value)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return false;
+}
+bool DBPlugin::PrepBindInt(int stmtID, int index, int value)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return false;
+}
+bool DBPlugin::PrepBindFloat(int stmtID, int index, float value)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return false;
+}
+bool DBPlugin::PrepBindNull(int stmtID, int index)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return false;
+}
+bool DBPlugin::PrepExecute(int stmtID)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return false;
+}
+bool DBPlugin::PrepFetch(int stmtID)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return false;
+}
+char* DBPlugin::PrepGetDataString(int stmtID, int iCol, char* buffer)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return nullptr;
+}
+int DBPlugin::PrepGetDataInt(int stmtID, int iCol)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return -1;
+}
+float DBPlugin::PrepGetDataFloat(int stmtID, int iCol)
+{
+	logger->Err("* %s not implemented for this plugin", __FUNCTION__);
+	return -1;
+}
