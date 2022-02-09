@@ -30,9 +30,9 @@ You must install:
       shipped with convenient defaults, but you may need to tweak some of
       them. Note that the presence of a plugin configuration file does not
       mean the plugin will be loaded (see `plugin_list` in `nwnx.ini`).
-4. (Optional) Copy the `.nss` files inside the `nwscript/` folder to your
+4. Copy the `.nss` files from the `nwscript/` folder into your
    module folder, **or** import `nwscript/nwnx.erf` into your module using the
-   NWN2 toolset
+   NWN2 toolset. Overwrite existing files if necessary.
 5. Start NWNX4:
     + Run `NWNX4_GUI.exe` for the GUI version
     + Run `NWNX4_Controller.exe -interactive` in a shell for the command-line
@@ -47,6 +47,9 @@ You must install:
    configuration files in the NWNX4 folder are not overwritten. You may need
    to manually update the existing configuration files (see the [release
    notes](https://github.com/nwn2dev/nwnx4/releases)).
+3. Copy the `.nss` files from the `nwscript/` folder into your
+   module folder, **or** import `nwscript/nwnx.erf` into your module using the
+   NWN2 toolset. Overwrite existing files if necessary.
 
 ## About
 
