@@ -8,7 +8,7 @@ void PickpocketCancel()
 
 void PickpocketContinue()
 {
-	NWNXGetInt("PICK", "1", "", 1);
+	NWNXGetInt("PICK", "1", "", 0);
 }
 
 object PickpocketGetTarget()
