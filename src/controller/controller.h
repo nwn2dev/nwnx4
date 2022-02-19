@@ -25,6 +25,7 @@
 #include <cstring>
 #include <cwchar>
 #include <detours/detours.h>
+#include <processenv.h>
 #include "udp.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"

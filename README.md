@@ -175,3 +175,7 @@ By default, `start-game.bat` will:
 You must install your custom content (modules, campaigns, haks, tlks,
 override, ...) inside the `package-skel\home\` folder. This custom content
 will be used by both the server and the game client.
+
+## Cannot start the server with a long parameters list [Bug #38](https://github.com/nwn2dev/nwnx4/issues/38)
+
+To work with long parameter lists (above 260 characters), refer to the document [here](docs/Character Path Limit/README.md).
