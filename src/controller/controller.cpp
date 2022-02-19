@@ -299,14 +299,14 @@ bool NWNXController::startServerProcessInternal()
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 	SetLastError(0);
 
-    // A parameter list can have a SHRT_MAX size (32,767 characters)
-    char params[SHRT_MAX];
+	// A parameter list can have a SHRT_MAX size (32,767 characters)
+	char params[SHRT_MAX];
 
 	if (ExpandEnvironmentStringsA(("nwn2server.exe " + parameters).c_str(), params, SHRT_MAX) == 0) {
 		logger->Err("Could not substitute environment variables in NWN2Server command line: %s", params);
 	}
 
-    logger->Trace("Starting: %s\\%s", nwninstalldir.c_str(), params);
+	logger->Trace("Starting: %s\\%s", nwninstalldir.c_str(), params);
 	logger->Trace("with %s", szDllPath);
 
 	if (!DetourCreateProcessWithDllExA(exePath.c_str(), params,
