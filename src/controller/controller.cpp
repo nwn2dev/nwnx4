@@ -218,7 +218,7 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 		}
 	}
 
-	// TODO: This has a far reaching effect. Need more time to test out reprecussions of using long paths
+	// TODO: This has a far reaching effect. Need more time to test out repercussions of using long paths
 	/*#ifdef _WIN32
 	// Win32 applications have problems with long paths (exceeding 260 characters)
 	const char* LONG_PATH_PREFIX = R"(\\?\)";
