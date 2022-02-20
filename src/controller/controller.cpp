@@ -225,7 +225,7 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 	const int LONG_PATH_PADDING = 64;
 
 	if (nwninstalldir.length() >= MAX_PATH - LONG_PATH_PADDING &&  // If the length exceeds the MAX_PATH without its padding
-		nwninstalldir.rfind(LONG_PATH_PREFIX, 0) == std::string::npos)  // If the prefix isn't already found on the install directory.
+		nwninstalldir.rfind(LONG_PATH_PREFIX, 0) == std::string::npos)  // If the prefix isn't already found on the install directory
 	{
 		nwninstalldir = LONG_PATH_PREFIX + nwninstalldir;
 	}
