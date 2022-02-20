@@ -217,6 +217,20 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 			return;
 		}
 	}
+
+	// TODO: This has a far reaching effect. Need more time to test out reprecussions of using long paths
+	/*#ifdef _WIN32
+	// Win32 applications have problems with long paths (exceeding 260 characters)
+	const char* LONG_PATH_PREFIX = R"(\\?\)";
+	const int LONG_PATH_PADDING = 64;
+
+	if (nwninstalldir.length() >= MAX_PATH - LONG_PATH_PADDING &&  // If the length exceeds the MAX_PATH without its padding
+		nwninstalldir.rfind(LONG_PATH_PREFIX, 0) == std::string::npos)  // If the prefix isn't already found on the install directory.
+	{
+		nwninstalldir = LONG_PATH_PREFIX + nwninstalldir;
+	}
+	#endif*/
+
 	logger->Trace("NWN2 install dir: %s", nwninstalldir.c_str());
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
 }
@@ -299,11 +313,10 @@ bool NWNXController::startServerProcessInternal()
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 	SetLastError(0);
 
-	// A parameter list can have a SHRT_MAX size (32,767 characters)
-	auto params_ = "nwn2server.exe " + parameters;
-	char params[SHRT_MAX];
+	// A parameter list can have a USHRT_MAX size (65,535 characters)
+	char params[USHRT_MAX];
 
-	if (ExpandEnvironmentStringsA(params_.c_str(), params, SHRT_MAX) == 0) {
+	if (ExpandEnvironmentStringsA("nwn2server.exe " + parameters, params, USHRT_MAX) == 0) {
 		logger->Err("Could not substitute environment variables in NWN2Server command line: %s", params);
 	}
 
