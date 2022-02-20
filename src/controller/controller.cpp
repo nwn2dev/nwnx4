@@ -300,9 +300,10 @@ bool NWNXController::startServerProcessInternal()
 	SetLastError(0);
 
 	// A parameter list can have a SHRT_MAX size (32,767 characters)
+	auto params_ = "nwn2server.exe " + parameters;
 	char params[SHRT_MAX];
 
-	if (ExpandEnvironmentStringsA(("nwn2server.exe " + parameters).c_str(), params, SHRT_MAX) == 0) {
+	if (ExpandEnvironmentStringsA(params_.c_str(), params, SHRT_MAX) == 0) {
 		logger->Err("Could not substitute environment variables in NWN2Server command line: %s", params);
 	}
 
