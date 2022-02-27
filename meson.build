@@ -37,8 +37,6 @@ else
 endif
 
 
-subdir('src/RPC') # Provides the nwnx_rpc_dep dependency
-
 # Target list
 subdir('src')
 subdir('src/hook')

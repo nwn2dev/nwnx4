@@ -25,8 +25,7 @@ NWNx4Controller_exe = executable('NWNX4_Controller',
     dependencies: [
         cppcompiler.find_library('wsock32'),
         cppcompiler.find_library('ws2_32'),
-        cppcompiler.find_library('detours', dirs: lib_dirs),
-        nwnx_rpc_dep,
+        cppcompiler.find_library('detours', dirs: lib_dirs)
     ],
     install: true,
 )
