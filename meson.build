@@ -24,8 +24,7 @@ endif
 nwnx4_repo_path = meson.global_source_root()
 include_dirs = include_directories([
     'lib/NWN2/include',
-    'vcpkg_installed/x86-windows-static-md/include',
-    'src/RPC/proto'
+    'vcpkg_installed/x86-windows-static-md/include'
 ])
 lib_dirs = [
     nwnx4_repo_path + '/lib/NWN2'
@@ -58,6 +57,5 @@ subdir('src/plugins/xp_bugfix')
 subdir('src/plugins/xp_fastboot')
 subdir('src/plugins/xp_objectattributes')
 subdir('src/plugins/xp_srvadmin')
-subdir('src/plugins/xp_rpc')
 
 install_data('README.md', install_dir: '.')
