@@ -611,6 +611,7 @@ static std::vector<std::filesystem::path> ParsePluginsList(const std::string& li
 	return ret;
 }
 
+typedef bool (WINAPI* IsProtoPlugin)();
 typedef Plugin* (WINAPI* GetPluginPointer)();
 typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
 
@@ -671,10 +672,37 @@ void loadPlugins()
 			continue;
 		}
 
-		void* pGetPluginPointer;
+		// Search for proto plugins; proto plugins are plugin wrappers around exported function calls on the DLL
+		void* pIsProtoPlugin = GetProcAddress(hDLL, "IsProtoPlugin");
+		if (pIsProtoPlugin != nullptr) {
+			if (!reinterpret_cast<IsProtoPlugin>(pIsProtoPlugin)()) {
+				continue;
+			}
+
+			auto plugin = new ProtoPlugin(pluginPathStr, hDLL);  // Build the plugin on the extender
+
+			if (!plugin->Init(nwnxHome->data())) {
+				logger->Err("* Loading (proto) plugin %s: Error during plugin initialization.", pluginName.c_str());
+			} else {
+				char fClass[128];
+				plugin->GetFunctionClass(fClass);
+
+				if (plugins.find(fClass) == plugins.end()) {
+					logger->Info("* Loading (proto) plugin %s: Successfully registered as class: %s",
+								 pluginName.c_str(), fClass);
+					plugins[fClass] = plugin;
+				} else {
+					logger->Warn("* Skipping (proto) plugin %s: Class %s already registered by another plugin.",
+								 pluginName.c_str(), fClass);
+					FreeLibrary(hDLL);
+				}
+			}
+
+			continue;
+		}
 
 		// Search for V2 plugin function
-		pGetPluginPointer = GetProcAddress(hDLL, "GetPluginPointerV2");
+		void* pGetPluginPointer = GetProcAddress(hDLL, "GetPluginPointerV2");
 		if (pGetPluginPointer != nullptr)
 		{
 			// Load

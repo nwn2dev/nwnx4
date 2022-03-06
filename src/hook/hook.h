@@ -28,6 +28,7 @@
 #include "../misc/ini.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
+#include "../plugins/proto_plugin.h"
 #include "../plugins/plugin.h"
 #include "../plugins/legacy_plugin.h"
 
