@@ -17,11 +17,11 @@ ProtoPlugin::ProtoPlugin(string pluginPath, HINSTANCE hDLL) {
 	if (CallGetDescriptionDescriptor != nullptr) {
 		description = reinterpret_cast<CallGetDescriptor_>(CallGetDescriptionDescriptor)();
 	}
-	void* CallGetSubClassDescriptor = (CallGetDescriptor_)GetProcAddress(hDLL, "GetSubClassDescriptor");
+	void* CallGetSubClassDescriptor = GetProcAddress(hDLL, "GetSubClassDescriptor");
 	if (CallGetSubClassDescriptor != nullptr) {
 		subClass = reinterpret_cast<CallGetDescriptor_>(CallGetSubClassDescriptor)();
 	}
-	auto CallGetVersionDescriptor = (CallGetDescriptor_)GetProcAddress(hDLL, "GetVersionDescriptor");
+	void* CallGetVersionDescriptor = GetProcAddress(hDLL, "GetVersionDescriptor");
 	if (CallGetVersionDescriptor != nullptr) {
 		version = reinterpret_cast<CallGetDescriptor_>(CallGetVersionDescriptor)();
 	}
@@ -161,6 +161,6 @@ void ProtoPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* s
 
 		CallSetString(sFunction, sParam1, nParam2, sValue);
 	} catch (const std::exception& exception) {
-		logger->Warn("Calling SetFloat() failed: %s", exception.what());
+		logger->Warn("Calling SetString() failed: %s", exception.what());
 	}
 }
