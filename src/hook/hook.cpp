@@ -27,10 +27,12 @@
 
 SHARED_MEMORY *shmem;
 
+CPluginHashMap cplugins;
 PluginHashMap plugins;
 LegacyPluginHashMap legacyplugins;
 
 LogNWNX* logger;
+std::string* nwnInstallHome;
 std::string* nwnxHome;
 SimpleIniConfig* config;
 
@@ -78,8 +80,16 @@ int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	logger->Debug("call to NWNXGetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)", sPlugin, sFunction, sParam1, nParam2);
 
 	// try to call the plugin
+	CPluginHashMap::iterator cplugin = cplugins.find(sPlugin);
 	PluginHashMap::iterator it = plugins.find(sPlugin);
-	if (it != plugins.end())
+	if (cplugin != cplugins.end())
+	{
+		// C plugin was found; handle the request
+		CPlugin* pCPlugin = cplugin->second;
+
+		return pCPlugin->GetInt(sFunction, sParam1, nParam2);
+	}
+	else if (it != plugins.end())
 	{
 		// plugin found, handle the request
 		Plugin* pPlugin = it->second;
@@ -109,8 +119,15 @@ void NWNXSetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2, int 
 		sPlugin, sFunction, sParam1, nParam2, nValue);
 
 	// try to call the plugin
+	CPluginHashMap::iterator cplugin = cplugins.find(sPlugin);
 	PluginHashMap::iterator it = plugins.find(sPlugin);
-	if (it != plugins.end())
+	if (cplugin != cplugins.end())
+	{
+		// C plugin was found; handle the request
+		CPlugin* pCPlugin = cplugin->second;
+		pCPlugin->SetInt(sFunction, sParam1, nParam2, nValue);
+	}
+	else if (it != plugins.end())
 	{
 		// plugin found, handle the request
 		Plugin* pPlugin = it->second;
@@ -130,8 +147,16 @@ float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 		sPlugin, sFunction, sParam1, nParam2);
 
 	// try to call the plugin
+	CPluginHashMap::iterator cplugin = cplugins.find(sPlugin);
 	PluginHashMap::iterator it = plugins.find(sPlugin);
-	if (it != plugins.end())
+	if (cplugin != cplugins.end())
+	{
+		// C plugin was found; handle the request
+		CPlugin* pCPlugin = cplugin->second;
+
+		return pCPlugin->GetFloat(sFunction, sParam1, nParam2);
+	}
+	else if (it != plugins.end())
 	{
 		// plugin found, handle the request
 		Plugin* pPlugin = it->second;
@@ -153,8 +178,16 @@ void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, fl
 		sPlugin, sFunction, sParam1, nParam2, fValue);
 
 	// try to call the plugin
+	CPluginHashMap::iterator cplugin = cplugins.find(sPlugin);
 	PluginHashMap::iterator it = plugins.find(sPlugin);
-	if (it != plugins.end())
+	if (cplugin != cplugins.end())
+	{
+		// C plugin was found; handle the request
+		CPlugin* pCPlugin = cplugin->second;
+
+		return pCPlugin->SetFloat(sFunction, sParam1, nParam2, fValue);
+	}
+	else if (it != plugins.end())
 	{
 		// plugin found, handle the request
 		Plugin* pPlugin = it->second;
@@ -174,8 +207,15 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 		sPlugin, sFunction, sParam1, nParam2);
 
 	// try to call the plugin
+	CPluginHashMap::iterator cplugin = cplugins.find(sPlugin);
 	PluginHashMap::iterator it = plugins.find(sPlugin);
-	if (it != plugins.end())
+	if (cplugin != cplugins.end())
+	{
+		// C plugin was found; handle the request
+		CPlugin* pCPlugin = cplugin->second;
+		pCPlugin->GetString(sFunction, sParam1, nParam2);
+	}
+	else if (it != plugins.end())
 	{
 		// plugin found, handle the request
 		Plugin* pPlugin = it->second;
@@ -215,8 +255,15 @@ void NWNXSetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2, c
 		sPlugin, sFunction, sParam1, nParam2, sValue);
 
 	// try to call the plugin
+	CPluginHashMap::iterator cplugin = cplugins.find(sPlugin);
 	PluginHashMap::iterator it = plugins.find(sPlugin);
-	if (it != plugins.end())
+	if (cplugin != cplugins.end())
+	{
+		// C plugin was found; handle the request
+		CPlugin* pCPlugin = cplugin->second;
+		pCPlugin->SetString(sFunction, sParam1, nParam2, sValue);
+	}
+	else if (it != plugins.end())
 	{
 		// plugin found, handle the request
 		Plugin* pPlugin = it->second;
@@ -611,7 +658,7 @@ static std::vector<std::filesystem::path> ParsePluginsList(const std::string& li
 	return ret;
 }
 
-typedef bool (WINAPI* IsProtoPlugin)();
+typedef uint32_t (WINAPI* NWNXCPlugin_GetAbiVersion)();
 typedef Plugin* (WINAPI* GetPluginPointer)();
 typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
 
@@ -672,30 +719,42 @@ void loadPlugins()
 			continue;
 		}
 
-		// Search for proto plugins; proto plugins are plugin wrappers around exported function calls on the DLL
-		void* pIsProtoPlugin = GetProcAddress(hDLL, "IsProtoPlugin");
-		if (pIsProtoPlugin != nullptr) {
-			if (!reinterpret_cast<IsProtoPlugin>(pIsProtoPlugin)()) {
-				continue;
+		// Search for CPlugins, an ABI implementation of the plugin DLL
+		void* pNWNXCPlugin_GetAbiVersion = GetProcAddress(hDLL, "NWNXCPlugin_GetAbiVersion");
+		if (pNWNXCPlugin_GetAbiVersion != nullptr) {
+			auto abiVersion = reinterpret_cast<NWNXCPlugin_GetAbiVersion>(pNWNXCPlugin_GetAbiVersion)();
+			CPlugin* plugin;
+
+			switch (abiVersion) {
+				case 1: {
+					CPluginInitInfoV1 initInfo{
+							pluginPathStr.data(),
+							nwnInstallHome->data(),
+							nwnxHome->data()
+					};
+					plugin = new CPluginV1(hDLL, &initInfo);
+
+					break;
+				}
+				default:
+					logger->Warn("* Skipping C plugin %s: ABI v%d unsupported", abiVersion);
+
+					continue;
 			}
 
-			auto plugin = new ProtoPlugin(pluginPathStr, hDLL);  // Build the plugin on the extender
+			// Get the data associated with the plugin
+			auto cpluginName = plugin->GetPluginName();
+			auto cpluginVersion = plugin->GetPluginVersion();
 
-			if (!plugin->Init(nwnxHome->data())) {
-				logger->Err("* Loading (proto) plugin %s: Error during plugin initialization.", pluginName.c_str());
-			} else {
-				char fClass[128];
-				plugin->GetFunctionClass(fClass);
-
-				if (plugins.find(fClass) == plugins.end()) {
-					logger->Info("* Loading (proto) plugin %s: Successfully registered as class: %s",
-								 pluginName.c_str(), fClass);
-					plugins[fClass] = plugin;
-				} else {
-					logger->Warn("* Skipping (proto) plugin %s: Class %s already registered by another plugin.",
-								 pluginName.c_str(), fClass);
-					FreeLibrary(hDLL);
-				}
+			if (cplugins.find(cpluginName) == cplugins.end())
+			{
+				logger->Info("* Loading C plugin %s@%s: Successfully registered", cpluginName, cpluginVersion);
+				cplugins[cpluginName] = plugin;
+			}
+			else
+			{
+				logger->Warn("* Skipping C plugin %s@%s: Already registered plugin", cpluginName, cpluginVersion);
+				FreeLibrary(hDLL);
 			}
 
 			continue;
@@ -809,7 +868,8 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			// Initialize plugins and load configuration data.
 			//
 
-            nwnxHome = new std::string(shmem->nwnx_home);
+			nwnInstallHome = new std::string(shmem->nwninstall_home);
+			nwnxHome = new std::string(shmem->nwnx_home);
 
 			// Initialize hook.
 			init();

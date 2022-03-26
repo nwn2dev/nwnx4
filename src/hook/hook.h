@@ -28,7 +28,7 @@
 #include "../misc/ini.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
-#include "../plugins/proto_plugin.h"
+#include "../plugins/cplugin.h"
 #include "../plugins/plugin.h"
 #include "../plugins/legacy_plugin.h"
 
@@ -65,12 +65,15 @@ const unsigned char SET_NWNX_SETSTRING[] = {0xB4, 0x4E, 0xB4, 0x57, 0xB4, 0x4E, 
 
 extern SHARED_MEMORY *shmem;
 
+typedef std::unordered_map<std::string, CPlugin*> CPluginHashMap;
 typedef std::unordered_map<std::string, Plugin*> PluginHashMap;
 typedef std::unordered_map<std::string, LegacyPlugin*> LegacyPluginHashMap;
+extern CPluginHashMap cplugins;
 extern PluginHashMap plugins;
 extern LegacyPluginHashMap legacyplugins;
 
 extern LogNWNX* logger;
+extern std::string* nwnInstallHome;
 extern std::string* nwnxHome;
 extern SimpleIniConfig* config;
 
