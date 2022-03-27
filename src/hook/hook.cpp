@@ -196,8 +196,7 @@ void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, fl
 	{
 		// C plugin was found; handle the request
 		CPlugin* pCPlugin = cpluginIt->second;
-
-		return pCPlugin->SetFloat(sFunction, sParam1, nParam2, fValue);
+		pCPlugin->SetFloat(sFunction, sParam1, nParam2, fValue);
 	}
 	else if (it != plugins.end())
 	{
@@ -228,7 +227,8 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	{
 		// C plugin was found; handle the request
 		CPlugin* pCPlugin = cpluginIt->second;
-		pCPlugin->GetString(sFunction, sParam1, nParam2);
+
+		return pCPlugin->GetString(sFunction, sParam1, nParam2);
 	}
 	else if (it != plugins.end())
 	{
