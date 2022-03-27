@@ -1,4 +1,4 @@
-#include "cplugin.h"
+#include "CPlugin.h"
 
 extern LogNWNX* logger;
 
@@ -13,12 +13,6 @@ CPlugin::CPlugin(HINSTANCE hDLL) {
 	if (callGetPluginName != nullptr) {
 		CallGetPluginName = reinterpret_cast<CallGetPluginName_>(callGetPluginName);
 		logger->Info("  * Bound NWNXCPlugin_GetPluginName()");
-	}
-
-	void* callGetPluginInstance = GetProcAddress(hDLL, "NWNXCPlugin_GetPluginInstance");
-	if (callGetPluginInstance != nullptr) {
-		CallGetPluginInstance = reinterpret_cast<CallGetPluginInstance_>(callGetPluginInstance);
-		logger->Info("  * Bound NWNXCPlugin_GetPluginInstance()");
 	}
 
 	void* callGetPluginVersion = GetProcAddress(hDLL, "NWNXCPlugin_GetPluginVersion");
@@ -65,7 +59,6 @@ CPlugin::CPlugin(HINSTANCE hDLL) {
 
 	SetPluginName();
 	SetPluginVersion();
-	SetPluginInstance();
 }
 
 CPlugin::~CPlugin() {
@@ -90,12 +83,12 @@ bool CPlugin::Delete() {
 
 std::string CPlugin::GetPluginId() {
 	std::stringstream ss;
-	ss << pluginName << "@" << pluginVersion << "; Instance: " << pluginInstance;
+	ss << pluginName << "@" << pluginVersion;
 
 	return ss.str();
 }
 
-bool CPlugin::HasMatch(char *pluginName) {
+bool CPlugin::Test(char *pluginName) {
 	return strcmp(pluginName, this->pluginName) == 0;
 }
 
@@ -122,19 +115,6 @@ void CPlugin::SetPluginVersion() {
 		pluginVersion = CallGetPluginVersion();
 	} catch (const std::exception& exception) {
 		logger->Warn("  * Calling SetPluginVersion() failed: %s", exception.what());
-	}
-}
-
-void CPlugin::SetPluginInstance() {
-	try {
-		if (CallGetPluginInstance == nullptr) {
-			return;
-		}
-
-		logger->Info("  * Getting C plugin instance");
-		pluginInstance = CallGetPluginInstance();
-	} catch (const std::exception& exception) {
-		logger->Warn("  * Calling SetPluginInstance() failed: %s", exception.what());
 	}
 }
 
@@ -213,29 +193,5 @@ void CPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sValu
 		CallSetString(plugin, sFunction, sParam1, nParam2, sValue);
 	} catch (const std::exception& exception) {
 		logger->Warn("  * Calling SetString() failed: %s", exception.what());
-	}
-}
-
-// ABI Version: 1
-CPluginV1::CPluginV1(HINSTANCE hDLL, CPluginInitInfoV1 *initInfo): CPlugin(hDLL) {
-	void* callNew = GetProcAddress(hDLL, "NWNXCPlugin_New");
-	if (callNew != nullptr) {
-		CallNew = reinterpret_cast<CallNewV1_>(callNew);
-	}
-
-	// Create new version of the C plugin (V1)
-	New(initInfo);
-}
-
-void CPluginV1::New(CPluginInitInfoV1* initInfo) {
-	try {
-		if (CallNew == nullptr) {
-			return;
-		}
-
-		plugin = CallNew(initInfo);
-		logger->Info("  * C plugin established at %p", plugin);
-	} catch (const std::exception& exception) {
-		logger->Warn("  * Calling New() failed: %s", exception.what());
 	}
 }

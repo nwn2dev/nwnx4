@@ -83,7 +83,7 @@ int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
 			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
-				return x.second->HasMatch(sPlugin); });
+				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
 	{
@@ -125,7 +125,7 @@ void NWNXSetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2, int 
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
 			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
-				return x.second->HasMatch(sPlugin); });
+				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
 	{
@@ -156,7 +156,7 @@ float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
 			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
-				return x.second->HasMatch(sPlugin); });
+				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
 	{
@@ -190,7 +190,7 @@ void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, fl
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
 			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
-				return x.second->HasMatch(sPlugin); });
+				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
 	{
@@ -222,7 +222,7 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
 			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
-				return x.second->HasMatch(sPlugin); });
+				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
 	{
@@ -273,7 +273,7 @@ void NWNXSetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2, c
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
 			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
-				return x.second->HasMatch(sPlugin); });
+				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
 	{
@@ -677,7 +677,7 @@ static std::vector<std::filesystem::path> ParsePluginsList(const std::string& li
 	return ret;
 }
 
-typedef uint32_t (WINAPI* NWNXCPlugin_GetAbiVersion)();
+typedef float (WINAPI* NWNXCPlugin_GetAbiVersion)();
 typedef Plugin* (WINAPI* GetPluginPointer)();
 typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
 
@@ -745,21 +745,18 @@ void loadPlugins()
 				auto abiVersion = reinterpret_cast<NWNXCPlugin_GetAbiVersion>(pNWNXCPlugin_GetAbiVersion)();
 				CPlugin* plugin;
 
-				switch (abiVersion) {
-					case 1: {
-						CPluginInitInfoV1 initInfo{
-								pluginPathStr.data(),
-								nwnInstallHome->data(),
-								nwnxHome->data()
-						};
-						plugin = new CPluginV1(hDLL, &initInfo);
+				// Handle ABI versions
+				if (abiVersion == 1.0) {
+					CPluginInitInfoV1_0 initInfo{
+							pluginPathStr.data(),
+							nwnInstallHome->data(),
+							nwnxHome->data()
+					};
+					plugin = new CPluginVersion(hDLL, &initInfo);
+				} else {
+					logger->Warn("* Skipping C plugin %s: ABI v%g unsupported", abiVersion);
 
-						break;
-					}
-					default:
-						logger->Warn("* Skipping C plugin %s: ABI v%d unsupported", abiVersion);
-
-						continue;
+					continue;
 				}
 
 				// Get the data associated with the plugin

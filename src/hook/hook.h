@@ -28,7 +28,7 @@
 #include "../misc/ini.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
-#include "../plugins/cplugin.h"
+#include "../plugins/CPluginVersion.h"
 #include "../plugins/plugin.h"
 #include "../plugins/legacy_plugin.h"
 
