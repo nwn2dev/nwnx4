@@ -6,6 +6,7 @@
 
 typedef char* (WINAPI* CallGetPluginName_)();
 typedef char* (WINAPI* CallGetPluginVersion_)();
+typedef char* (WINAPI* CallGetPluginInstance_)();
 typedef bool (WINAPI* CallDelete_)(void*);
 typedef int (WINAPI* CallGetInt_)(void*, char*, char*, int);
 typedef void (WINAPI* CallSetInt_)(void*, char*, char*, int, int);
@@ -20,8 +21,8 @@ public:
 	CPlugin(HINSTANCE hDLL);
 	~CPlugin();
 
-	char* GetPluginName();
-	char* GetPluginVersion();
+	std::string GetPluginId();
+	bool HasMatch(char* pluginName);
 
 	int GetInt(char* sFunction, char* sParam1, int nParam2);
 	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue);
@@ -36,12 +37,15 @@ protected:
 
 	char* pluginName = nullptr;
 	char* pluginVersion = nullptr;
+	char* pluginInstance = nullptr;
 
 	void SetPluginName();
 	void SetPluginVersion();
+	void SetPluginInstance();
 
 	CallGetPluginName_ CallGetPluginName;
 	CallGetPluginVersion_ CallGetPluginVersion;
+	CallGetPluginInstance_ CallGetPluginInstance;
 
 	CallDelete_ CallDelete;
 	CallGetInt_ CallGetInt;
@@ -63,15 +67,7 @@ typedef void* (WINAPI* CallNewV1_)(CPluginInitInfoV1*);
 
 class CPluginV1: public CPlugin {
 public:
-	CPluginV1(HINSTANCE hDLL, CPluginInitInfoV1* initInfo): CPlugin(hDLL) {
-		void* callNew = GetProcAddress(hDLL, "NWNXCPlugin_New");
-		if (callNew != nullptr) {
-			CallNew = reinterpret_cast<CallNewV1_>(callNew);
-		}
-
-		// Create new version of the C plugin (V1)
-		New(initInfo);
-	};
+	CPluginV1(HINSTANCE hDLL, CPluginInitInfoV1* initInfo);
 private:
 	void New(CPluginInitInfoV1* initInfo);
 
