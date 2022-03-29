@@ -82,7 +82,7 @@ int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	// try to call the plugin
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
+			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
 				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
@@ -124,7 +124,7 @@ void NWNXSetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2, int 
 	// try to call the plugin
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
+			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
 				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
@@ -155,7 +155,7 @@ float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	// try to call the plugin
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
+			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
 				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
@@ -189,7 +189,7 @@ void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, fl
 	// try to call the plugin
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
+			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
 				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
@@ -220,7 +220,7 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	// try to call the plugin
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
+			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
 				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
@@ -272,7 +272,7 @@ void NWNXSetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2, c
 	// try to call the plugin
 	auto cpluginIt = std::find_if(
 			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin *> x) {
+			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
 				return x.second->Test(sPlugin); });
 	auto it = plugins.find(sPlugin);
 	if (cpluginIt != cplugins.end())
@@ -677,7 +677,7 @@ static std::vector<std::filesystem::path> ParsePluginsList(const std::string& li
 	return ret;
 }
 
-typedef float (WINAPI* NWNXCPlugin_GetAbiVersion)();
+typedef uint32_t (WINAPI* NWNXCPlugin_GetAbiVersion)();
 typedef Plugin* (WINAPI* GetPluginPointer)();
 typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
 
@@ -743,36 +743,38 @@ void loadPlugins()
 		if (pNWNXCPlugin_GetAbiVersion != nullptr) {
 			try {
 				auto abiVersion = reinterpret_cast<NWNXCPlugin_GetAbiVersion>(pNWNXCPlugin_GetAbiVersion)();
-				CPlugin* plugin;
+				CPlugin* cplugin;
 
-				// Handle ABI versions
-				if (abiVersion == 1.0) {
-					CPluginInitInfoV1_0 initInfo{
-							pluginPathStr.data(),
-							nwnInstallHome->data(),
-							nwnxHome->data()
-					};
-					plugin = new CPluginVersion(hDLL, &initInfo);
-				} else {
-					logger->Warn("* Skipping C plugin %s: ABI v%g unsupported", abiVersion);
-
-					continue;
+				// Handle ABI
+				switch (abiVersion) {
+					case 1: {
+						CPluginInitInfoV1 initInfo{
+								pluginPathStr.data(),
+								nwnInstallHome->data(),
+								nwnxHome->data()
+						};
+						cplugin = new CPluginVersion(hDLL, &initInfo);
+						break;
+					}
+					default:
+						logger->Warn("* Skipping C plugin %s: ABI v%d unsupported", abiVersion);
+						continue;
 				}
 
 				// Get the data associated with the plugin
-				auto cpluginId = plugin->GetPluginId();
+				auto cpluginId = cplugin->GetPluginId();
 
 				logger->Info("* Searching for C plugin %s", cpluginId.c_str());
 
-				// Search for the plugin
-				if (cplugins.find(cpluginId) == cplugins.end())
+				if (cplugin->Ready() && cplugins.find(pluginName) == cplugins.end())
 				{
 					logger->Info("* Loading C plugin %s: Successfully registered", cpluginId.c_str());
-					cplugins[cpluginId] = plugin;
+					cplugins[pluginName] = cplugin;
 				}
 				else
 				{
-					logger->Warn("* Skipping C plugin %s: Plugin is already registered", cpluginId.c_str());
+					logger->Warn("* Skipping C plugin %s: Plugin of type is already registered", cpluginId.c_str());
+					delete cplugin;
 					FreeLibrary(hDLL);
 				}
 			} catch (const std::exception& exception) {

@@ -21,6 +21,7 @@ public:
 	~CPlugin();
 
 	std::string GetPluginId();
+	bool Ready();
 	bool Test(char* pluginName);
 
 	int GetInt(char* sFunction, char* sParam1, int nParam2);
@@ -30,13 +31,12 @@ public:
 	char* GetString(char* sFunction, char* sParam1, int nParam2);
 	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue);
 protected:
-	bool Delete();  // Called on destructor
-
 	void* plugin = nullptr;
 
-	char* pluginName = nullptr;
-	char* pluginVersion = nullptr;
+	char* pluginName_ = nullptr;
+	char* pluginVersion_ = nullptr;
 
+	bool Delete();  // Called on destructor
 	void SetPluginName();
 	void SetPluginVersion();
 

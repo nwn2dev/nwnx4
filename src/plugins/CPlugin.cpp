@@ -63,7 +63,7 @@ CPlugin::CPlugin(HINSTANCE hDLL) {
 
 CPlugin::~CPlugin() {
 	if (!Delete()) {
-		logger->Err("  * Cannot delete C plugin for %s@%s", pluginName, pluginVersion);
+		logger->Err("  * Cannot delete C plugin for %s", GetPluginId().c_str());
 	}
 }
 
@@ -83,13 +83,17 @@ bool CPlugin::Delete() {
 
 std::string CPlugin::GetPluginId() {
 	std::stringstream ss;
-	ss << pluginName << "@" << pluginVersion;
+	ss << pluginName_ << "@" << pluginVersion_;
 
 	return ss.str();
 }
 
-bool CPlugin::Test(char *pluginName) {
-	return strcmp(pluginName, this->pluginName) == 0;
+bool CPlugin::Ready() {
+	return pluginName_ != nullptr;
+}
+
+bool CPlugin::Test(char* pluginName) {
+	return strcmp(pluginName, pluginName) == 0;
 }
 
 void CPlugin::SetPluginName() {
@@ -99,7 +103,7 @@ void CPlugin::SetPluginName() {
 		}
 
 		logger->Info("  * Getting C plugin name");
-		pluginName = CallGetPluginName();
+		pluginName_ = CallGetPluginName();
 	} catch (const std::exception& exception) {
 		logger->Warn("  * Calling SetPluginName() failed: %s", exception.what());
 	}
@@ -112,7 +116,7 @@ void CPlugin::SetPluginVersion() {
 		}
 
 		logger->Info("  * Getting C plugin version");
-		pluginVersion = CallGetPluginVersion();
+		pluginVersion_ = CallGetPluginVersion();
 	} catch (const std::exception& exception) {
 		logger->Warn("  * Calling SetPluginVersion() failed: %s", exception.what());
 	}
