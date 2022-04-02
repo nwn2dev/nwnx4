@@ -79,39 +79,36 @@ int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 {
 	logger->Debug("call to NWNXGetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)", sPlugin, sFunction, sParam1, nParam2);
 
-	// try to call the plugin
-	auto cpluginIt = std::find_if(
-			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
-				return x.second->Test(sPlugin); });
-	auto it = plugins.find(sPlugin);
-	if (cpluginIt != cplugins.end())
-	{
-		// C plugin was found; handle the request
-		CPlugin* pCPlugin = cpluginIt->second;
+	std::string pluginClass(sPlugin);
 
-		return pCPlugin->GetInt(sFunction, sParam1, nParam2);
-	}
-	else if (it != plugins.end())
+	// NWNX internal forwarding
+	if (pluginClass == "NWNX")
 	{
-		// plugin found, handle the request
-		Plugin* pPlugin = it->second;
-		return pPlugin->GetInt(sFunction, sParam1, nParam2);
-	}
-	else
-	{
-		std::string plugin(sPlugin);
 		std::string function(sFunction);
-		if (plugin == "NWNX")
-		{
-			if (function == "INSTALLED")
-				return 1;
-			else if (function == "GET PLUGIN COUNT")
-				return (int)plugins.size();
+		if (function == "INSTALLED")
+			return 1;
+		else if (function == "GET PLUGIN COUNT")
+			return (int)(plugins.size() + cplugins.size());
+		else{
+			logger->Err("* NWNXGetInt: Unsupported NWNX function '%s'.", sFunction);
+			return 0;
 		}
-		else
-			logger->Info("* NWNXGetInt: Function class '%s' not provided by any plugin. Check your installation.", plugin.c_str());
 	}
+
+	// CPlugin forwarding
+	auto cpluginIt = cplugins.find(pluginClass);
+	if(cpluginIt != cplugins.end()){
+		return cpluginIt->second->GetInt(sFunction, sParam1, nParam2);
+	}
+
+	// Plugin class forwarding
+	auto pluginIt = plugins.find(pluginClass);
+	if (pluginIt != plugins.end())
+	{
+		return pluginIt->second->GetInt(sFunction, sParam1, nParam2);
+	}
+
+	logger->Warn("* NWNXGetInt: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
 	return 0;
 }
 
@@ -121,30 +118,24 @@ void NWNXSetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2, int 
 	logger->Debug("call to NWNXSetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, nValue=%d)",
 		sPlugin, sFunction, sParam1, nParam2, nValue);
 
-	// try to call the plugin
-	auto cpluginIt = std::find_if(
-			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
-				return x.second->Test(sPlugin); });
-	auto it = plugins.find(sPlugin);
-	if (cpluginIt != cplugins.end())
-	{
-		// C plugin was found; handle the request
-		CPlugin* pCPlugin = cpluginIt->second;
-		pCPlugin->SetInt(sFunction, sParam1, nParam2, nValue);
+	std::string pluginClass(sPlugin);
+
+	// CPlugin forwarding
+	auto cpluginIt = cplugins.find(pluginClass);
+	if(cpluginIt != cplugins.end()){
+		cpluginIt->second->SetInt(sFunction, sParam1, nParam2, nValue);
+		return;
 	}
-	else if (it != plugins.end())
+
+	// Plugin class forwarding
+	auto pluginIt = plugins.find(pluginClass);
+	if (pluginIt != plugins.end())
 	{
-		// plugin found, handle the request
-		Plugin* pPlugin = it->second;
-		pPlugin->SetInt(sFunction, sParam1, nParam2, nValue);
+		pluginIt->second->SetInt(sFunction, sParam1, nParam2, nValue);
+		return;
 	}
-	else
-	{
-		std::string plugin(sPlugin);
-		std::string function(sFunction);
-		logger->Info("* NWNXSetInt: Function class '%s' not provided by any plugin. Check your installation.", plugin.c_str());
-	}
+
+	logger->Warn("* NWNXSetInt: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
 }
 
 float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
@@ -152,32 +143,22 @@ float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	logger->Debug("call to NWNXGetFloat(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)",
 		sPlugin, sFunction, sParam1, nParam2);
 
-	// try to call the plugin
-	auto cpluginIt = std::find_if(
-			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
-				return x.second->Test(sPlugin); });
-	auto it = plugins.find(sPlugin);
-	if (cpluginIt != cplugins.end())
-	{
-		// C plugin was found; handle the request
-		CPlugin* pCPlugin = cpluginIt->second;
+	std::string pluginClass(sPlugin);
 
-		return pCPlugin->GetFloat(sFunction, sParam1, nParam2);
-	}
-	else if (it != plugins.end())
-	{
-		// plugin found, handle the request
-		Plugin* pPlugin = it->second;
-		return pPlugin->GetFloat(sFunction, sParam1, nParam2);
-	}
-	else
-	{
-		std::string plugin(sPlugin);
-		std::string function(sFunction);
-		logger->Info("* NWNXGetFloat: Function class '%s' not provided by any plugin. Check your installation.", plugin.c_str());
+	// CPlugin forwarding
+	auto cpluginIt = cplugins.find(pluginClass);
+	if(cpluginIt != cplugins.end()){
+		return cpluginIt->second->GetFloat(sFunction, sParam1, nParam2);
 	}
 
+	// Plugin class forwarding
+	auto pluginIt = plugins.find(pluginClass);
+	if (pluginIt != plugins.end())
+	{
+		return pluginIt->second->GetFloat(sFunction, sParam1, nParam2);
+	}
+
+	logger->Warn("* NWNXGetFloat: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
 	return 0.0;
 }
 
@@ -186,30 +167,24 @@ void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, fl
 	logger->Debug("call to NWNXSetFloat(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, fValue=%f)",
 		sPlugin, sFunction, sParam1, nParam2, fValue);
 
-	// try to call the plugin
-	auto cpluginIt = std::find_if(
-			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
-				return x.second->Test(sPlugin); });
-	auto it = plugins.find(sPlugin);
-	if (cpluginIt != cplugins.end())
-	{
-		// C plugin was found; handle the request
-		CPlugin* pCPlugin = cpluginIt->second;
-		pCPlugin->SetFloat(sFunction, sParam1, nParam2, fValue);
+	std::string pluginClass(sPlugin);
+
+	// CPlugin forwarding
+	auto cpluginIt = cplugins.find(pluginClass);
+	if(cpluginIt != cplugins.end()){
+		cpluginIt->second->SetFloat(sFunction, sParam1, nParam2, fValue);
+		return;
 	}
-	else if (it != plugins.end())
+
+	// Plugin class forwarding
+	auto pluginIt = plugins.find(pluginClass);
+	if (pluginIt != plugins.end())
 	{
-		// plugin found, handle the request
-		Plugin* pPlugin = it->second;
-		pPlugin->SetFloat(sFunction, sParam1, nParam2, fValue);
+		pluginIt->second->SetFloat(sFunction, sParam1, nParam2, fValue);
+		return;
 	}
-	else
-	{
-		std::string plugin(sPlugin);
-		std::string function(sFunction);
-		logger->Info("* NWNXSetFloat: Function class '%s' not provided by any plugin. Check your installation.", plugin.c_str());
-	}
+
+	logger->Warn("* NWNXSetFloat: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
 }
 
 char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
@@ -217,50 +192,54 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	logger->Debug("call to NWNXGetString(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)",
 		sPlugin, sFunction, sParam1, nParam2);
 
-	// try to call the plugin
-	auto cpluginIt = std::find_if(
-			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
-				return x.second->Test(sPlugin); });
-	auto it = plugins.find(sPlugin);
-	if (cpluginIt != cplugins.end())
-	{
-		// C plugin was found; handle the request
-		CPlugin* pCPlugin = cpluginIt->second;
+	std::string pluginClass(sPlugin);
 
-		return pCPlugin->GetString(sFunction, sParam1, nParam2);
-	}
-	else if (it != plugins.end())
+	// NWNX internal forwarding
+	if (pluginClass == "NWNX")
 	{
-		// plugin found, handle the request
-		Plugin* pPlugin = it->second;
-		return pPlugin->GetString(sFunction, sParam1, nParam2);
-	}
-	else
-	{
-		std::string plugin(sPlugin);
 		std::string function(sFunction);
-		if (plugin == "NWNX")
+		if (function == "GET PLUGIN CLASS")
 		{
-			if (function == "GET PLUGIN CLASS")
-			{
-				int i = 0;
-				PluginHashMap::iterator it;
-				for(it = plugins.begin(); it != plugins.end(); ++it)
-				{
-					i++;
-					if (i == nParam2)
-					{
-						// sprintf_s(returnBuffer, MAX_BUFFER, "%s", it->first);
-						return returnBuffer;
-					}
+			const int index = nParam2;
+			int i = 0;
+			for(auto& p : cplugins){
+				if(i == index){
+					strncpy_s(returnBuffer, MAX_BUFFER, p.first.c_str(), p.first.size());
+					return returnBuffer;
 				}
-				return nullptr;
+				i++;
 			}
+			for(auto& p : plugins){
+				if(i == index){
+					strncpy_s(returnBuffer, MAX_BUFFER, p.first.c_str(), p.first.size());
+					return returnBuffer;
+				}
+				i++;
+			}
+			return nullptr;
 		}
-		else
-			logger->Info("* NWNXGetString: Function class '%s' not provided by any plugin. Check your installation.", plugin.c_str());
+		else{
+			logger->Err("* NWNXGetString: Unsupported NWNX function '%s'.", sFunction);
+			return nullptr;
+		}
 	}
+
+	// CPlugin forwarding
+	auto cpluginIt = cplugins.find(pluginClass);
+	if(cpluginIt != cplugins.end()){
+		returnBuffer[0] = '\0';
+		cpluginIt->second->GetString(sFunction, sParam1, nParam2, returnBuffer, MAX_BUFFER);
+		return returnBuffer;
+	}
+
+	// Plugin class forwarding
+	auto pluginIt = plugins.find(pluginClass);
+	if (pluginIt != plugins.end())
+	{
+		return pluginIt->second->GetString(sFunction, sParam1, nParam2);
+	}
+
+	logger->Warn("* NWNXGetString: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
 	return nullptr;
 }
 
@@ -269,29 +248,24 @@ void NWNXSetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2, c
 	logger->Debug("call to NWNXSetString(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, sValue=%s)",
 		sPlugin, sFunction, sParam1, nParam2, sValue);
 
-	// try to call the plugin
-	auto cpluginIt = std::find_if(
-			cplugins.begin(), cplugins.end(),
-			[&sPlugin](std::pair<const std::string,CPlugin*> x) {
-				return x.second->Test(sPlugin); });
-	auto it = plugins.find(sPlugin);
-	if (cpluginIt != cplugins.end())
-	{
-		// C plugin was found; handle the request
-		CPlugin* pCPlugin = cpluginIt->second;
-		pCPlugin->SetString(sFunction, sParam1, nParam2, sValue);
+	std::string pluginClass(sPlugin);
+
+	// CPlugin forwarding
+	auto cpluginIt = cplugins.find(pluginClass);
+	if(cpluginIt != cplugins.end()){
+		cpluginIt->second->SetString(sFunction, sParam1, nParam2, sValue);
+		return;
 	}
-	else if (it != plugins.end())
+
+	// Plugin class forwarding
+	auto pluginIt = plugins.find(pluginClass);
+	if (pluginIt != plugins.end())
 	{
-		// plugin found, handle the request
-		Plugin* pPlugin = it->second;
-		pPlugin->SetString(sFunction, sParam1, nParam2, sValue);
+		pluginIt->second->SetString(sFunction, sParam1, nParam2, sValue);
+		return;
 	}
-	else
-	{
-		logger->Info("* NWNXSetString: Function class '%s' not provided by any plugin. Check your installation.",
-			sPlugin);
-	}
+
+	logger->Warn("* NWNXSetString: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
 }
 
 
@@ -738,47 +712,40 @@ void loadPlugins()
 			continue;
 		}
 
-		// Search for CPlugins, an ABI implementation of the plugin DLL
-		void* pNWNXCPlugin_GetAbiVersion = GetProcAddress(hDLL, "NWNXCPlugin_GetAbiVersion");
-		if (pNWNXCPlugin_GetAbiVersion != nullptr) {
+		// Search for CPlugins, a C ABI compatible plugin
+		auto cpluginABIVersion = reinterpret_cast<uint32_t*>(GetProcAddress(hDLL, "nwnxcplugin_abi_version"));
+		if (cpluginABIVersion != nullptr) {
 			try {
-				auto abiVersion = reinterpret_cast<NWNXCPlugin_GetAbiVersion>(pNWNXCPlugin_GetAbiVersion)();
-				CPlugin* cplugin;
+				CPlugin::InitInfo initInfo{
+					.dll_path        = pluginPathStr.c_str(),
+					.nwnx_path       = nwnxHome->c_str(),
+					.nwn2server_path = nwnInstallHome->c_str()
+				};
 
-				// Handle ABI
-				switch (abiVersion) {
-					case 1: {
-						CPluginInitInfoV1 initInfo{
-								pluginPathStr.data(),
-								nwnInstallHome->data(),
-								nwnxHome->data()
-						};
-						cplugin = new CPluginVersion(hDLL, &initInfo);
-						break;
+				// Instantiate & initialize CPlugin
+				auto cplugin = std::make_unique<CPlugin>(hDLL, initInfo);
+
+				if(cplugin->GetIsLoaded()){
+					auto id = cplugin->GetID();
+					if(cplugins.contains(id)){
+						logger->Warn("* Skipping C plugin v%d '%s': Class %s already registered by another plugin.",
+							*cpluginABIVersion, pluginName.c_str(), id.c_str());
 					}
-					default:
-						logger->Warn("* Skipping C plugin %s: ABI v%d unsupported", abiVersion);
-						continue;
+					else{
+						logger->Info("* Loading C plugin v%d '%s': Successfully registered as ID: %s",
+							*cpluginABIVersion, pluginName.c_str(), id.c_str());
+						logger->Info("    Name: %s", cplugin->GetName().c_str());
+						logger->Info("    Version: %s", cplugin->GetVersion().c_str());
+						cplugins[id] = std::move(cplugin);
+					}
 				}
-
-				// Get the data associated with the plugin
-				auto cpluginId = cplugin->GetPluginId();
-
-				logger->Info("* Searching for C plugin %s", cpluginId.c_str());
-
-				if (cplugin->Ready() && cplugins.find(pluginName) == cplugins.end())
-				{
-					logger->Info("* Loading C plugin %s: Successfully registered", cpluginId.c_str());
-					cplugins[pluginName] = cplugin;
-				}
-				else
-				{
-					logger->Warn("* Skipping C plugin %s: Plugin of type is already registered", cpluginId.c_str());
-					delete cplugin;
-					FreeLibrary(hDLL);
+				else{
+					logger->Err("* Failed to initialize C plugin v%d '%s'",
+						*cpluginABIVersion, pluginName.c_str());
 				}
 			} catch (const std::exception& exception) {
-				logger->Err("* Error hooking C plugin to server: %s", exception.what());
+				logger->Err("* Exception thrown while loading C plugin v%d '%s': %s",
+					*cpluginABIVersion, pluginName.c_str(), exception.what());
 			}
 
 			continue;
@@ -892,8 +859,8 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			// Initialize plugins and load configuration data.
 			//
 
-			nwnInstallHome = new std::string(shmem->nwninstall_home);
-			nwnxHome = new std::string(shmem->nwnx_home);
+			nwnInstallHome = new std::string(shmem->nwninstall_dir);
+			nwnxHome = new std::string(shmem->nwnx_dir);
 
 			// Initialize hook.
 			init();

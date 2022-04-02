@@ -22,8 +22,8 @@
 #define SHMEM_H_INCLUDED
 
 typedef struct _SHARED_MEMORY {
-	char nwninstall_home[MAX_PATH];
-	char nwnx_home[MAX_PATH];
+	char nwninstall_dir[MAX_PATH];
+	char nwnx_dir[MAX_PATH];
 	HANDLE ready_event;
 } SHARED_MEMORY;
 

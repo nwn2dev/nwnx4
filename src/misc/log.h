@@ -44,6 +44,10 @@ public:
     LogNWNX(LogLevel level = LogLevel::info);
     LogNWNX(std::string, LogLevel level = LogLevel::info);
 
+    LogLevel Level() const {
+        return m_level;
+    }
+
     void SetLogLevel(LogLevel level) {
         m_level = level;
     }

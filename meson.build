@@ -55,5 +55,6 @@ subdir('src/plugins/xp_bugfix')
 subdir('src/plugins/xp_fastboot')
 subdir('src/plugins/xp_objectattributes')
 subdir('src/plugins/xp_srvadmin')
+subdir('src/plugins/xp_example_cplugin')
 
 install_data('README.md', install_dir: '.')

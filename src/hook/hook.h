@@ -24,11 +24,12 @@
 #include <windows.h>
 #include <unordered_map>
 #include <detours/detours.h>
+#include <memory>
+#include "CPlugin.h"
 #include "crashdump.h"
 #include "../misc/ini.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
-#include "../plugins/CPluginVersion.h"
 #include "../plugins/plugin.h"
 #include "../plugins/legacy_plugin.h"
 
@@ -65,7 +66,7 @@ const unsigned char SET_NWNX_SETSTRING[] = {0xB4, 0x4E, 0xB4, 0x57, 0xB4, 0x4E, 
 
 extern SHARED_MEMORY *shmem;
 
-typedef std::unordered_map<std::string, CPlugin*> CPluginHashMap;
+typedef std::unordered_map<std::string, std::unique_ptr<CPlugin>> CPluginHashMap;
 typedef std::unordered_map<std::string, Plugin*> PluginHashMap;
 typedef std::unordered_map<std::string, LegacyPlugin*> LegacyPluginHashMap;
 extern CPluginHashMap cplugins;

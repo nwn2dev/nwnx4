@@ -101,6 +101,22 @@ void xp_funcs(){
 	DestroyObject(oCreature);
 }
 
+void xp_example_cplugin(){
+	Assert(NWNXGetInt("CPluginExample", "GET_COUNTER", "", 0) == 0, __FUNCTION__, __LINE__);
+	NWNXSetInt("CPluginExample", "SET_COUNTER", "", 0, 42);
+	Assert(NWNXGetInt("CPluginExample", "GET_COUNTER", "", 0) == 42, __FUNCTION__, __LINE__);
+	Assert(NWNXGetInt("CPluginExample", "INC_COUNTER", "", 0) == 43, __FUNCTION__, __LINE__);
+	Assert(NWNXGetInt("CPluginExample", "INC_COUNTER", "", 0) == 44, __FUNCTION__, __LINE__);
+
+	Assert(NWNXGetFloat("CPluginExample", "", "", 0) == 0.0, __FUNCTION__, __LINE__);
+	NWNXSetFloat("CPluginExample", "", "", 0, 13.37);
+	Assert(NWNXGetFloat("CPluginExample", "", "", 0) == 13.37, __FUNCTION__, __LINE__);
+
+	Assert(NWNXGetString("CPluginExample", "", "", 0) == "", __FUNCTION__, __LINE__);
+	NWNXSetString("CPluginExample", "", "", 0, "Hello world");
+	Assert(NWNXGetString("CPluginExample", "", "", 0) == "Hello world", __FUNCTION__, __LINE__);
+}
+
 
 
 
@@ -124,6 +140,7 @@ void main()
 	xp_sql();
 	DelayCommand(1.0, xp_time());
 	xp_funcs();
+	xp_example_cplugin();
 
 	WriteTimestampedLogEntry("Finished " + __FILE__ + "================================");
 }
