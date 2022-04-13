@@ -57,10 +57,11 @@ void NWNXCPlugin_Delete(void* cplugin);
 __declspec(dllexport)
 const char* NWNXCPlugin_GetID(void* cplugin);
 
-/// Returns the plugin user-friendly name and information, like "SuperPlugin by Foo Bar"
+/// Returns the plugin user-friendly name and basic information, like "SuperPlugin by Foo Bar -
+/// Provides example features"
 /// @return null-terminated string
 __declspec(dllexport)
-const char* NWNXCPlugin_GetName();
+const char* NWNXCPlugin_GetInfo();
 
 /// Returns the plugin version information, like "v1.2.3"
 /// @return null-terminated string

@@ -13,7 +13,10 @@ class Plugin {
 public:
 	Plugin(const std::filesystem::path& logFile){
 		this->logFile.open(logFile);
-		this->logFile.rdbuf()->pubsetbuf(0, 0); // Disable buffering
+
+		// Disable buffering
+		// This is bad for performance but useful for testing
+		this->logFile.rdbuf()->pubsetbuf(0, 0);
 	}
 
 	std::ofstream logFile;
@@ -44,8 +47,8 @@ const char* NWNXCPlugin_GetVersion(){
 	return "1.0.0 (" __DATE__ " " __TIME__ ")";
 }
 
-const char* NWNXCPlugin_GetName(){
-	return "NWNX4 C Plugin Example";
+const char* NWNXCPlugin_GetInfo(){
+	return "NWNX4 CPlugin Example - A C++ plugin showcasing C plugin ABI";
 }
 
 int32_t NWNXCPlugin_GetInt(void* cplugin,

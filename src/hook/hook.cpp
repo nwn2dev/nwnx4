@@ -89,6 +89,23 @@ int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			return 1;
 		else if (function == "GET PLUGIN COUNT")
 			return (int)(plugins.size() + cplugins.size());
+		else if(function == "FIND PLUGIN CLASS"){
+			const std::string classname = sParam1;
+			int i = 0;
+			for(auto& p : cplugins){
+				if(p.first == classname){
+					return i;
+				}
+				i++;
+			}
+			for(auto& p : plugins){
+				if(p.first == classname){
+					return i;
+				}
+				i++;
+			}
+			return -1;
+		}
 		else{
 			logger->Err("* NWNXGetInt: Unsupported NWNX function '%s'.", sFunction);
 			return 0;
@@ -200,21 +217,67 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 		std::string function(sFunction);
 		if (function == "GET PLUGIN CLASS")
 		{
-			const int index = nParam2;
-			int i = 0;
-			for(auto& p : cplugins){
-				if(i == index){
-					strncpy_s(returnBuffer, MAX_BUFFER, p.first.c_str(), p.first.size());
-					return returnBuffer;
-				}
-				i++;
+			int index = nParam2;
+			if(index < 0)
+				return nullptr;
+
+			if(index < cplugins.size()){
+				auto p = cplugins.begin();
+				std::advance(p, index);
+				strncpy_s(returnBuffer, MAX_BUFFER, p->first.c_str(), p->first.size());
+				return returnBuffer;
 			}
-			for(auto& p : plugins){
-				if(i == index){
-					strncpy_s(returnBuffer, MAX_BUFFER, p.first.c_str(), p.first.size());
-					return returnBuffer;
-				}
-				i++;
+
+			index -= cplugins.size();
+			if(index < plugins.size()){
+				auto p = plugins.begin();
+				std::advance(p, index);
+				strncpy_s(returnBuffer, MAX_BUFFER, p->first.c_str(), p->first.size());
+				return returnBuffer;
+			}
+			return nullptr;
+		}
+		else if (function == "GET PLUGIN INFO"){
+			int index = nParam2;
+			if(index < 0)
+				return nullptr;
+
+			if(index < cplugins.size()){
+				auto p = cplugins.begin();
+				std::advance(p, index);
+				auto info = p->second->GetInfo();
+				strncpy_s(returnBuffer, MAX_BUFFER, info.c_str(), info.size());
+				return returnBuffer;
+			}
+
+			index -= cplugins.size();
+			if(index < plugins.size()){
+				auto p = plugins.begin();
+				std::advance(p, index);
+				strncpy_s(returnBuffer, MAX_BUFFER, p->second->description.c_str(), p->second->description.size());
+				return returnBuffer;
+			}
+			return nullptr;
+		}
+		else if (function == "GET PLUGIN VERSION"){
+			int index = nParam2;
+			if(index < 0)
+				return nullptr;
+
+			if(index < cplugins.size()){
+				auto p = cplugins.begin();
+				std::advance(p, index);
+				auto version = p->second->GetVersion();
+				strncpy_s(returnBuffer, MAX_BUFFER, version.c_str(), version.size());
+				return returnBuffer;
+			}
+
+			index -= cplugins.size();
+			if(index < plugins.size()){
+				auto p = plugins.begin();
+				std::advance(p, index);
+				strncpy_s(returnBuffer, MAX_BUFFER, p->second->version.c_str(), p->second->version.size());
+				return returnBuffer;
 			}
 			return nullptr;
 		}
@@ -734,8 +797,8 @@ void loadPlugins()
 					else{
 						logger->Info("* Loading C plugin v%d '%s': Successfully registered as ID: %s",
 							*cpluginABIVersion, pluginName.c_str(), id.c_str());
-						logger->Info("    Name: %s", cplugin->GetName().c_str());
 						logger->Info("    Version: %s", cplugin->GetVersion().c_str());
+						logger->Info("    Info: %s", cplugin->GetInfo().c_str());
 						cplugins[id] = std::move(cplugin);
 					}
 				}

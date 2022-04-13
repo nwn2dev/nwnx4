@@ -25,7 +25,7 @@ public:
 	}
 
 	std::string GetID() const;
-	std::string GetName() const;
+	std::string GetInfo() const;
 	std::string GetVersion() const;
 
 	int GetInt(const char* sFunction, const char* sParam1, int nParam2);
@@ -40,7 +40,7 @@ private:
 	// clang-format off
 	typedef void*       (NewPluginFn)   (InitInfo info);
 	typedef void        (DeletePluginFn)(void* cplugin);
-	typedef const char* (GetNameFn)     ();
+	typedef const char* (GetInfoFn)     ();
 	typedef const char* (GetVersionFn)  ();
 	typedef const char* (GetIDFn)(void* cplugin);
 	typedef int32_t     (GetIntFn)      (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2);
@@ -54,7 +54,7 @@ private:
 		uint32_t abiVersion;
 		std::function<NewPluginFn> newPlugin;
 		std::function<DeletePluginFn> deletePlugin;
-		std::function<GetNameFn> getName;
+		std::function<GetInfoFn> getInfo;
 		std::function<GetVersionFn> getVersion;
 		std::function<GetIDFn> getID;
 		std::function<GetIntFn> getInt;

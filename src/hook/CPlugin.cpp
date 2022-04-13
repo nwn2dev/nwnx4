@@ -22,7 +22,7 @@ CPlugin::CPlugin(HINSTANCE hDLL, const CPlugin::InitInfo& initInfo)
 			// clang-format off
 			logger->Trace("NWNXCPlugin_New: %lu", GetProcAddress(hDLL, "NWNXCPlugin_New"));
 			logger->Trace("NWNXCPlugin_Delete: %lu", GetProcAddress(hDLL, "NWNXCPlugin_Delete"));
-			logger->Trace("NWNXCPlugin_GetName: %lu", GetProcAddress(hDLL, "NWNXCPlugin_GetName"));
+			logger->Trace("NWNXCPlugin_GetInfo: %lu", GetProcAddress(hDLL, "NWNXCPlugin_GetInfo"));
 			logger->Trace("NWNXCPlugin_GetVersion: %lu", GetProcAddress(hDLL, "NWNXCPlugin_GetVersion"));
 			logger->Trace("NWNXCPlugin_GetID: %lu", GetProcAddress(hDLL, "NWNXCPlugin_GetID"));
 			logger->Trace("NWNXCPlugin_GetInt: %lu", GetProcAddress(hDLL, "NWNXCPlugin_GetInt"));
@@ -36,7 +36,7 @@ CPlugin::CPlugin(HINSTANCE hDLL, const CPlugin::InitInfo& initInfo)
 		// clang-format off
 		m_dll.newPlugin    = reinterpret_cast<NewPluginFn*>(   GetProcAddress(hDLL, "NWNXCPlugin_New"));
 		m_dll.deletePlugin = reinterpret_cast<DeletePluginFn*>(GetProcAddress(hDLL, "NWNXCPlugin_Delete"));
-		m_dll.getName      = reinterpret_cast<GetNameFn*>(     GetProcAddress(hDLL, "NWNXCPlugin_GetName"));
+		m_dll.getInfo      = reinterpret_cast<GetInfoFn*>(     GetProcAddress(hDLL, "NWNXCPlugin_GetInfo"));
 		m_dll.getVersion   = reinterpret_cast<GetVersionFn*>(  GetProcAddress(hDLL, "NWNXCPlugin_GetVersion"));
 		m_dll.getID        = reinterpret_cast<GetIDFn*>(       GetProcAddress(hDLL, "NWNXCPlugin_GetID"));
 		m_dll.getInt       = reinterpret_cast<GetIntFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_GetInt"));
@@ -75,10 +75,10 @@ CPlugin::~CPlugin()
 		m_dll.deletePlugin(m_instancePtr);
 }
 std::string
-CPlugin::GetName() const
+CPlugin::GetInfo() const
 {
-	if (m_dll.getName)
-		return std::string(m_dll.getName());
+	if (m_dll.getInfo)
+		return std::string(m_dll.getInfo());
 	return GetID();
 }
 std::string
