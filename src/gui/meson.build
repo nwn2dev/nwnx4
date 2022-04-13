@@ -13,7 +13,7 @@ if get_option('buildtype') == 'release'
 else
     wx_args += ['/D__WXMSWUD__', '/D__WXDEBUG__']
     wx_dep = [
-        cppcompiler.find_library('jpegd', dirs: lib_dirs),
+        cppcompiler.find_library('jpeg', dirs: lib_dirs),
         cppcompiler.find_library('libpng16d', dirs: lib_dirs),
         cppcompiler.find_library('wxbase31ud', dirs: lib_dirs),
         cppcompiler.find_library('wxbase31ud_net', dirs: lib_dirs),

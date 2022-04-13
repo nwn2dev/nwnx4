@@ -20,11 +20,9 @@ shared_library('xp_mysql',
     dependencies: [
     	# MariaDB & dependencies
         cppcompiler.find_library('libmariadb', dirs: lib_dirs),
-    	cppcompiler.find_library('mariadbclient', dirs: lib_dirs),
-        cppcompiler.find_library('libssl', dirs: lib_dirs),
-        cppcompiler.find_library('libcrypto', dirs: lib_dirs),
         cppcompiler.find_library('shlwapi'),
         cppcompiler.find_library('crypt32'),
+        cppcompiler.find_library('secur32'),
 
     	cppcompiler.find_library('detours', dirs: lib_dirs),
     	cppcompiler.find_library('NWN2_MemoryMgr_amdxp', dirs: lib_dirs),
