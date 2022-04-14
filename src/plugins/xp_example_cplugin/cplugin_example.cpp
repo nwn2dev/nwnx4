@@ -30,6 +30,10 @@ void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info){
 	auto logFilePath = std::filesystem::path(info.nwnx_path) / "xp_cplugin_example.txt";
 	auto plugin = new Plugin(logFilePath);
 	plugin->logFile << "Plugin initialized" << std::endl;
+	plugin->logFile << "    dll_path: " << info.dll_path << std::endl;
+	plugin->logFile << "    nwnx_path: " << info.nwnx_path << std::endl;
+	plugin->logFile << "    nwn2_install_path: " << info.nwn2_install_path << std::endl;
+	plugin->logFile << "    nwn2_home_path: " << info.nwn2_home_path << std::endl;
 	return plugin;
 }
 

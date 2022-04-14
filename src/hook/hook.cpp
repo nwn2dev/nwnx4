@@ -20,6 +20,9 @@
 
 #include "hook.h"
 #include <filesystem>
+#include <codecvt>
+#include <shellapi.h>
+#include <Shlobj.h>
 
 /*
  * Globals.
@@ -32,8 +35,8 @@ PluginHashMap plugins;
 LegacyPluginHashMap legacyplugins;
 
 LogNWNX* logger;
-std::string* nwnInstallHome;
-std::string* nwnxHome;
+std::string nwnInstallHome;
+std::string nwnxHome;
 SimpleIniConfig* config;
 
 char returnBuffer[MAX_BUFFER];
@@ -522,19 +525,19 @@ void init()
 	if(!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)){
 		logger->Err("* SetDefaultDllDirectories failed (%d)", GetLastError());
 	}
-	auto path = std::filesystem::path(*nwnxHome) / "nwn2server-dll";
+	auto path = std::filesystem::path(nwnxHome) / "nwn2server-dll";
 	if(!AddDllDirectory(path.c_str())){
 		logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
 	}
 
-	auto logfile = std::string(*nwnxHome) + "\\nwnx.txt";
+	auto logfile = nwnxHome + "\\nwnx.txt";
 	logger = new LogNWNX(logfile);
 	logger->Info("NWN Extender 4 V.1.1.0");
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
 
-	logger->Info("NWN2 Install Home: %s", nwnInstallHome->c_str());
-    logger->Info("NWNX Home: %s", nwnxHome->c_str());
+	logger->Info("NWN2 Install Home: %s", nwnInstallHome.c_str());
+    logger->Info("NWNX Home: %s", nwnxHome.c_str());
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
@@ -545,7 +548,7 @@ void init()
 	CloseHandle(shmem->ready_event);
 
 	// open ini file
-	auto inifile = *nwnxHome + "\\nwnx.ini";
+	auto inifile = nwnxHome + "\\nwnx.ini";
 	logger->Debug("Reading inifile %s", inifile.c_str());
 	config = new SimpleIniConfig(inifile);
 	logger->Configure(config);
@@ -713,10 +716,29 @@ static std::vector<std::filesystem::path> ParsePluginsList(const std::string& li
 
 	return ret;
 }
+std::unordered_map<std::string, std::string> ParseServerCommandLine(){
 
-typedef uint32_t (WINAPI* NWNXCPlugin_GetAbiVersion)();
-typedef Plugin* (WINAPI* GetPluginPointer)();
-typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
+	std::unordered_map<std::string, std::string> ret;
+	const wchar_t* argName = nullptr;
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+
+	int argc;
+	auto argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+	for(size_t i = 1 ; i < argc ; i++){
+		if(i % 2 == 1){
+			if(argv[i][0] == L'-')
+				argName = argv[i + 1]; // skip dash
+			else
+				argName = nullptr;
+		}
+		else{
+			if(argName != nullptr)
+				ret[conv.to_bytes(argName)] = conv.to_bytes(argv[i]);
+		}
+	}
+
+	return ret;
+}
 
 // Called upon initialization (see above).
 //
@@ -731,7 +753,7 @@ void loadPlugins()
 		logger->Warn("No 'plugin_list' found in nwnx.ini. All plugins in the nwnx4 directory will be loaded. This behavior is not recommended !");
 
 		// Add all plugins in nwnx4 dir to pluginList
-		auto dir = std::filesystem::directory_entry(*nwnxHome);
+		auto dir = std::filesystem::directory_entry(nwnxHome);
 		for(auto& file : std::filesystem::directory_iterator(dir.path())){
 			auto filename = file.path().filename().string();
 
@@ -745,6 +767,22 @@ void loadPlugins()
 	else
 		pluginList = ParsePluginsList(pluginListStr);
 
+	// Get nwn2 home directory (for loading CPlugins)
+	auto serverArgs = ParseServerCommandLine();
+
+	std::string nwn2HomeDir;
+	if (serverArgs.contains("home")) {
+		auto& dir   = serverArgs["home"];
+		nwn2HomeDir = std::string(dir.begin(), dir.end());
+	} else {
+		wchar_t path[MAX_PATH];
+		SHGetFolderPathW(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, path);
+
+		auto dir    = std::filesystem::path(path) / "Neverwinter Nights 2";
+		nwn2HomeDir = dir.string();
+	}
+
+	// Start loading plugins
 	for(auto& pluginPath : pluginList){
 		if(++pluginPath.begin() == pluginPath.end()){
 			// The plugin is provided as name only (no slashes), and must be
@@ -754,7 +792,7 @@ void loadPlugins()
 		}
 		// If relative path, prepend the nwnx4 dir
 		if(pluginPath.is_relative())
-			pluginPath = std::filesystem::directory_entry(*nwnxHome) / pluginPath;
+			pluginPath = std::filesystem::directory_entry(nwnxHome) / pluginPath;
 
 		auto pluginPathStr = pluginPath.string();
 		auto pluginName = pluginPath.stem().string();
@@ -780,9 +818,10 @@ void loadPlugins()
 		if (cpluginABIVersion != nullptr) {
 			try {
 				CPlugin::InitInfo initInfo{
-					.dll_path        = pluginPathStr.c_str(),
-					.nwnx_path       = nwnxHome->c_str(),
-					.nwn2server_path = nwnInstallHome->c_str()
+					.dll_path              = pluginPathStr.c_str(),
+					.nwnx_path             = nwnxHome.c_str(),
+					.nwn2_install_path     = nwnInstallHome.c_str(),
+					.nwn2_home_path        = nwn2HomeDir.c_str(),
 				};
 
 				// Instantiate & initialize CPlugin
@@ -819,10 +858,12 @@ void loadPlugins()
 		if (pGetPluginPointer != nullptr)
 		{
 			// Load
+			typedef Plugin* (WINAPI* GetPluginPointer)();
+
 			Plugin* pPlugin = ((GetPluginPointer)pGetPluginPointer)();
 			if (pPlugin != nullptr)
 			{
-				if (!pPlugin->Init(nwnxHome->data()))
+				if (!pPlugin->Init(nwnxHome.data()))
 					logger->Err("* Loading plugin %s: Error during plugin initialization.", pluginName.c_str());
 				else
 				{
@@ -852,10 +893,12 @@ void loadPlugins()
 		pGetPluginPointer = GetProcAddress(hDLL, "GetPluginPointer");
 		if (pGetPluginPointer != nullptr)
 		{
+			typedef LegacyPlugin* (WINAPI* GetLegacyPluginPointer)();
+
 			LegacyPlugin* pPlugin = ((GetLegacyPluginPointer)pGetPluginPointer)();
 			if (pPlugin != nullptr)
 			{
-				if (!pPlugin->Init(nwnxHome->data()))
+				if (!pPlugin->Init(nwnxHome.data()))
 					logger->Err("* Loading plugin %s: [LEGACY] Error during plugin initialization.", pluginName.c_str());
 				else
 				{
@@ -922,8 +965,8 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			// Initialize plugins and load configuration data.
 			//
 
-			nwnInstallHome = new std::string(shmem->nwninstall_dir);
-			nwnxHome = new std::string(shmem->nwnx_dir);
+			nwnInstallHome = std::string(shmem->nwninstall_dir);
+			nwnxHome = std::string(shmem->nwnx_dir);
 
 			// Initialize hook.
 			init();

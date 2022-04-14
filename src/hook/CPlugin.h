@@ -10,11 +10,8 @@ public:
 	struct InitInfo {
 	    const char* dll_path;
 	    const char* nwnx_path;
-		const char* nwn2server_path;
-
-		// Ideas for the future:
-	    // const char* home_path; // nwn2 home path (i.e. by default Documents/Neverwinter Nights 2)
-	    // const char* servervault_path; // server vault path if enabled
+		const char* nwn2_install_path;
+		const char* nwn2_home_path;
 	};
 
 	CPlugin(HINSTANCE hDLL, const InitInfo& initInfo);

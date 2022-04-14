@@ -14,7 +14,9 @@ struct NWNXCPlugin_InitInfo {
     /// Path to the NWNX4 base directory, where nwnx4_controller.exe is located.
     const char* nwnx_path;
     /// Path to the NWN2 installation directory, where nwn2server.exe is located.
-    const char* nwn2server_path;
+    const char* nwn2_install_path;
+    /// Path to the NWN2 home folder, usually 'Documents\Neverwinter Nights 2'
+    const char* nwn2_home_path;
 };
 
 
