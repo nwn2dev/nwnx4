@@ -4,8 +4,6 @@
 
 extern "C" {
 
-#define NWNX_MAX_BUFFER 64*1024
-
 /// Information provided by nwnx4 during plugin initialization.
 ///
 struct NWNXCPlugin_InitInfo {
@@ -27,7 +25,7 @@ struct NWNXCPlugin_InitInfo {
 /// Plugin ABI version for nwnx4 compatibility.
 /// **Must be instantiated** and set to 1 in order to use this include file
 __declspec(dllexport)
-extern uint32_t nwnxcplugin_abi_version;
+extern const uint32_t nwnxcplugin_abi_version;
 
 //
 // REQUIRED FUNCTIONS TO IMPLEMENT:

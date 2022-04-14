@@ -74,7 +74,6 @@ extern PluginHashMap plugins;
 extern LegacyPluginHashMap legacyplugins;
 
 extern LogNWNX* logger;
-extern std::string nwnInstallHome;
 extern std::string nwnxHome;
 extern SimpleIniConfig* config;
 

@@ -520,22 +520,24 @@ DWORD FindHook()
 
 void init()
 {
+	std::filesystem::path nwnxHomePath{nwnxHome};
+
 	// Add nwn2server-dll to DLL search path
 	if(!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)){
 		logger->Err("* SetDefaultDllDirectories failed (%d)", GetLastError());
 	}
-	auto path = std::filesystem::path(nwnxHome) / "nwn2server-dll";
+	auto path = nwnxHomePath / "nwn2server-dll";
 	if(!AddDllDirectory(path.c_str())){
 		logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
 	}
 
-	auto logfile = nwnxHome + "\\nwnx.txt";
-	logger = new LogNWNX(logfile);
+	auto logfile = nwnxHomePath / "nwnx.txt";
+	logger = new LogNWNX(logfile.string());
 	logger->Info("NWN Extender 4 V.1.1.0");
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
 
-    logger->Info("NWNX directory: %s", nwnxHome.c_str());
+    logger->Info("NWNX directory: %s", nwnxHomePath.c_str());
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
@@ -546,9 +548,9 @@ void init()
 	CloseHandle(shmem->ready_event);
 
 	// open ini file
-	auto inifile = nwnxHome + "\\nwnx.ini";
+	auto inifile = nwnxHomePath / "nwnx.ini";
 	logger->Debug("Reading inifile %s", inifile.c_str());
-	config = new SimpleIniConfig(inifile);
+	config = new SimpleIniConfig(inifile.string());
 	logger->Configure(config);
 
 	bool missingFunction = false;
