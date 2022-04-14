@@ -35,7 +35,6 @@ PluginHashMap plugins;
 LegacyPluginHashMap legacyplugins;
 
 LogNWNX* logger;
-std::string nwnInstallHome;
 std::string nwnxHome;
 SimpleIniConfig* config;
 
@@ -536,8 +535,7 @@ void init()
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
 
-	logger->Info("NWN2 Install Home: %s", nwnInstallHome.c_str());
-    logger->Info("NWNX Home: %s", nwnxHome.c_str());
+    logger->Info("NWNX directory: %s", nwnxHome.c_str());
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
@@ -767,9 +765,11 @@ void loadPlugins()
 	else
 		pluginList = ParsePluginsList(pluginListStr);
 
+
+	std::string nwn2InstallDir{std::filesystem::current_path().string()};
+
 	// Get nwn2 home directory (for loading CPlugins)
 	auto serverArgs = ParseServerCommandLine();
-
 	std::string nwn2HomeDir;
 	if (serverArgs.contains("home")) {
 		auto& dir   = serverArgs["home"];
@@ -820,7 +820,7 @@ void loadPlugins()
 				CPlugin::InitInfo initInfo{
 					.dll_path              = pluginPathStr.c_str(),
 					.nwnx_path             = nwnxHome.c_str(),
-					.nwn2_install_path     = nwnInstallHome.c_str(),
+					.nwn2_install_path     = nwn2InstallDir.c_str(),
 					.nwn2_home_path        = nwn2HomeDir.c_str(),
 				};
 
@@ -965,8 +965,7 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			// Initialize plugins and load configuration data.
 			//
 
-			nwnInstallHome = std::string(shmem->nwninstall_dir);
-			nwnxHome = std::string(shmem->nwnx_dir);
+			nwnxHome = shmem->nwnx_dir;
 
 			// Initialize hook.
 			init();

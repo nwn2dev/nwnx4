@@ -338,9 +338,6 @@ bool NWNXController::startServerProcessInternal()
 	strncpy_s(shmem.nwnx_dir, MAX_PATH, m_nwnx4Dir, MAX_PATH);
 	logger->Debug("Injecting NWNX4 directory as '%s'", shmem.nwnx_dir);
 
-	strncpy_s(shmem.nwninstall_dir, MAX_PATH, nwninstalldir.c_str(), nwninstalldir.size());
-	logger->Debug("Injecting NWN2 install directory as '%s'", shmem.nwninstall_dir);
-
 	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {
 	    logger->Err("! Error: Could not copy payload to process.", GetLastError());
 	    return false;
