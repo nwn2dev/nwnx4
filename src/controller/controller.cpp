@@ -218,19 +218,6 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 		}
 	}
 
-	// TODO: This has a far reaching effect. Need more time to test out repercussions of using long paths
-	/*#ifdef _WIN32
-	// Win32 applications have problems with long paths (exceeding 260 characters)
-	const char* LONG_PATH_PREFIX = R"(\\?\)";
-	const int LONG_PATH_PADDING = 64;
-
-	if (nwninstalldir.length() >= MAX_PATH - LONG_PATH_PADDING &&  // If the length exceeds the MAX_PATH without its padding
-		nwninstalldir.rfind(LONG_PATH_PREFIX, 0) == std::string::npos)  // If the prefix isn't already found on the install directory
-	{
-		nwninstalldir = LONG_PATH_PREFIX + nwninstalldir;
-	}
-	#endif*/
-
 	logger->Trace("NWN2 install dir: %s", nwninstalldir.c_str());
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
 }
@@ -317,7 +304,15 @@ bool NWNXController::startServerProcessInternal()
 	char params[USHRT_MAX];
 
 	if (ExpandEnvironmentStringsA(("nwn2server.exe " + parameters).c_str(), params, USHRT_MAX) == 0) {
+		char* lpMsgBuf;
+		DWORD dw = GetLastError();
+		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+			nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			&lpMsgBuf, 0, nullptr);
+
 		logger->Err("Could not substitute environment variables in NWN2Server command line: %s", params);
+		logger->Err("    Error %d: %s", dw, lpMsgBuf);
+		return false;
 	}
 
 	logger->Trace("Starting: %s\\%s", nwninstalldir.c_str(), params);
@@ -351,7 +346,7 @@ bool NWNXController::startServerProcessInternal()
 	logger->Trace("Injecting NWNX home directory as '%s'", shmem.nwnx_home);
 
 	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {
-	    logger->Err("! Error: Could not copy payload to process.", GetLastError());
+	    logger->Err("! Error: Could not copy payload to process. Error %d", GetLastError());
 	    return false;
 	}
 
