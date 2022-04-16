@@ -308,7 +308,7 @@ bool NWNXController::startServerProcessInternal()
 		DWORD dw = GetLastError();
 		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
 			nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			&lpMsgBuf, 0, nullptr);
+			(LPSTR)&lpMsgBuf, 0, nullptr);
 
 		logger->Err("Could not substitute environment variables in NWN2Server command line: %s", params);
 		logger->Err("    Error %d: %s", dw, lpMsgBuf);
