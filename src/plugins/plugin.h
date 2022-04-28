@@ -64,7 +64,6 @@ public:
 	void nwnxcpy(char* buffer, std::string_view response);
 	void nwnxcpy(char* buffer, const char* response, size_t len);
 
-protected:
 	std::string header;
 	std::string subClass;
 	std::string version;

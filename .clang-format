@@ -1,0 +1,10 @@
+BasedOnStyle: Mozilla
+AlignConsecutiveMacros: 'true'
+AlignConsecutiveAssignments: 'true'
+AlignEscapedNewlines: Left
+ColumnLimit: '100'
+Cpp11BracedListStyle: 'true'
+FixNamespaceComments: 'true'
+UseTab: ForIndentation
+IndentWidth: '4'
+TabWidth: '4'
