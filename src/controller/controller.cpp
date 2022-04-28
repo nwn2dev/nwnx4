@@ -217,6 +217,7 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 			return;
 		}
 	}
+
 	logger->Trace("NWN2 install dir: %s", nwninstalldir.c_str());
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
 }
@@ -299,13 +300,19 @@ bool NWNXController::startServerProcessInternal()
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 	SetLastError(0);
 
-	char params[MAX_PATH];
-	strcpy(params, "nwn2server.exe ");
-	strncat(params, parameters.c_str(), MAX_PATH);
+	// A parameter list can have a USHRT_MAX size (65,535 characters)
+	char params[USHRT_MAX];
 
-	auto envRes = DoEnvironmentSubstA(params, MAX_PATH);
-	if(!HIWORD(envRes)){
+	if (ExpandEnvironmentStringsA(("nwn2server.exe " + parameters).c_str(), params, USHRT_MAX) == 0) {
+		char* lpMsgBuf;
+		DWORD dw = GetLastError();
+		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+			nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPSTR)&lpMsgBuf, 0, nullptr);
+
 		logger->Err("Could not substitute environment variables in NWN2Server command line: %s", params);
+		logger->Err("    Error %d: %s", dw, lpMsgBuf);
+		return false;
 	}
 
 	logger->Trace("Starting: %s\\%s", nwninstalldir.c_str(), params);
@@ -339,7 +346,7 @@ bool NWNXController::startServerProcessInternal()
 	logger->Trace("Injecting NWNX home directory as '%s'", shmem.nwnx_home);
 
 	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {
-	    logger->Err("! Error: Could not copy payload to process.", GetLastError());
+	    logger->Err("! Error: Could not copy payload to process. Error %d", GetLastError());
 	    return false;
 	}
 

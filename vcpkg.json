@@ -1,10 +1,10 @@
 {
     "name": "nwnx4",
     "version-string": "0.1.0",
-    "builtin-baseline": "38d2893b30d4d4b3c09485216ecf4f6e8ef35d88",
+    "builtin-baseline": "99346bb6926e85d93e4aad330bf28cce4a18051b",
     "dependencies": [
-      { "name": "detours",    "version>=": "4.0.1" },
-      { "name": "wxwidgets",  "version>=": "3.1.5" },
-      { "name": "libmariadb", "version>=": "3.1.12#1" }
+      "detours",
+      "wxwidgets",
+      "libmariadb"
     ]
 }
