@@ -8,10 +8,11 @@
 class CPlugin {
 public:
 	struct InitInfo {
-	    const char* dll_path;
-	    const char* nwnx_path;
+		const char* dll_path;
+		const char* nwnx_path;
 		const char* nwn2_install_path;
 		const char* nwn2_home_path;
+		const char* nwn2_module_path;
 	};
 
 	CPlugin(HINSTANCE hDLL, const InitInfo& initInfo);

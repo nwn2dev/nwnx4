@@ -34,6 +34,7 @@ void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info){
 	plugin->logFile << "    nwnx_path: " << info.nwnx_path << std::endl;
 	plugin->logFile << "    nwn2_install_path: " << info.nwn2_install_path << std::endl;
 	plugin->logFile << "    nwn2_home_path: " << info.nwn2_home_path << std::endl;
+	plugin->logFile << "    nwn2_module_path: " << (info.nwn2_module_path == nullptr ? "unknown" : info.nwn2_module_path) << std::endl;
 	return plugin;
 }
 

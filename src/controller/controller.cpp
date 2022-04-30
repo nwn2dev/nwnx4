@@ -306,7 +306,7 @@ bool NWNXController::startServerProcessInternal()
 	if (ExpandEnvironmentStringsA(("nwn2server.exe " + parameters).c_str(), params, USHRT_MAX) == 0) {
 		char* lpMsgBuf;
 		DWORD dw = GetLastError();
-		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_IGNORE_INSERTS,
 			nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			(LPSTR)&lpMsgBuf, 0, nullptr);
 

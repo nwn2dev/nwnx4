@@ -537,7 +537,7 @@ void init()
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
 
-    logger->Info("NWNX directory: %s", nwnxHomePath.c_str());
+    logger->Info("NWNX directory: %s", nwnxHomePath.string().c_str());
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
@@ -727,7 +727,7 @@ std::unordered_map<std::string, std::string> ParseServerCommandLine(){
 	for(size_t i = 1 ; i < argc ; i++){
 		if(i % 2 == 1){
 			if(argv[i][0] == L'-')
-				argName = argv[i + 1]; // skip dash
+				argName = argv[i] + 1; // skip dash
 			else
 				argName = nullptr;
 		}
@@ -784,6 +784,14 @@ void loadPlugins()
 		nwn2HomeDir = dir.string();
 	}
 
+	// Get loaded module path
+	std::string nwn2ModulePath;
+	if(serverArgs.contains("module"))
+		nwn2ModulePath = (std::filesystem::path(nwn2HomeDir) / "modules" / (serverArgs["module"] + ".mod")).string();
+	else if(serverArgs.contains("moduledir"))
+		nwn2ModulePath = (std::filesystem::path(nwn2HomeDir) / "modules" / serverArgs["moduledir"]).string();
+	const char* nwn2ModulePathCStr = nwn2ModulePath.size() > 0 ? nwn2ModulePath.c_str() : nullptr;
+
 	// Start loading plugins
 	for(auto& pluginPath : pluginList){
 		if(++pluginPath.begin() == pluginPath.end()){
@@ -807,11 +815,11 @@ void loadPlugins()
 			// Failed to load the plugin
 			char* lpMsgBuf;
 			DWORD dw = GetLastError();
-			FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM| FORMAT_MESSAGE_MAX_WIDTH_MASK ,
+			FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_IGNORE_INSERTS,
 				nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 				(LPSTR) &lpMsgBuf, 0, nullptr);
 
-			logger->Err("Loading plugin %s: Error %d. %s", pluginName.c_str(), dw, lpMsgBuf);
+			logger->Err("* Cannot load plugin dll %s: Error %d: %s", pluginName.c_str(), dw, lpMsgBuf);
 			continue;
 		}
 
@@ -824,6 +832,7 @@ void loadPlugins()
 					.nwnx_path             = nwnxHome.c_str(),
 					.nwn2_install_path     = nwn2InstallDir.c_str(),
 					.nwn2_home_path        = nwn2HomeDir.c_str(),
+					.nwn2_module_path      = nwn2ModulePathCStr,
 				};
 
 				// Instantiate & initialize CPlugin
@@ -927,7 +936,7 @@ void loadPlugins()
 		}
 
 		// No compatible API found
-		logger->Info("* Loading plugin %s: Error. Could not retrieve class object pointer.", pluginName.c_str());
+		logger->Info("* Loading plugin %s: Error. Could not retrieve instantiation function.", pluginName.c_str());
 	}
 }
 
