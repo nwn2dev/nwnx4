@@ -15,6 +15,10 @@ struct NWNXCPlugin_InitInfo {
     const char* nwn2_install_path;
     /// Path to the NWN2 home folder, usually 'Documents\Neverwinter Nights 2'
     const char* nwn2_home_path;
+    /// Loaded module path. Either a .mod file or a directory.
+    /// Note: this value depends on the parameters list in nwnx.ini. If the server has not been
+    /// started with -module or -moduledir, this value is set to NULL.
+    const char* nwn2_module_path;
 };
 
 
