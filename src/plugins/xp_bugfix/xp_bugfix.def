@@ -71,3 +71,4 @@ EXPORTS
 	BugFix::GetGameObject=GetGameObject
 	BugFix::GetClientObjectByPlayerId=GetClientObjectByPlayerId
 	BugFix::GetLastUpdateObject=GetLastUpdateObject
+	BugFix::GetClientObjectByPlayerId=GetClientObjectByPlayerId
