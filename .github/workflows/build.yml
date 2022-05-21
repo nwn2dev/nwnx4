@@ -49,42 +49,37 @@ jobs:
           doNotCache: true
           vcpkgArguments: "--triplet=x86-windows-static-md --disable-metrics --clean-after-build"
 
-      - name: ↳ Setup NuGet cache for vcpkg'
-        if: steps.vcpkg_cache.outputs.cache-hit != 'true'
-        shell: 'bash'
-        run: |
-          $(./vcpkg/vcpkg fetch nuget | tail -n 1) \
-            sources add \
-            -source "https://nuget.pkg.github.com/nwn2dev/index.json" \
-            -storepasswordincleartext \
-            -name "GitHub" \
-            -username "${{ github.actor }}" \
-            -password "${{ secrets.GITHUB_TOKEN }}"
-
       # Build vcpkg dependencies
-      - name: ↳ Build & install dependencies
+      - name: ↳ Build & install VCPKG dependencies
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
         timeout-minutes: 120
         shell: bash
         run: |
           vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics --clean-after-build
 
+      # Prepare build files
+      - name: Meson Configure
+        run: |
+          meson setup builddir --backend=vs --buildtype=release --optimization=2
+
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
         continue-on-error: true
         with:
           languages: cpp
           source-root: src
 
-      - name: Meson Configure
-        run: |
-          meson setup builddir --backend=vs --buildtype=release --optimization=2 --strip
-
+      # Compile everything
       - name: Meson build
         run: |
           cd builddir
           meson compile
 
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        continue-on-error: true
+
+      # Copy nwnx4 files in appropriate directories
       - name: Meson install
         shell: bash
         run: |
@@ -110,7 +105,7 @@ jobs:
       - name: Package nwnx4
         shell: bash
         run: |
-          rm nwnx4/*.lib
+          rm nwnx4/*.lib nwnx4/plugins/*.lib
           /c/nwn-lib-d-tools/nwn-erf create -o nwnx4/nwscript/nwnx.erf nwnx4/nwscript/
 
       - name: Upload artifacts
@@ -118,10 +113,6 @@ jobs:
         with:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
-        continue-on-error: true
 
   # --------------------------------------------------
 
@@ -137,12 +128,14 @@ jobs:
     steps:
       # ------------- Install dependencies
       - uses: shogo82148/actions-setup-mysql@v1
+        if: matrix.sql == 'xp_mysql'
         with:
           distribution: mariadb
           mysql-version: '10.6'
           auto-start: true
 
       - name: "Setup SQL user and database"
+        if: matrix.sql == 'xp_mysql'
         run: |
           mysql -uroot -hlocalhost -e "
             CREATE USER 'nwn'@'localhost' IDENTIFIED BY 'nwn';
@@ -166,7 +159,7 @@ jobs:
 
       - name: "Install choco packages"
         run: |
-          choco install vcredist2005 dotnet3.5 dotnet4.7 directx
+          choco install directx
 
       # ------------- Run module
       - uses: actions/checkout@v2

@@ -15,7 +15,7 @@ cppcompiler = meson.get_compiler('cpp')
 add_project_arguments('/DWIN32', '/D_WINDOWS', '/D_USRDLL', '/DTEST_EXPORTS', '/D_UNICODE', '/DUNICODE', language: ['cpp', 'c'])
 if get_option('buildtype') == 'release'
     add_project_arguments('/DNDEBUG', language: ['cpp', 'c'])
-    # add_global_link_arguments('/GL', language: ['cpp', 'c'])
+    add_global_link_arguments('/DEBUG', language: ['cpp', 'c'])
 else
     add_project_arguments('/D_DEBUG', language: ['cpp', 'c'])
 endif

@@ -48,5 +48,6 @@ NWNx4Gui_exe = executable('NWNX4_Gui',
         cppcompiler.find_library('rpcrt4'),
         cppcompiler.find_library('detours', dirs: lib_dirs)
     ] + wx_dep,
+    implib: false,
     install: true,
 )
