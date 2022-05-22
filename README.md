@@ -79,7 +79,7 @@ git submodule init
 git submodule update
 
 # Bootstrap vcpkg
-vcpkg\bootstrap-vcpkg.sh
+vcpkg\bootstrap-vcpkg.bat
 
 # Install dependencies (can take a while)
 vcpkg\vcpkg.exe install --triplet=x86-windows-static-md --clean-after-build
