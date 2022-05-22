@@ -12,4 +12,4 @@ if exist home\nwn2.ini (
     copy "%UserProfile%\Documents\Neverwinter Nights 2\nwn2.ini" home\nwn2.ini
 )
 
-ClientExtension\NWLauncher.exe -home %CD%\home
+ClientExtension\NWLauncher.exe -home %CD%\home +connect localhost:5121
