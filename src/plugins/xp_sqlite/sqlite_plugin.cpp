@@ -17,7 +17,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ***************************************************************************/
 
-#include "sqlite.h"
+#include "sqlite_plugin.h"
 
 #include "nwn2heap.h"
 
@@ -56,7 +56,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     Implementation of SQLite Plugin
 ***************************************************************************/
 
-SQLite::SQLite()
+SQLite::SQLite(): DBPlugin()
 {
 	header =
 		"NWNX SQLite Plugin V.1.1.0\n" \
@@ -85,6 +85,11 @@ bool SQLite::Init(char* nwnxhome)
 {
 	// Read config
 	SetupLogAndIniFile(nwnxhome);
+	if(HookSCORCO(logger))
+		logger->Info("* Hooking successful");
+	else
+		logger->Info("* Hooking failed");
+
 	config->Read("file", &dbfile, std::string("sqlite.db"));
 	config->Read("wrap_transaction", &wrapTransaction, false);
 
@@ -334,16 +339,21 @@ int SQLite::GetLastInsertID()
 
 bool SQLite::WriteScorcoData(BYTE* pData, int Length)
 {
-	logger->Info("* SCO query: %s", scorcoSQL);
+	logger->Info("* SCO query: %s", scorcoSQL.c_str());
 
 	// End any previous SQL statement
 	SafeFinalize(&pStmt);
 
+	// Replace %s with ?1 for better compatibility with MySQL
+	const auto match = scorcoSQL.find("%s");
+	if(match != std::string::npos)
+		scorcoSQL.replace(match, 2, "?1");
+
 	// Prepare new SQL statement
-	auto rc = sqlite3_prepare_v2(sdb, scorcoSQL, -1, &pStmt, nullptr);
+	auto rc = sqlite3_prepare_v2(sdb, scorcoSQL.c_str(), -1, &pStmt, nullptr);
 	if (rc != SQLITE_OK)
 	{
-		logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL, sqlite3_errmsg(sdb));
+		logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL.c_str(), sqlite3_errmsg(sdb));
 		SafeFinalize(&pStmt);
 		return false;
 	}
@@ -378,16 +388,16 @@ bool SQLite::WriteScorcoData(BYTE* pData, int Length)
 
 BYTE* SQLite::ReadScorcoData(char *param, int *size)
 {
-	logger->Info("* RCO query: %s", scorcoSQL);
+	logger->Info("* RCO query: %s", scorcoSQL.c_str());
 
 	// Prepare SQL statement
 	if (strcmp(param, "FETCHMODE") != 0){
 		SafeFinalize(&pStmt);
 
-		auto rc = sqlite3_prepare_v2(sdb, scorcoSQL, -1, &pStmt, nullptr);
+		auto rc = sqlite3_prepare_v2(sdb, scorcoSQL.c_str(), -1, &pStmt, nullptr);
 		if (rc != SQLITE_OK)
 		{
-			logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL, sqlite3_errmsg(sdb));
+			logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL.c_str(), sqlite3_errmsg(sdb));
 			SafeFinalize(&pStmt);
 			return nullptr;
 		}
@@ -397,11 +407,14 @@ BYTE* SQLite::ReadScorcoData(char *param, int *size)
 	// Execute step
 	Fetch(nullptr);
 
+	if(sqlite3_column_count(pStmt) == 0)
+		return nullptr;
+
 	// Extract raw object data
-	auto value = sqlite3_column_blob(pStmt, 1);
+	auto value = sqlite3_column_blob(pStmt, 0);
 	if (value != nullptr)
 	{
-		auto valueLen = sqlite3_column_bytes(pStmt, 1);
+		auto valueLen = sqlite3_column_bytes(pStmt, 0);
 
 		NWN2_HeapMgr *pHeapMgr = NWN2_HeapMgr::Instance();
 		NWN2_Heap *pHeap = pHeapMgr->GetDefaultHeap();
