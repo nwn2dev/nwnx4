@@ -22,7 +22,7 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
-#include "../dbplugin.h"
+#include "../database/dbplugin.h"
 #include "lib/sqlite3.h"
 
 class SQLite : public DBPlugin

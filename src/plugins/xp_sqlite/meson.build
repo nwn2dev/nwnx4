@@ -3,7 +3,7 @@
 shared_library('xp_sqlite',
     [
     	'../../misc/log.cpp',
-    	'../dbplugin.cpp',
+    	'../database/dbplugin.cpp',
     	'../plugin.cpp',
     	'lib/sqlite3.c',
     	'sqlite.cpp',
@@ -17,4 +17,4 @@ shared_library('xp_sqlite',
 )
 
 install_data('xp_sqlite.ini', install_dir: 'config.example')
-install_data('../mysql/nwnx_sql.nss', install_dir: 'nwscript')
+install_data('../database/nwnx_sql.nss', install_dir: 'nwscript')
