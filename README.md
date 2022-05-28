@@ -4,13 +4,21 @@
 NWNX4 is a launcher for NWN2Server that injects code into the server process,
 in order to provide additional features and bug fixes.
 
-## Requirements
+### About
+
+NWNX4 was originally written by Virusman, Grinning Fool, McKillroy, Skywing,
+Papillon and many contributors. This repository is based on the original
+codebase, but with modern build tools and new maintainers.
+
+The original source code can be found here: https://github.com/NWNX/nwnx4
+
+## Usage
+
+### Requirements
 You must install:
 - [Visual C++ 2005 x86 Runtime](https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE) <!-- xp_bugfix -->
 - [Visual C++ 2015 x86 Runtime](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe) <!-- msvc 2019 -->
 - [.NET Framework 4.7.2](https://download.visualstudio.microsoft.com/download/pr/1f5af042-d0e4-4002-9c59-9ba66bcf15f6/124d2afe5c8f67dfa910da5f9e3db9c1/ndp472-kb4054531-web.exe) or above <!-- xp_bugfix -->
-
-## Usage
 
 ### First installation
 
@@ -22,9 +30,11 @@ You must install:
     - `nwnx.ini`:
         + `plugin_list`: the list of all nwnx4 plugins that will be loaded.
           You may want to add or remove some of them.
-        + `nwn2`: full or relative path to the NWN2 install folder
+        + `nwn2`: full or relative path to the NWN2 install folder. By default
+          nwnx4 will try to detect an existing NWN2 installation.
         + `parameters`: nwn2server command line arguments. Examples:
-            * `-module YourModuleName` if your module is a .mod file
+            * `-module YourModuleName` to automatically load a module as a
+              .mod file
             * `-moduledir YourModuleName` if your module is a directory
     - `xp_*.ini`: these are the plugins configuration files. Most plugins are
       shipped with convenient defaults, but you may need to tweak some of
@@ -32,7 +42,7 @@ You must install:
       mean the plugin will be loaded (see `plugin_list` in `nwnx.ini`).
 4. Copy the `.nss` files from the `nwscript/` folder into your
    module folder, **or** import `nwscript/nwnx.erf` into your module using the
-   NWN2 toolset. Overwrite existing files if necessary.
+   NWN2 toolset. Overwrite existing files if prompted.
 5. Start NWNX4:
     + Run `NWNX4_GUI.exe` for the GUI version
     + Run `NWNX4_Controller.exe -interactive` in a shell for the command-line
@@ -43,23 +53,15 @@ You must install:
 1. Download and extract the [NWNX4 zip
    file](https://github.com/nwn2dev/nwnx4/releases) into your existing nwnx4
    directory, and overwrite everything
-2. Only configuration files inside `config.example/` are updated. The existing
-   configuration files in the NWNX4 folder are not overwritten. You may need
-   to manually update the existing configuration files (see the [release
-   notes](https://github.com/nwn2dev/nwnx4/releases)).
+2. Only configuration files inside `config.example/` will be updated. The
+   existing configuration files in the NWNX4 folder are not overwritten, but
+   **you may need to manually update** those configuration files (see the
+   [release notes](https://github.com/nwn2dev/nwnx4/releases)).
 3. Copy the `.nss` files from the `nwscript/` folder into your
    module folder, **or** import `nwscript/nwnx.erf` into your module using the
-   NWN2 toolset. Overwrite existing files if necessary.
+   NWN2 toolset. Overwrite existing files if prompted.
 
-## About
-
-NWNX4 was originally written by Virusman, Grinning Fool, McKillroy, Skywing,
-Papillon and many contributors. This repository is based on the original
-codebase, but with modern build tools and new maintainers.
-
-The original source code can be found here: https://github.com/NWNX/nwnx4
-
-# Build
+# Building from sources
 
 ## Requirements
 
@@ -78,10 +80,10 @@ The original source code can be found here: https://github.com/NWNX/nwnx4
 git submodule init
 git submodule update
 
-# Bootstrap vcpkg
-vcpkg\bootstrap-vcpkg.sh
+# Bootstrap vcpkg (prepare dependencies)
+vcpkg\bootstrap-vcpkg.bat
 
-# Install dependencies (can take a while)
+# Compile and install dependencies
 vcpkg\vcpkg.exe install --triplet=x86-windows-static-md --clean-after-build
 ```
 
@@ -89,15 +91,15 @@ vcpkg\vcpkg.exe install --triplet=x86-windows-static-md --clean-after-build
 
 From a x86 MSBuild prompt (i.e. `x86 Native Tools Command Prompt for VS 2019` if you installed Visual Studio 2019):
 ```powershell
-# Setup build
+# Setup build files
 meson builddir
 
-# Build project
+# Compile project
 cd builddir
 meson compile
 
 # Install nwnx4 at a given location
-meson install --destdir=%cd%\..\nwnx4-install
+meson install --destdir=%cd%\..\nwnx4-dev
 ```
 
 
@@ -140,8 +142,8 @@ You must configure NWNX4 as explained in nwnx4's
 [README.md](https://github.com/nwn2dev/nwnx4#first-installation).
 
 In order to run nwnx4 in a portable manner, you must add `-home
-"$NWNX4_DIR\..\home"` to the `parameters` variable. Other arguments are
-recommended but not required:
+"$NWNX4_DIR\..\home"` to the `parameters` option in `nwnx.ini`. Other
+arguments are recommended but not required:
 
 ```ini
 # Configure the parameters to auto-start your module
@@ -150,24 +152,26 @@ recommended but not required:
 # -module <MODNAME>     Your module name without the .mod extension (if you're not in directory mode)
 # -publicserver         Disable server online advertising
 # -maxclients           Maximum number of connected players
-parameters = -home "$NWNX4_DIR\..\home" -moduledir YourModule -publicserver 0 -maxclients 1
+# -servervault 1        Makes the server automatically save the character in the servervault folder
+parameters = -home "$NWNX4_DIR\..\home" -moduledir YourModule -publicserver 0 -maxclients 1 -servervault 1
 ```
 
 ## Game launcher
 
 Skywing's Client Extension can automatically detect NWN2 installation
-directory (and provides a better NWN2 player experience). [Download it from
-the
+directory and provides a better NWN2 player experience. [Download it from the
 NWVault](https://neverwintervault.org/project/nwn2/other/nwn2-client-extension)
 and extract the zip into the `package-skel\ClientExtension\` folder.
 
-By default, `start-game.bat` will:
+As is, `start-game.bat` will:
 1. Copy `nwn2.ini` and `nwn2player.ini` from `Documents\Neverwinter Nights 2\`
    to `package-skel\home\` (so player game settings are kept). If these files
    are already present in the home folder, they will not be overwritten. You
    can use this behavior to provide your own custom `nwn2player.ini`.
 2. Launch the game using the Client Extension
-3. Automatically connect to the server at `127.0.0.1:5121`
+
+Additionnally, `start-game-autoconnect.bat` will also automatically connect to
+the server at `127.0.0.1:5121`.
 
 
 ## Custom content

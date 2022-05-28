@@ -253,7 +253,7 @@ jobs:
           path: |
             C:/nwn2temp/NWN2/LOGS.0/*.txt
             C:/nwnx4/*.txt
-          name: test-logs
+          name: "test-logs-${{matrix.sql}}"
 
   # --------------------------------------------------
 

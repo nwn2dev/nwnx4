@@ -11,9 +11,9 @@ endif
 shared_library('xp_mysql',
     [
     	'../../misc/log.cpp',
-		'../dbplugin.cpp',
+		'../database/dbplugin.cpp',
+        '../database/scorcohook.cpp',
 		'../plugin.cpp',
-		'../scorcohook.cpp',
 		'mysql_plugin.cpp',
     ],
     include_directories: include_dirs,
@@ -34,5 +34,5 @@ shared_library('xp_mysql',
 )
 
 install_data('xp_mysql.ini', install_dir: 'config.example')
-install_data('nwnx_sql.nss', install_dir: 'nwscript')
+install_data('../database/nwnx_sql.nss', install_dir: 'nwscript')
 install_data('nwnx_mysql_errors.nss', install_dir: 'nwscript')

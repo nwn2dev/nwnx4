@@ -25,7 +25,7 @@
 
 typedef unsigned long ulong;
 
-#include "../dbplugin.h"
+#include "../database/dbplugin.h"
 #include <mysql/mysql.h>
 
 class MySQL : public DBPlugin

@@ -45,12 +45,12 @@ subdir('src/gui')
 
 nwscript_includes = []
 
-subdir('src/plugins/funcs')
-subdir('src/plugins/mysql')
-subdir('src/plugins/pickpocket')
-subdir('src/plugins/profiler')
-subdir('src/plugins/sqlite')
-subdir('src/plugins/time')
+subdir('src/plugins/xp_funcs')
+subdir('src/plugins/xp_mysql')
+subdir('src/plugins/xp_pickpocket')
+subdir('src/plugins/xp_profiler')
+subdir('src/plugins/xp_sqlite')
+subdir('src/plugins/xp_time')
 subdir('src/plugins/xp_bugfix')
 subdir('src/plugins/xp_fastboot')
 subdir('src/plugins/xp_objectattributes')

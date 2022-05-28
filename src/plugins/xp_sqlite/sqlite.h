@@ -1,7 +1,6 @@
 /***************************************************************************
-    NWNX Leto - Leto bridge
-    Copyright (C) 2007 virusman (virusman@virusman.ru)
-	Copyright (C) 2004 David Frauzel (dragonsong), dragon@weathersong.net
+    NWNX SQLite - Database plugin for SQLite
+    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com) 
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,43 +17,45 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
  ***************************************************************************/
-#if !defined(LETO_H_INCLUDED)
-#define LETO_H_INCLUDED
+#if !defined(SQLITE_H_INCLUDED)
+#define SQLITE_H_INCLUDED
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
-#include "windows.h"
-#include "../legacy_plugin.h"
-#include "../../misc/log.h"
+#include "../database/dbplugin.h"
+#include "lib/sqlite3.h"
 
-typedef char* (CALLBACK* LPFNONCREATE)(const char*);
-typedef char* (CALLBACK* LPFNONRELEASE)();
-typedef char* (CALLBACK* LPFNONREQUEST)(char*,char*,char*);
-
-class Leto : public LegacyPlugin
+class SQLite : public DBPlugin
 {
 public:
-	Leto();
-	~Leto();
+	SQLite();
+	~SQLite() override;
 
 	bool Init(char* nwnxhome);  
-	const char* DoRequest(char *gameObject, char* request, char* parameters);
-	void GetFunctionClass(char* fClass);
-
-	LPCSTR sTimeReport(LARGE_INTEGER c1, LARGE_INTEGER c2);
-	char sTime[45];
 
 private:
-	LogNWNX* logger;
-	HINSTANCE hDLL;
+	std::string dbfile;
+	bool firstfetch;
+	bool wrapTransaction;
 
-	LPFNONCREATE lpfnOnCreate;
-	LPFNONRELEASE lpfnOnRelease;
-	LPFNONREQUEST lpfnOnRequest;
+	sqlite3 *sdb;
+	sqlite3_stmt* pStmt;
 
-	int iDebug;
+	bool Connect();
+	void Disconnect();
+	bool Execute(char* query) override;
+	int Fetch(char* buffer) override;
+	int GetData(int iCol, char* buffer) override;
+	int GetAffectedRows() override;
+	void GetEscapeString(char* str, char* buffer) override;
+	int GetErrno() override;
+	const char *GetErrorMessage() override;
+	int GetLastInsertID() override;
+	bool WriteScorcoData(BYTE* pData, int Length) override;
+	BYTE* ReadScorcoData(char *param, int *size) override;
 
-	LARGE_INTEGER clkFreq, clkStart, clkEnd;
+	/// Free *pStmt if possible
+	static void SafeFinalize(sqlite3_stmt** pStmt);
 };
 
 #endif
