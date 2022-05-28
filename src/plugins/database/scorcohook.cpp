@@ -19,11 +19,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "scorcohook.h"
 #include "dbplugin.h"
-#include "../xp_mysql/mysql_plugin.h" //This is a temporary design flaw workaround: see below
-
-//DESIGN FLAW
-//Can't access base class here
-extern MySQL* plugin;
 
 int (__fastcall *OriginalSCO)(void* pThis, void* _, char** database, char** key, char** player, int flags, unsigned char* pData, int size);
 unsigned char* (__fastcall *OriginalRCO)(void* pThis, void* _, char** database, char** key, char** player, int* arg4, int* size);
@@ -36,7 +31,7 @@ int __fastcall SCOHookProc(void* pThis, void* _, char** database, char** key, ch
 	{
 		return OriginalSCO(pThis, _, database, key, player, flags, pData, size);
 	}
-	int lastRet = plugin->WriteScorcoData(pData, size);
+	int lastRet = dbplugin->WriteScorcoData(pData, size);
 	return lastRet;
 }
 
@@ -48,7 +43,7 @@ unsigned char* __fastcall RCOHookProc(void* pThis, void* _, char** database, cha
 	{
 		return OriginalRCO(pThis, _, database, key, player, arg4, size);
 	}
-	unsigned char * lastRet = plugin->ReadScorcoData(*key, size);
+	unsigned char * lastRet = dbplugin->ReadScorcoData(*key, size);
 	return lastRet; 
 }
 

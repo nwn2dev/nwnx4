@@ -63,14 +63,25 @@ void xp_sql(){
 	Assert(GetPersistentLocation(oModule, "nwnxtest_location") == lStart, __FUNCTION__, __LINE__);
 
 	// SCORCO
-	object oItem = CreateItemOnObject("nw_wswss001", oContainer);
-	Assert(GetIsObjectValid(oItem), __FUNCTION__, __LINE__);
-	SetPersistentObject(oModule, "nwnxtest_object", oItem);
-	object oRetrieved = GetPersistentObject(oModule, "nwnxtest_object", oContainer);
-	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
-	AssertEqS(GetName(oRetrieved), GetName(oItem), __FUNCTION__, __LINE__);
-	DestroyObject(oItem);
-	DestroyObject(oRetrieved);
+	object oItem1 = CreateItemOnObject("nw_wswss001", oContainer);
+	Assert(GetIsObjectValid(oItem1), __FUNCTION__, __LINE__);
+	SetPersistentObject(oModule, "nwnxtest_object1", oItem1);
+
+	object oItem2 = CreateItemOnObject("nw_it_gem001", oContainer);
+	Assert(GetIsObjectValid(oItem2), __FUNCTION__, __LINE__);
+	SetPersistentObject(oModule, "nwnxtest_object2", oItem2);
+
+	object oRetrieved1 = GetPersistentObject(oModule, "nwnxtest_object1", oContainer);
+	Assert(GetIsObjectValid(oRetrieved1), __FUNCTION__, __LINE__);
+	AssertEqS(GetResRef(oRetrieved1), "nw_wswss001", __FUNCTION__, __LINE__);
+	DestroyObject(oItem1);
+	DestroyObject(oRetrieved1);
+
+	object oRetrieved2 = GetPersistentObject(oModule, "nwnxtest_object2", oContainer);
+	Assert(GetIsObjectValid(oRetrieved2), __FUNCTION__, __LINE__);
+	AssertEqS(GetResRef(oRetrieved2), "nw_it_gem001", __FUNCTION__, __LINE__);
+	DestroyObject(oItem2);
+	DestroyObject(oRetrieved2);
 
 	// Passthrough conventional campaign functions
 	SetCampaignString("nwnxtest_cam", "string", "Café");
@@ -84,10 +95,10 @@ void xp_sql(){
 	SetCampaignLocation("nwnxtest_cam", "location", lStart);
 	Assert(GetCampaignLocation("nwnxtest_cam", "location") == lStart, __FUNCTION__, __LINE__);
 
-	oItem = CreateItemOnObject("nw_wswss001", oContainer);
+	object oItem = CreateItemOnObject("nw_wswss001", oContainer);
 	Assert(GetIsObjectValid(oItem), __FUNCTION__, __LINE__);
 	StoreCampaignObject("nwnxtest_cam", "object", oItem);
-	oRetrieved = RetrieveCampaignObject("nwnxtest_cam", "object", GetLocation(oContainer), oContainer);
+	object oRetrieved = RetrieveCampaignObject("nwnxtest_cam", "object", GetLocation(oContainer), oContainer);
 	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
 	AssertEqS(GetName(oRetrieved), GetName(oItem), __FUNCTION__, __LINE__);
 	DestroyObject(oItem);

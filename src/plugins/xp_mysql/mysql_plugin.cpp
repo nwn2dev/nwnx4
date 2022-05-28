@@ -26,6 +26,7 @@
 
 MySQL* plugin;
 
+
 DLLEXPORT Plugin* GetPluginPointerV2()
 {
 	return plugin;
@@ -53,7 +54,7 @@ bool APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     Implementation of MySQL Plugin
 ***************************************************************************/
 
-MySQL::MySQL()
+MySQL::MySQL(): DBPlugin()
 {
 	header =
 		"NWNX MySQL Plugin V.1.1.0-dev\n" \
@@ -394,7 +395,7 @@ const char *MySQL::GetErrorMessage()
 
 bool MySQL::WriteScorcoData(BYTE* pData, int Length)
 {
-	logger->Info("* SCO query: %s", scorcoSQL);
+	logger->Info("* SCO query: %s", scorcoSQL.c_str());
 
 	int res;
 	unsigned long len;
@@ -404,7 +405,7 @@ bool MySQL::WriteScorcoData(BYTE* pData, int Length)
 	len = mysql_real_escape_string (&mysql, Data + 1, (const char*)pData, Length);
 	Data[0] = Data[len + 1] = 39; //'
 	Data[len + 2] = 0x0; 
-	sprintf(pSQL, scorcoSQL, Data);
+	sprintf(pSQL, scorcoSQL.c_str(), Data);
 
 	MYSQL_RES *result = mysql_store_result (&mysql);
 	res = mysql_query(&mysql, (const char *) pSQL);
@@ -421,13 +422,13 @@ bool MySQL::WriteScorcoData(BYTE* pData, int Length)
 
 BYTE* MySQL::ReadScorcoData(char *param, int *size)
 {
-	logger->Info("* RCO query: %s", scorcoSQL);
+	logger->Info("* RCO query: %s", scorcoSQL.c_str());
 
 	bool pSqlError;
 	MYSQL_RES *rcoresult;
 	if (strcmp(param, "FETCHMODE") != 0)
 	{	
-		if (mysql_query(&mysql, (const char *) scorcoSQL) != 0)
+		if (mysql_query(&mysql, scorcoSQL.c_str()) != 0)
 		{
 			pSqlError = true;
 			return NULL;

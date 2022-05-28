@@ -24,8 +24,11 @@
     Implementation of DBPlugin
 ***************************************************************************/
 
+DBPlugin* dbplugin = nullptr;
+
 DBPlugin::DBPlugin()
 {
+	dbplugin = this;
 	header = "NWNX Base DB Plugin V.1.1";
 	subClass = "DBPlugin";
 	version = "1.1";
@@ -209,10 +212,7 @@ BYTE* DBPlugin::ReadScorcoData(char *param, int *size)
 	return NULL;
 }
 
-void DBPlugin::SetScorcoSQL(char *request)
+void DBPlugin::SetScorcoSQL(const char *request)
 {
-	if(strlen(request) < MAXSQL)
-		memcpy(scorcoSQL, request, strlen(request) + 1);
-	else
-		memcpy(scorcoSQL, request, MAXSQL);
+	scorcoSQL = request;
 }

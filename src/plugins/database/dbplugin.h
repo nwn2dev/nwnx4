@@ -53,7 +53,7 @@ public:
 protected:
 	LogNWNX* logger;
 	SimpleIniConfig *config;
-	char scorcoSQL[MAXSQL];
+	std::string scorcoSQL;
 
 	virtual bool Execute(char* query);
 	virtual int Fetch(char* buffer);
@@ -63,7 +63,9 @@ protected:
 	virtual int GetErrno();
 	virtual const char *GetErrorMessage();
 	virtual int GetLastInsertID();
-	void SetScorcoSQL(char *request);
+	void SetScorcoSQL(const char *request);
 };
+
+extern DBPlugin* dbplugin;
 
 #endif
