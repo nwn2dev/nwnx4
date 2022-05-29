@@ -36,17 +36,17 @@ private:
 	void* m_instancePtr = nullptr;
 
 	// clang-format off
-	typedef void*       (NewPluginFn)   (InitInfo info);
-	typedef void        (DeletePluginFn)(void* cplugin);
-	typedef const char* (GetInfoFn)     ();
-	typedef const char* (GetVersionFn)  ();
-	typedef const char* (GetIDFn)(void* cplugin);
-	typedef int32_t     (GetIntFn)      (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2);
-	typedef void        (SetIntFn)      (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, int32_t nValue);
-	typedef float       (GetFloatFn)    (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2);
-	typedef void        (SetFloatFn)    (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, float fValue);
-	typedef void        (GetStringFn)   (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, char* result, size_t resultSize);
-	typedef void        (SetStringFn)   (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, const char* sValue);
+	typedef void*       (__cdecl NewPluginFn)   (InitInfo info);
+	typedef void        (__cdecl DeletePluginFn)(void* cplugin);
+	typedef const char* (__cdecl GetInfoFn)     ();
+	typedef const char* (__cdecl GetVersionFn)  ();
+	typedef const char* (__cdecl GetIDFn)       (void* cplugin);
+	typedef int32_t     (__cdecl GetIntFn)      (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2);
+	typedef void        (__cdecl SetIntFn)      (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, int32_t nValue);
+	typedef float       (__cdecl GetFloatFn)    (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2);
+	typedef void        (__cdecl SetFloatFn)    (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, float fValue);
+	typedef void        (__cdecl GetStringFn)   (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, char* result, size_t resultSize);
+	typedef void        (__cdecl SetStringFn)   (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, const char* sValue);
 	// clang-format on
 	struct {
 		uint32_t abiVersion;

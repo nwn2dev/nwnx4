@@ -42,7 +42,7 @@ extern const uint32_t nwnxcplugin_abi_version;
 ///     storing plugin data inside this struct rather than global variables). NULL if the plugin
 ///     failed to be initialized.
 __declspec(dllexport)
-void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info);
+void* __cdecl NWNXCPlugin_New(NWNXCPlugin_InitInfo info);
 
 //
 // OPTIONAL FUNCTIONS TO IMPLEMENT:
@@ -52,25 +52,25 @@ void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info);
 /// function is used to free the memory allocated for `cplugin` in `NWNXCPlugin_New`.
 /// @param cplugin User data pointer, as returned by `NWNXCPlugin_New`
 __declspec(dllexport)
-void NWNXCPlugin_Delete(void* cplugin);
+void __cdecl NWNXCPlugin_Delete(void* cplugin);
 
 /// Returns the ID of the plugin. This ID is used in NWScript NWNXGetXXX / NWNXSetXXX functions to
 /// send commands to the plugin.
 /// @param cplugin User data pointer, as returned by `NWNXCPlugin_New`
 /// @return The plugin ID as a null-terminated string
 __declspec(dllexport)
-const char* NWNXCPlugin_GetID(void* cplugin);
+const char* __cdecl NWNXCPlugin_GetID(void* cplugin);
 
 /// Returns the plugin user-friendly name and basic information, like "SuperPlugin by Foo Bar -
 /// Provides example features"
 /// @return null-terminated string
 __declspec(dllexport)
-const char* NWNXCPlugin_GetInfo();
+const char* __cdecl NWNXCPlugin_GetInfo();
 
 /// Returns the plugin version information, like "v1.2.3"
 /// @return null-terminated string
 __declspec(dllexport)
-const char* NWNXCPlugin_GetVersion();
+const char* __cdecl NWNXCPlugin_GetVersion();
 
 /// Executed by NWScript function `NWNXGetInt`
 /// @param cplugin User data pointer, as returned by `NWNXCPlugin_New`
@@ -79,7 +79,7 @@ const char* NWNXCPlugin_GetVersion();
 /// @param nParam2 NWScript function argument.
 /// @return NWScript function result
 __declspec(dllexport)
-int32_t NWNXCPlugin_GetInt(void* cplugin,
+int32_t __cdecl NWNXCPlugin_GetInt(void* cplugin,
                            const char* sFunction,
                            const char* sParam1,
                            int32_t nParam2);
@@ -90,7 +90,7 @@ int32_t NWNXCPlugin_GetInt(void* cplugin,
 /// @param sParam1 NWScript function argument. Null-terminated string
 /// @param nParam2 NWScript function argument.
 __declspec(dllexport)
-void NWNXCPlugin_SetInt(void* cplugin,
+void __cdecl NWNXCPlugin_SetInt(void* cplugin,
                         const char* sFunction,
                         const char* sParam1,
                         int32_t nParam2,
@@ -103,7 +103,7 @@ void NWNXCPlugin_SetInt(void* cplugin,
 /// @param nParam2 NWScript function argument.
 /// @return NWScript function result
 __declspec(dllexport)
-float NWNXCPlugin_GetFloat(void* cplugin,
+float __cdecl NWNXCPlugin_GetFloat(void* cplugin,
                            const char* sFunction,
                            const char* sParam1,
                            int32_t nParam2);
@@ -115,7 +115,7 @@ float NWNXCPlugin_GetFloat(void* cplugin,
 /// @param nParam2 NWScript function argument.
 /// @param fValue NWScript function argument. 32-bit floating point.
 __declspec(dllexport)
-void NWNXCPlugin_SetFloat(void* cplugin,
+void __cdecl NWNXCPlugin_SetFloat(void* cplugin,
                           const char* sFunction,
                           const char* sParam1,
                           int32_t nParam2,
@@ -129,7 +129,7 @@ void NWNXCPlugin_SetFloat(void* cplugin,
 /// @param result Buffer for storing the returned string. **Must be null-terminated**.
 /// @param resultSize Size of the result buffer
 __declspec(dllexport)
-void NWNXCPlugin_GetString(void* cplugin,
+void __cdecl NWNXCPlugin_GetString(void* cplugin,
                            const char* sFunction,
                            const char* sParam1,
                            int32_t nParam2,
@@ -143,7 +143,7 @@ void NWNXCPlugin_GetString(void* cplugin,
 /// @param nParam2 NWScript function argument.
 /// @param sValue null-terminated string
 __declspec(dllexport)
-void NWNXCPlugin_SetString(void* cplugin,
+void __cdecl NWNXCPlugin_SetString(void* cplugin,
                            const char* sFunction,
                            const char* sParam1,
                            int32_t nParam2,
