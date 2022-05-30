@@ -2,6 +2,8 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <queue>
+#include <unordered_map>
 
 #include <nwnx_cplugin.h>
 
@@ -24,6 +26,9 @@ public:
 	int counter = 0;
 	float storedFloat = 0;
 	std::string storedString;
+
+	typedef std::vector<uint8_t> GffData;
+	std::unordered_map<std::string, std::queue<GffData>> storedGFFs;
 };
 
 void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info){
@@ -151,4 +156,62 @@ void NWNXCPlugin_SetString(void* cplugin,
 	// Copy sValue into stored string
 	plugin->storedString = std::string(sValue);
 	plugin->logFile << "  Set to \"" << plugin->storedString << "\"" << std::endl;
+}
+
+size_t
+NWNXCPlugin_GetGFFSize(void* cplugin, const char* sVarName)
+{
+	auto plugin = static_cast<Plugin*>(cplugin);
+
+	plugin->logFile << "NWNXCPlugin_GetGFFSize(\"" << sVarName << "\")" << std::endl;
+
+	auto queueIt = plugin->storedGFFs.find(sVarName);
+	if(queueIt != plugin->storedGFFs.end()){
+		if(queueIt->second.size() > 0)
+			return queueIt->second.front().size();
+	}
+	return 0;
+}
+
+void
+NWNXCPlugin_GetGFF(void* cplugin, const char* sVarName, uint8_t* result, size_t resultSize)
+{
+	auto plugin = static_cast<Plugin*>(cplugin);
+
+	plugin->logFile << "NWNXCPlugin_GetGFF(\"" << sVarName << "\")" << std::endl;
+
+	auto queueIt = plugin->storedGFFs.find(sVarName);
+	if(queueIt != plugin->storedGFFs.end()){
+		if(queueIt->second.size() == 0)
+			return;// TODO: handle errors / non existent object
+
+		if(resultSize < queueIt->second.front().size())
+			return;// TODO: handle errors / non existent object
+
+		auto& gff = queueIt->second.front();
+
+		memcpy(result, gff.data(), gff.size());
+		queueIt->second.pop();
+		plugin->logFile << "  Returned GFF and popped queue with key \"" << sVarName << "\" => " << queueIt->second.size() << " GFFs with this key" << std::endl;
+	}
+}
+
+void
+NWNXCPlugin_SetGFF(void* cplugin, const char* sVarName, const uint8_t* gffData, size_t gffDataSize)
+{
+	auto plugin = static_cast<Plugin*>(cplugin);
+
+	char gffHeaderText[9] = {0};
+	strncpy_s(gffHeaderText, 9, (const char*)gffData, 8);
+	plugin->logFile << "NWNXCPlugin_SetGFF(\"" << sVarName << "\", \"" << gffHeaderText << "...\", "
+	                << gffDataSize << ")" << std::endl;
+
+	auto queueIt = plugin->storedGFFs.find(sVarName);
+	if(queueIt == plugin->storedGFFs.end()){
+		plugin->storedGFFs.insert({sVarName, {}});
+		queueIt = plugin->storedGFFs.find(sVarName);
+	}
+
+	queueIt->second.push({gffData, gffData + gffDataSize});
+	plugin->logFile << "  Append GFF data for key \"" << sVarName << "\" => " << queueIt->second.size() << " GFFs with this key" << std::endl;
 }

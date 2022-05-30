@@ -22,11 +22,10 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
-#include "windows.h"
+#include <windows.h>
 #include "../plugin.h"
 #include "../../misc/log.h"
 #include "../../misc/ini.h"
-#include "scorcohook.h"
 
 #define BUFFER_SIZE 1024*64
 #define MAXSQL 1024
@@ -65,7 +64,5 @@ protected:
 	virtual int GetLastInsertID();
 	void SetScorcoSQL(const char *request);
 };
-
-extern DBPlugin* dbplugin;
 
 #endif

@@ -4,7 +4,6 @@ shared_library('xp_sqlite',
     [
     	'../../misc/log.cpp',
     	'../database/dbplugin.cpp',
-        '../database/scorcohook.cpp',
     	'../plugin.cpp',
     	'lib/sqlite3.c',
     	'sqlite_plugin.cpp',

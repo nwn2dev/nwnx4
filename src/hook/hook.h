@@ -85,7 +85,7 @@ float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2);
 void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, float fValue);
 char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2);
 void NWNXSetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2, char* sValue);
-void (*SetLocalStringNextHook)();
+extern void (*SetLocalStringNextHook)();
 void PayLoad(char *gameObject, char* name, char* value);
 void SetLocalStringHookProc();
 DWORD FindHook();
