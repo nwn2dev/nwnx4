@@ -8,9 +8,10 @@
 #include "../misc/log.h"
 #include "../plugins/database/dbplugin.h" // For compatibility with current SQL plugins implementation
 
-int SCORCOHook(LogNWNX* logger);
+/// Hooks SCORCO functions, returns true on success
+bool SCORCOHook(LogNWNX* logger);
 
-
+/// Set DB plugin pointer for forwarding legacy queries
 void SCORCOSetLegacyDBPlugin(DBPlugin* dbplugin);
 
 #endif

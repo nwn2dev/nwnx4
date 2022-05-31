@@ -176,6 +176,9 @@ void xp_example_cplugin(){
 	oRetrieved = RetrieveCampaignObject("NWNX.CPluginExample", "B", GetLocation(oContainer), oContainer);
 	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
 	AssertEqS(GetResRef(oRetrieved), "nw_it_gem002", __FUNCTION__, __LINE__);
+
+	Assert(!GetIsObjectValid(RetrieveCampaignObject("NWNX.CPluginExample", "A", GetLocation(oContainer), oContainer)), __FUNCTION__, __LINE__);
+	Assert(!GetIsObjectValid(RetrieveCampaignObject("NWNX.CPluginExample", "B", GetLocation(oContainer), oContainer)), __FUNCTION__, __LINE__);
 }
 
 void nwnx_general(){

@@ -37,20 +37,20 @@ CPlugin::CPlugin(HINSTANCE hDLL, const CPlugin::InitInfo& initInfo)
 			// clang-format on
 		}
 		// clang-format off
-		m_dll.newPlugin     = reinterpret_cast<NewPluginFn*>(   GetProcAddress(hDLL, "NWNXCPlugin_New"));
-		m_dll.deletePlugin  = reinterpret_cast<DeletePluginFn*>(GetProcAddress(hDLL, "NWNXCPlugin_Delete"));
-		m_dll.getInfo       = reinterpret_cast<GetInfoFn*>(     GetProcAddress(hDLL, "NWNXCPlugin_GetInfo"));
-		m_dll.getVersion    = reinterpret_cast<GetVersionFn*>(  GetProcAddress(hDLL, "NWNXCPlugin_GetVersion"));
-		m_dll.getID         = reinterpret_cast<GetIDFn*>(       GetProcAddress(hDLL, "NWNXCPlugin_GetID"));
-		m_dll.getInt        = reinterpret_cast<GetIntFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_GetInt"));
-		m_dll.setInt        = reinterpret_cast<SetIntFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_SetInt"));
-		m_dll.getFloat      = reinterpret_cast<GetFloatFn*>(    GetProcAddress(hDLL, "NWNXCPlugin_GetFloat"));
-		m_dll.setFloat      = reinterpret_cast<SetFloatFn*>(    GetProcAddress(hDLL, "NWNXCPlugin_SetFloat"));
-		m_dll.getString     = reinterpret_cast<GetStringFn*>(   GetProcAddress(hDLL, "NWNXCPlugin_GetString"));
-		m_dll.setString     = reinterpret_cast<SetStringFn*>(   GetProcAddress(hDLL, "NWNXCPlugin_SetString"));
-		m_dll.getObjectSize = reinterpret_cast<GetGFFSizeFn*>(  GetProcAddress(hDLL, "NWNXCPlugin_GetGFFSize"));
-		m_dll.copyObject    = reinterpret_cast<GetGFFFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_GetGFF"));
-		m_dll.setObject     = reinterpret_cast<SetGFFFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_SetGFF"));
+		m_dll.newPlugin    = reinterpret_cast<NewPluginFn*>(   GetProcAddress(hDLL, "NWNXCPlugin_New"));
+		m_dll.deletePlugin = reinterpret_cast<DeletePluginFn*>(GetProcAddress(hDLL, "NWNXCPlugin_Delete"));
+		m_dll.getInfo      = reinterpret_cast<GetInfoFn*>(     GetProcAddress(hDLL, "NWNXCPlugin_GetInfo"));
+		m_dll.getVersion   = reinterpret_cast<GetVersionFn*>(  GetProcAddress(hDLL, "NWNXCPlugin_GetVersion"));
+		m_dll.getID        = reinterpret_cast<GetIDFn*>(       GetProcAddress(hDLL, "NWNXCPlugin_GetID"));
+		m_dll.getInt       = reinterpret_cast<GetIntFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_GetInt"));
+		m_dll.setInt       = reinterpret_cast<SetIntFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_SetInt"));
+		m_dll.getFloat     = reinterpret_cast<GetFloatFn*>(    GetProcAddress(hDLL, "NWNXCPlugin_GetFloat"));
+		m_dll.setFloat     = reinterpret_cast<SetFloatFn*>(    GetProcAddress(hDLL, "NWNXCPlugin_SetFloat"));
+		m_dll.getString    = reinterpret_cast<GetStringFn*>(   GetProcAddress(hDLL, "NWNXCPlugin_GetString"));
+		m_dll.setString    = reinterpret_cast<SetStringFn*>(   GetProcAddress(hDLL, "NWNXCPlugin_SetString"));
+		m_dll.getGFFSize   = reinterpret_cast<GetGFFSizeFn*>(  GetProcAddress(hDLL, "NWNXCPlugin_GetGFFSize"));
+		m_dll.getGFF       = reinterpret_cast<GetGFFFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_GetGFF"));
+		m_dll.setGFF       = reinterpret_cast<SetGFFFn*>(      GetProcAddress(hDLL, "NWNXCPlugin_SetGFF"));
 		// clang-format on
 	} else
 		throw std::exception(
@@ -65,6 +65,12 @@ CPlugin::CPlugin(HINSTANCE hDLL, const CPlugin::InitInfo& initInfo)
 		// Fallback to plugin file name
 		auto dllName = std::filesystem::path(initInfo.dll_path).stem().string();
 		m_dll.getID  = [dllName](void*) { return dllName.c_str(); };
+	}
+
+	// Sanity checks
+	if ((bool)m_dll.getGFFSize ^ (bool)m_dll.getGFF) {
+		throw std::exception("Both NWNXCPlugin_GetGFFSize and NWNXCPlugin_GetGFF must be "
+		                     "implemented by the plugin in order to use SCORCO functions");
 	}
 
 	// Initialize instance

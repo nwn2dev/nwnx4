@@ -80,20 +80,21 @@ class CPlugin
 	}
 	inline size_t GetGFFSize(const char* sVarName)
 	{
-		if (m_dll.getObjectSize) {
-			return m_dll.getObjectSize(m_instancePtr, sVarName);
+		if (m_dll.getGFFSize) {
+			return m_dll.getGFFSize(m_instancePtr, sVarName);
 		}
+		return 0;
 	}
 	inline void GetGFF(const char* sVarName, uint8_t* result, size_t resultSize)
 	{
-		if (m_dll.copyObject) {
-			return m_dll.copyObject(m_instancePtr, sVarName, result, resultSize);
+		if (m_dll.getGFF) {
+			m_dll.getGFF(m_instancePtr, sVarName, result, resultSize);
 		}
 	}
 	inline void SetGFF(const char* sVarName, const uint8_t* gffData, size_t gffDataSize)
 	{
-		if (m_dll.setObject) {
-			m_dll.setObject(m_instancePtr, sVarName, gffData, gffDataSize);
+		if (m_dll.setGFF) {
+			m_dll.setGFF(m_instancePtr, sVarName, gffData, gffDataSize);
 		}
 	}
 
@@ -130,9 +131,9 @@ class CPlugin
 		std::function<SetFloatFn> setFloat;
 		std::function<GetStringFn> getString;
 		std::function<SetStringFn> setString;
-		std::function<GetGFFSizeFn> getObjectSize;
-		std::function<GetGFFFn> copyObject;
-		std::function<SetGFFFn> setObject;
+		std::function<GetGFFSizeFn> getGFFSize;
+		std::function<GetGFFFn> getGFF;
+		std::function<SetGFFFn> setGFF;
 	} m_dll;
 };
 
