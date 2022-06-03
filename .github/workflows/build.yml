@@ -177,6 +177,10 @@ jobs:
       - name: "Configure NWNX4"
         shell: bash
         run: |
+          # Install old ini plugin for testing compatibility
+          cp .github/workflows/xp_ini.dll /c/nwnx4/plugins/
+          cp .github/workflows/test.ini /c/nwnx4_nwn2server/
+
           cd /c/nwnx4/
           cp config.example/* .
 
@@ -186,7 +190,7 @@ jobs:
             s|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home %NWNX4_DIR%/../nwn2home|g;
             s|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g;
 
-            s|plugin_list\s*=.*$|plugin_list = xp_bugfix,xp_fastboot,xp_funcs,${{matrix.sql}},xp_objectattributes,xp_pickpocket,xp_profiler,xp_rpc,xp_srvadmin,xp_time,xp_example_cplugin|g;
+            s|plugin_list\s*=.*$|plugin_list = xp_bugfix,xp_fastboot,xp_funcs,${{matrix.sql}},xp_objectattributes,xp_pickpocket,xp_profiler,xp_rpc,xp_srvadmin,xp_time,xp_example_cplugin,xp_ini|g;
 
             s|^restartDelay\s*=.*$|restartDelay = 600|g;
             s|^gamespyInterval\s*=.*$|gamespyInterval = 1|g;
@@ -196,7 +200,6 @@ jobs:
           echo "======================================== nwnx.ini"
           cat nwnx.ini
           echo "========================================"
-
       # - name: "Disable windows defender"
       #   run: |
       #     Add-MpPreference -ExclusionProcess "NWNX4_Controller.exe"

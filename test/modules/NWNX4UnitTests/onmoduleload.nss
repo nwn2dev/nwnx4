@@ -187,6 +187,51 @@ void nwnx_general(){
 }
 
 
+void legacy_compatibility(){
+	// xp_ini
+	int INI_FLAG_NONE = 0;
+	int INI_FLAG_OPEN_FILE = 1;
+	int INI_FLAG_SAVE_FILE = 2;
+	int INI_FLAG_CLOSE_FILE = 3;
+	int INI_FLAG_CREATE_FILE = 4;
+	int INI_FLAG_DELETE_FILE = 5;
+	int INI_FLAG_FILE_OPENED = 6;
+	int INI_FLAG_GET_UNICODE = 7;
+	int INI_FLAG_SET_UNICODE = 8;
+	int INI_FLAG_GET_MULTIKEY = 9;
+	int INI_FLAG_SET_MULTIKEY = 10;
+	int INI_FLAG_GET_MULTILINE = 11;
+	int INI_FLAG_SET_MULTILINE = 12;
+	int INI_FLAG_GET_USESPACES = 13;
+	int INI_FLAG_SET_USESPACES = 14;
+	int INI_FLAG_GET_PATH = 15;
+	int INI_FLAG_FILE_EMPTY = 16;
+	int INI_FLAG_INVALID = 17;
+
+
+	int nIniIndex = NWNXFindPluginByClass("INI");
+	Assert(nIniIndex >= 0, __FILE__, __LINE__);
+	// These two are not correctly implemented in the plugin, but it shouldn't segfault the nwn2server
+	AssertEqS(NWNXGetPluginInfo(nIniIndex), "", __FILE__, __LINE__);
+	AssertEqS(NWNXGetPluginSemVer(nIniIndex), "", __FILE__, __LINE__);
+
+	Assert(NWNXGetInt("INI", "test.ini", "test.ini", INI_FLAG_OPEN_FILE), __FILE__, __LINE__);
+
+	AssertEqI(NWNXGetInt("INI", "test.ini", "main|IntValue", INI_FLAG_NONE), 42, __FILE__, __LINE__);
+	AssertEqF(NWNXGetFloat("INI", "test.ini", "main|FloatValue", INI_FLAG_NONE), 13.37, 0.0001, __FILE__, __LINE__);
+	AssertEqS(NWNXGetString("INI", "test.ini", "main|StringValue", INI_FLAG_NONE), "hello world", __FILE__, __LINE__);
+
+	NWNXSetInt("INI", "test.ini", "main|IntValue", INI_FLAG_NONE, 43);
+	NWNXSetFloat("INI", "test.ini", "main|FloatValue", INI_FLAG_NONE, 24.48);
+	NWNXSetString("INI", "test.ini", "main|StringValue", INI_FLAG_NONE, "Wow it worked :)");
+
+	AssertEqI(NWNXGetInt("INI", "test.ini", "main|IntValue", INI_FLAG_NONE), 43, __FILE__, __LINE__);
+	AssertEqF(NWNXGetFloat("INI", "test.ini", "main|FloatValue", INI_FLAG_NONE), 24.48, 0.0001, __FILE__, __LINE__);
+	AssertEqS(NWNXGetString("INI", "test.ini", "main|StringValue", INI_FLAG_NONE), "Wow it worked :)", __FILE__, __LINE__);
+
+	Assert(NWNXGetInt("INI", "test.ini", "", INI_FLAG_CLOSE_FILE), __FILE__, __LINE__);
+}
+
 
 
 void main()
@@ -199,6 +244,10 @@ void main()
 
 	// Unit tests
 	nwnx_general();
+	if(NWNXFindPluginByClass("INI") >= 0)
+		legacy_compatibility();
+	else
+		WriteTimestampedLogEntry("WARNING: legacy_compatibility checks have been skipped. Load xp_ini plugin to run compatibility tests");
 	xp_sql();
 	DelayCommand(1.0, xp_time());
 	xp_funcs();
