@@ -10,32 +10,32 @@ object oContainer = CreateObject(OBJECT_TYPE_PLACEABLE, "plc_mc_lbox01", lStart)
 
 void ShutdownIfFailed(){
 	if(GetLocalInt(GetModule(), "shutting_down")){
-		WriteTimestampedLogEntry("!! Shutting down server because of failed asserts");
+		WriteTimestampedLogEntry("ERROR: Shutting down server because of failed asserts");
 		NWNXSetString("SRVADMIN", "SHUTDOWNNWN2SERVER", "", 0, "");
 	}
 }
 
 void Assert(int bCond, string sFunction, int nLine, string sMessage=""){
 	if(!bCond){
-		WriteTimestampedLogEntry(sFunction + ":" + IntToString(nLine) + ": Assert failed" + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed" + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
 void AssertEqS(string sA, string sB, string sFunction, int nLine, string sMessage=""){
 	if(sA != sB){
-		WriteTimestampedLogEntry(sFunction + ":" + IntToString(nLine) + ": Assert failed: '" + sA + "' != '" + sB + "'" + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed: '" + sA + "' != '" + sB + "'" + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
 void AssertEqI(int nA, int nB, string sFunction, int nLine, string sMessage=""){
 	if(nA != nB){
-		WriteTimestampedLogEntry(sFunction + ":" + IntToString(nLine) + ": Assert failed: " + IntToString(nA) + " != " + IntToString(nB) + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed: " + IntToString(nA) + " != " + IntToString(nB) + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
 void AssertEqF(float fA, float fB, float fPrecision, string sFunction, int nLine, string sMessage=""){
 	if(fabs(fA - fB) > fPrecision){
-		WriteTimestampedLogEntry(sFunction + ":" + IntToString(nLine) + ": Assert failed: " + FloatToString(fA, 0) + " != " + FloatToString(fA, 0) + " (precision: " + FloatToString(fPrecision, 0) + ")" + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed: " + FloatToString(fA, 0) + " != " + FloatToString(fA, 0) + " (precision: " + FloatToString(fPrecision, 0) + ")" + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
@@ -247,7 +247,7 @@ void main()
 	if(NWNXFindPluginByClass("INI") >= 0)
 		legacy_compatibility();
 	else
-		WriteTimestampedLogEntry("WARNING: legacy_compatibility checks have been skipped. Load xp_ini plugin to run compatibility tests");
+		WriteTimestampedLogEntry("WARN: legacy_compatibility checks have been skipped. Load xp_ini plugin to run compatibility tests");
 	xp_sql();
 	DelayCommand(1.0, xp_time());
 	xp_funcs();

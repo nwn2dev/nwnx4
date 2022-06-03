@@ -236,14 +236,6 @@ jobs:
             RES=1
           fi
 
-          # Print failed asserts if any
-          if grep -q "Assert failed" /c/nwn2temp/NWN2/LOGS.0/nwserverLog1.txt; then
-            echo "======================================== Failed asserts:"
-            grep "Assert failed" /c/nwn2temp/NWN2/LOGS.0/nwserverLog1.txt
-            echo "========================================"
-            RES=1
-          fi
-
           # Stop processes if still running
           taskkill //IM nwn2server.exe //IM NWNX4_Controller.exe //F ||true
 
@@ -257,6 +249,12 @@ jobs:
             C:/nwn2temp/NWN2/LOGS.0/*.txt
             C:/nwnx4/*.txt
           name: "test-logs-${{matrix.sql}}"
+
+      - name: Check for warnings and errors in logs
+        if: always()
+        shell: bash
+        run: |
+          ! grep -E "ERROR:|WARN: " /c/nwnx4/*.txt /c/nwn2temp/NWN2/LOGS.0/*.txt
 
   # --------------------------------------------------
 
