@@ -256,8 +256,7 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			if(index < plugins.size()){
 				auto p = plugins.begin();
 				std::advance(p, index);
-				strncpy_s(returnBuffer, MAX_BUFFER, p->second->description.c_str(), p->second->description.size());
-				return returnBuffer;
+				return p->second->GetString(sFunction, sParam1, nParam2);
 			}
 			return nullptr;
 		}
@@ -278,8 +277,7 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			if(index < plugins.size()){
 				auto p = plugins.begin();
 				std::advance(p, index);
-				strncpy_s(returnBuffer, MAX_BUFFER, p->second->version.c_str(), p->second->version.size());
-				return returnBuffer;
+				return p->second->GetString(sFunction, sParam1, nParam2);
 			}
 			return nullptr;
 		}
