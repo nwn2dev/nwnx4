@@ -5,10 +5,10 @@ services:
       context: .
       dockerfile: ./docker/nwn2server/Dockerfile
     volumes:
-      - "${NWN2_INSTALL_DIR}:/opt/neverwinter_nights_2"
-      - "wine32:/root/.wine32"
+      #- "${NWN2_INSTALL_DIR}:/opt/neverwinter_nights_2"
+      - "wine:/root/wine"
     ports:
       - "${SERVER_PORT:-5121}:5121"
 
 volumes:
-  wine32:
+  wine:

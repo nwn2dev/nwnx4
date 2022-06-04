@@ -1,3 +1,1 @@
-set -ev
-
 exec "$@"
