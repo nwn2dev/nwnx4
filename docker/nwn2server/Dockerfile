@@ -1,35 +1,32 @@
-FROM alpine:edge
+FROM i386/alpine:3.16.0
 
-ENV WINEDEBUG=fixme-all
 ENV WINEARCH=win32
 ENV WINEPREFIX=/root/.wine32
-
-# Set arch
-RUN echo "x86" > /etc/apk/arch
+ENV WINEDEBUG=fixme-all
 
 # Install wine and tools
 WORKDIR /usr/local/bin
 RUN apk add --no-cache xvfb xvfb-run wine && \
-    apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing winetricks && \
+    apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing mono winetricks && \
     apk add --update wget
-    # xvfb-run winetricks -q vcrun2005 vcrun2015 dotnet472
+RUN xvfb-run winecfg && \
+    winetricks -q vcrun2005 && \
+    winetricks -q vcrun2015 && \
+    winetricks -q dotnet472
 
-# Misc. NWNX4 setup
+# NWNX4 setup
 WORKDIR /opt/nwnx4
 COPY ./dist .
-
-WORKDIR /etc/nwnx4
-COPY ./dist/config.example/*.ini .
-COPY ./dist/plugins/*.dll ./plugins
+RUN mkdir -p /etc/nwnx4 && \
+    mv ./plugins /etc/nwnx4/plugins && \
+    mv ./*.ini /etc/nwnx4
 COPY ./docker/nwn2server/nwnx.ini /etc/nwnx4/nwnx.ini
-
-WORKDIR /opt/nwnx4
 RUN ln -s /etc/nwnx4/*.ini . && \
     ln -s /etc/nwnx4/plugins ./plugins
 
-# Post
-CMD ["tail", "-f", "/dev/null"]
-#ENTRYPOINT ["xvfb-run", "wine"]
-#CMD ["NWNX4_Controller.exe", "-interactive"]
-
+# Cleanup
+COPY ./docker/nwn2server/docker-entrypoint.sh /
+RUN chmod +x
+ENTRYPOINT ["sh", "/docker-entrypoint.sh"]
+CMD ["xvfb-run", "wine", "NWNX4_Controller.exe", "-interactive"]
 EXPOSE 5121
