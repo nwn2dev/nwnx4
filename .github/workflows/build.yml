@@ -134,7 +134,7 @@ jobs:
           mysql-version: '10.6'
           auto-start: true
 
-      - name: "Setup SQL user and database"
+      - name: "Setup MySQL user and database access"
         if: matrix.sql == 'xp_mysql'
         run: |
           mysql -uroot -hlocalhost -e "
@@ -159,11 +159,13 @@ jobs:
 
       - name: "Install choco packages"
         run: |
-          choco install directx
+          choco install directx vcredist2010
+        # Note: vcredist2010 is required for xp_ini (msvcr100.dll)
 
-      # ------------- Run module
+      # Download the repo for installing test module files
       - uses: actions/checkout@v2
 
+      # Download nwnx4 release zip
       - uses: actions/download-artifact@v2
         with:
           name: nwnx4-${{ github.sha }}
@@ -177,7 +179,13 @@ jobs:
       - name: "Configure NWNX4"
         shell: bash
         run: |
+          # Install old ini plugin for testing compatibility
+          cp .github/workflows/xp_ini.dll /c/nwnx4/plugins/
+          cp .github/workflows/test.ini /c/nwnx4_nwn2server/
+
           cd /c/nwnx4/
+
+          # Install default config for plugins
           cp config.example/* .
 
           # Configure nwnx.ini to load the module
@@ -186,7 +194,7 @@ jobs:
             s|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home %NWNX4_DIR%/../nwn2home|g;
             s|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g;
 
-            s|plugin_list\s*=.*$|plugin_list = xp_bugfix,xp_fastboot,xp_funcs,${{matrix.sql}},xp_objectattributes,xp_pickpocket,xp_profiler,xp_rpc,xp_srvadmin,xp_time,xp_example_cplugin|g;
+            s|plugin_list\s*=.*$|plugin_list = xp_bugfix,xp_fastboot,xp_funcs,${{matrix.sql}},xp_objectattributes,xp_pickpocket,xp_profiler,xp_srvadmin,xp_time,xp_example_cplugin,xp_ini|g;
 
             s|^restartDelay\s*=.*$|restartDelay = 600|g;
             s|^gamespyInterval\s*=.*$|gamespyInterval = 1|g;
@@ -233,18 +241,16 @@ jobs:
             RES=1
           fi
 
-          # Print failed asserts if any
-          if grep -q "Assert failed" /c/nwn2temp/NWN2/LOGS.0/nwserverLog1.txt; then
-            echo "======================================== Failed asserts:"
-            grep "Assert failed" /c/nwn2temp/NWN2/LOGS.0/nwserverLog1.txt
-            echo "========================================"
-            RES=1
-          fi
-
           # Stop processes if still running
           taskkill //IM nwn2server.exe //IM NWNX4_Controller.exe //F ||true
 
           exit $RES
+
+      - name: Check for warnings and errors in logs
+        if: always()
+        shell: bash
+        run: |
+          ! grep -E "ERROR:|WARN: " /c/nwnx4/*.txt /c/nwn2temp/NWN2/LOGS.0/*.txt
 
       - name: "Upload nwn2server logs"
         if: always()
