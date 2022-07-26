@@ -12,7 +12,6 @@ shared_library('xp_mysql',
     [
     	'../../misc/log.cpp',
 		'../database/dbplugin.cpp',
-        '../database/scorcohook.cpp',
 		'../plugin.cpp',
 		'mysql_plugin.cpp',
     ],

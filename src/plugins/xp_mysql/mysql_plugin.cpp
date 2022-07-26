@@ -82,10 +82,6 @@ MySQL::~MySQL()
 bool MySQL::Init(char* nwnxhome)
 {
 	SetupLogAndIniFile(nwnxhome);
-	if(HookSCORCO(logger))
-		logger->Info("* Hooking successful");
-	else
-		logger->Info("* Hooking failed");
 
 	config->Read("server", &server, std::string("localhost"));
 	config->Read("port", &port, 0);

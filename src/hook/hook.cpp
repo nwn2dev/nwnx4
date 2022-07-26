@@ -23,6 +23,7 @@
 #include <codecvt>
 #include <shellapi.h>
 #include <Shlobj.h>
+#include "scorcohook.h"
 
 /*
  * Globals.
@@ -44,6 +45,8 @@ char returnBuffer[MAX_BUFFER];
 HMODULE             g_Module;
 volatile LONG       g_InCrash;
 PCRASH_DUMP_SECTION g_CrashDumpSectionView;
+
+void (*SetLocalStringNextHook)() = nullptr;
 
 /***************************************************************************
     Fake export function for detours
@@ -647,6 +650,9 @@ void init()
 		missingFunction = true;
 	}
 
+	if(!SCORCOHook(logger))
+		missingFunction = true;
+
 	if (missingFunction)
 		logger->Err(
 			"!! One or more functions could not be hooked.\n"
@@ -654,6 +660,13 @@ void init()
 			"!! version of NWNX4, and come to our forums to get help or eventual updates.\n");
 
 	loadPlugins();
+
+	// Set SQL plugin for forwarding SCORCO functions
+	// This is necessary for SQL plugins that are still using the old Plugin class ABI
+	auto dbPluginIt = plugins.find("SQL");
+	if(dbPluginIt != plugins.cend()){
+		SCORCOSetLegacyDBPlugin(dynamic_cast<DBPlugin*>(dbPluginIt->second));
+	}
 
 	// Suppress general protection fault error box
 	bool noGPFaultErrorBox;

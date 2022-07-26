@@ -158,6 +158,27 @@ void xp_example_cplugin(){
 	AssertEqS(NWNXGetString("CPluginExample", "", "", 0), "", __FUNCTION__, __LINE__);
 	NWNXSetString("CPluginExample", "", "", 0, "Hello world");
 	AssertEqS(NWNXGetString("CPluginExample", "", "", 0), "Hello world", __FUNCTION__, __LINE__);
+
+	object oItem1 = CreateItemOnObject("nw_wswss001", oContainer);
+	StoreCampaignObject("NWNX.CPluginExample", "A", oItem1);
+	object oItem2 = CreateItemOnObject("nw_it_gem001", oContainer);
+	StoreCampaignObject("NWNX.CPluginExample", "A", oItem2);
+	object oItem3 = CreateItemOnObject("nw_it_gem002", oContainer);
+	Assert(GetIsObjectValid(oItem3), __FUNCTION__, __LINE__);
+	StoreCampaignObject("NWNX.CPluginExample", "B", oItem3);
+
+	object oRetrieved = RetrieveCampaignObject("NWNX.CPluginExample", "A", GetLocation(oContainer), oContainer);
+	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
+	AssertEqS(GetResRef(oRetrieved), "nw_wswss001", __FUNCTION__, __LINE__);
+	oRetrieved = RetrieveCampaignObject("NWNX.CPluginExample", "A", GetLocation(oContainer), oContainer);
+	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
+	AssertEqS(GetResRef(oRetrieved), "nw_it_gem001", __FUNCTION__, __LINE__);
+	oRetrieved = RetrieveCampaignObject("NWNX.CPluginExample", "B", GetLocation(oContainer), oContainer);
+	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
+	AssertEqS(GetResRef(oRetrieved), "nw_it_gem002", __FUNCTION__, __LINE__);
+
+	Assert(!GetIsObjectValid(RetrieveCampaignObject("NWNX.CPluginExample", "A", GetLocation(oContainer), oContainer)), __FUNCTION__, __LINE__);
+	Assert(!GetIsObjectValid(RetrieveCampaignObject("NWNX.CPluginExample", "B", GetLocation(oContainer), oContainer)), __FUNCTION__, __LINE__);
 }
 
 void nwnx_general(){

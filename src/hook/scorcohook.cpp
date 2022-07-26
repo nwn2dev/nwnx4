@@ -18,7 +18,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
 #include "scorcohook.h"
-#include "dbplugin.h"
+#include "hook.h"
+#include "nwn2heap.h"
+
+static DBPlugin* legacyDBPlugin = nullptr;
+void SCORCOSetLegacyDBPlugin(DBPlugin* dbplugin){
+	legacyDBPlugin = dbplugin;
+}
 
 int (__fastcall *OriginalSCO)(void* pThis, void* _, char** database, char** key, char** player, int flags, unsigned char* pData, int size);
 unsigned char* (__fastcall *OriginalRCO)(void* pThis, void* _, char** database, char** key, char** player, int* arg4, int* size);
@@ -31,8 +37,28 @@ int __fastcall SCOHookProc(void* pThis, void* _, char** database, char** key, ch
 	{
 		return OriginalSCO(pThis, _, database, key, player, flags, pData, size);
 	}
-	int lastRet = dbplugin->WriteScorcoData(pData, size);
-	return lastRet;
+	else
+	{
+		// *database starts with "NWNX"
+		if((*database)[4] == '.'){
+			// Send to CPlugin
+			auto pluginID = &(*database)[5];
+
+			auto pluginIt = cplugins.find(pluginID);
+			if(pluginIt != cplugins.end()){
+				pluginIt->second->SetGFF(*key, pData, size);
+				return true;
+			}
+		}
+		else{
+			// By default, send to SQL plugin
+			if(legacyDBPlugin != nullptr)
+				return legacyDBPlugin->WriteScorcoData(pData, size);
+			else
+				logger->Err("Called StoreCampaignObject(\"NWNX\", ...), but there is no SQL plugin");
+		}
+		return false;
+	}
 }
 
 unsigned char* __fastcall RCOHookProc(void* pThis, void* _, char** database, char** key, char** player, int* arg4, int* size)
@@ -43,11 +69,42 @@ unsigned char* __fastcall RCOHookProc(void* pThis, void* _, char** database, cha
 	{
 		return OriginalRCO(pThis, _, database, key, player, arg4, size);
 	}
-	unsigned char * lastRet = dbplugin->ReadScorcoData(*key, size);
-	return lastRet; 
+	else
+	{
+		// *database starts with "NWNX"
+		if((*database)[4] == '.'){
+			// Send to CPlugin
+			auto pluginID = &(*database)[5];
+
+			auto pluginIt = cplugins.find(pluginID);
+			if(pluginIt != cplugins.end()){
+				*size = pluginIt->second->GetGFFSize(*key);
+
+				if(*size > 0){
+					// Note: Any returned non-null pointer will be deallocated by the nwn2 server.
+					// Currently we cannot return data that isn't managed by the NWN2_HeapMgr
+					NWN2_HeapMgr *pHeapMgr = NWN2_HeapMgr::Instance();
+					NWN2_Heap *pHeap = pHeapMgr->GetDefaultHeap();
+					uint8_t* data = (uint8_t*) pHeap->Allocate(*size);
+
+					pluginIt->second->GetGFF(*key, data, *size);
+					return data;
+				}
+			}
+		}
+		else{
+			// By default, send to SQL plugin
+			if(legacyDBPlugin != nullptr)
+				return legacyDBPlugin->ReadScorcoData(*key, size);
+			else
+				logger->Err("Called RetrieveCampaignObject(\"NWNX\", ...), but there is no SQL plugin");
+		}
+
+		return nullptr;
+	}
 }
 
-DWORD FindHookSCO()
+static DWORD FindHookSCO()
 {
 	//8B 44 24 04 56 57 6A 01 50 8B F9 E8 ** ** ** ** 8B F0 85 F6 75 07 5F 33 C0 5E C2 18 00 8B 54 24 14
 	char* ptr = (char*) 0x400000;
@@ -94,7 +151,7 @@ DWORD FindHookSCO()
 	return NULL;
 }
 
-DWORD FindHookRCO()
+static DWORD FindHookRCO()
 {
 	//8B 44 24 04 56 57 33 FF 57 50 8B F1 E8 ** ** ** ** 85 C0 0F 84 9C 00 00 00 8B 4C 24 14 8B 54 24 10 51 52 50
 	char* ptr = (char*) 0x400000;
@@ -134,7 +191,7 @@ DWORD FindHookRCO()
 	return NULL;
 }
 
-int HookSCORCO(LogNWNX* logger)
+bool SCORCOHook(LogNWNX* logger)
 {	
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
@@ -150,8 +207,8 @@ int HookSCORCO(LogNWNX* logger)
 	}
 	else
 	{
-		logger->Info("! SCO locate failed.");
-		return 0;
+		logger->Err("! SCO locate failed.");
+		return false;
 	}
 
 	DWORD rco = FindHookRCO();
@@ -164,10 +221,10 @@ int HookSCORCO(LogNWNX* logger)
 	}
 	else
 	{
-		logger->Info("! RCO locate failed.");
-		return 0;
+		logger->Err("! RCO locate failed.");
+		return false;
 	}
     detour_success = DetourTransactionCommit()==0;
-	return sco_success&&rco_success&&detour_success;
+	return sco_success && rco_success&&detour_success;
 }
 

@@ -85,10 +85,6 @@ bool SQLite::Init(char* nwnxhome)
 {
 	// Read config
 	SetupLogAndIniFile(nwnxhome);
-	if(HookSCORCO(logger))
-		logger->Info("* Hooking successful");
-	else
-		logger->Info("* Hooking failed");
 
 	config->Read("file", &dbfile, std::string("sqlite.db"));
 	config->Read("wrap_transaction", &wrapTransaction, false);
