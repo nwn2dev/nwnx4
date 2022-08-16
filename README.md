@@ -142,7 +142,7 @@ You must configure NWNX4 as explained in nwnx4's
 [README.md](https://github.com/nwn2dev/nwnx4#first-installation).
 
 In order to run nwnx4 in a portable manner, you must add `-home
-"$NWNX4_DIR\..\home"` to the `parameters` option in `nwnx.ini`. Other
+"%NWNX4_DIR%\..\home"` to the `parameters` option in `nwnx.ini`. Other
 arguments are recommended but not required:
 
 ```ini
@@ -153,7 +153,7 @@ arguments are recommended but not required:
 # -publicserver         Disable server online advertising
 # -maxclients           Maximum number of connected players
 # -servervault 1        Makes the server automatically save the character in the servervault folder
-parameters = -home "$NWNX4_DIR\..\home" -moduledir YourModule -publicserver 0 -maxclients 1 -servervault 1
+parameters = -home "%NWNX4_DIR%\..\home" -moduledir YourModule -publicserver 0 -maxclients 1 -servervault 1
 ```
 
 ## Game launcher

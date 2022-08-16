@@ -24,11 +24,9 @@
     Implementation of DBPlugin
 ***************************************************************************/
 
-DBPlugin* dbplugin = nullptr;
 
 DBPlugin::DBPlugin()
 {
-	dbplugin = this;
 	header = "NWNX Base DB Plugin V.1.1";
 	subClass = "DBPlugin";
 	version = "1.1";

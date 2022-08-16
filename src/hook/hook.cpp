@@ -23,6 +23,7 @@
 #include <codecvt>
 #include <shellapi.h>
 #include <Shlobj.h>
+#include "scorcohook.h"
 
 /*
  * Globals.
@@ -44,6 +45,8 @@ char returnBuffer[MAX_BUFFER];
 HMODULE             g_Module;
 volatile LONG       g_InCrash;
 PCRASH_DUMP_SECTION g_CrashDumpSectionView;
+
+void (*SetLocalStringNextHook)() = nullptr;
 
 /***************************************************************************
     Fake export function for detours
@@ -256,8 +259,7 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			if(index < plugins.size()){
 				auto p = plugins.begin();
 				std::advance(p, index);
-				strncpy_s(returnBuffer, MAX_BUFFER, p->second->description.c_str(), p->second->description.size());
-				return returnBuffer;
+				return p->second->GetString((char*)"GET DESCRIPTION", sParam1, nParam2);
 			}
 			return nullptr;
 		}
@@ -278,8 +280,7 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			if(index < plugins.size()){
 				auto p = plugins.begin();
 				std::advance(p, index);
-				strncpy_s(returnBuffer, MAX_BUFFER, p->second->version.c_str(), p->second->version.size());
-				return returnBuffer;
+				return p->second->GetString((char*)"GET VERSION", sParam1, nParam2);
 			}
 			return nullptr;
 		}
@@ -649,6 +650,9 @@ void init()
 		missingFunction = true;
 	}
 
+	if(!SCORCOHook(logger))
+		missingFunction = true;
+
 	if (missingFunction)
 		logger->Err(
 			"!! One or more functions could not be hooked.\n"
@@ -656,6 +660,13 @@ void init()
 			"!! version of NWNX4, and come to our forums to get help or eventual updates.\n");
 
 	loadPlugins();
+
+	// Set SQL plugin for forwarding SCORCO functions
+	// This is necessary for SQL plugins that are still using the old Plugin class ABI
+	auto dbPluginIt = plugins.find("SQL");
+	if(dbPluginIt != plugins.cend()){
+		SCORCOSetLegacyDBPlugin(dynamic_cast<DBPlugin*>(dbPluginIt->second));
+	}
 
 	// Suppress general protection fault error box
 	bool noGPFaultErrorBox;

@@ -10,32 +10,32 @@ object oContainer = CreateObject(OBJECT_TYPE_PLACEABLE, "plc_mc_lbox01", lStart)
 
 void ShutdownIfFailed(){
 	if(GetLocalInt(GetModule(), "shutting_down")){
-		WriteTimestampedLogEntry("!! Shutting down server because of failed asserts");
+		WriteTimestampedLogEntry("ERROR: Shutting down server because of failed asserts");
 		NWNXSetString("SRVADMIN", "SHUTDOWNNWN2SERVER", "", 0, "");
 	}
 }
 
 void Assert(int bCond, string sFunction, int nLine, string sMessage=""){
 	if(!bCond){
-		WriteTimestampedLogEntry(sFunction + ":" + IntToString(nLine) + ": Assert failed" + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed" + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
 void AssertEqS(string sA, string sB, string sFunction, int nLine, string sMessage=""){
 	if(sA != sB){
-		WriteTimestampedLogEntry(sFunction + ":" + IntToString(nLine) + ": Assert failed: '" + sA + "' != '" + sB + "'" + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed: '" + sA + "' != '" + sB + "'" + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
 void AssertEqI(int nA, int nB, string sFunction, int nLine, string sMessage=""){
 	if(nA != nB){
-		WriteTimestampedLogEntry(sFunction + ":" + IntToString(nLine) + ": Assert failed: " + IntToString(nA) + " != " + IntToString(nB) + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed: " + IntToString(nA) + " != " + IntToString(nB) + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
 void AssertEqF(float fA, float fB, float fPrecision, string sFunction, int nLine, string sMessage=""){
 	if(fabs(fA - fB) > fPrecision){
-		WriteTimestampedLogEntry(sFunction + ":" + IntToString(nLine) + ": Assert failed: " + FloatToString(fA, 0) + " != " + FloatToString(fA, 0) + " (precision: " + FloatToString(fPrecision, 0) + ")" + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed: " + FloatToString(fA, 0) + " != " + FloatToString(fA, 0) + " (precision: " + FloatToString(fPrecision, 0) + ")" + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
@@ -158,6 +158,27 @@ void xp_example_cplugin(){
 	AssertEqS(NWNXGetString("CPluginExample", "", "", 0), "", __FUNCTION__, __LINE__);
 	NWNXSetString("CPluginExample", "", "", 0, "Hello world");
 	AssertEqS(NWNXGetString("CPluginExample", "", "", 0), "Hello world", __FUNCTION__, __LINE__);
+
+	object oItem1 = CreateItemOnObject("nw_wswss001", oContainer);
+	StoreCampaignObject("NWNX.CPluginExample", "A", oItem1);
+	object oItem2 = CreateItemOnObject("nw_it_gem001", oContainer);
+	StoreCampaignObject("NWNX.CPluginExample", "A", oItem2);
+	object oItem3 = CreateItemOnObject("nw_it_gem002", oContainer);
+	Assert(GetIsObjectValid(oItem3), __FUNCTION__, __LINE__);
+	StoreCampaignObject("NWNX.CPluginExample", "B", oItem3);
+
+	object oRetrieved = RetrieveCampaignObject("NWNX.CPluginExample", "A", GetLocation(oContainer), oContainer);
+	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
+	AssertEqS(GetResRef(oRetrieved), "nw_wswss001", __FUNCTION__, __LINE__);
+	oRetrieved = RetrieveCampaignObject("NWNX.CPluginExample", "A", GetLocation(oContainer), oContainer);
+	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
+	AssertEqS(GetResRef(oRetrieved), "nw_it_gem001", __FUNCTION__, __LINE__);
+	oRetrieved = RetrieveCampaignObject("NWNX.CPluginExample", "B", GetLocation(oContainer), oContainer);
+	Assert(GetIsObjectValid(oRetrieved), __FUNCTION__, __LINE__);
+	AssertEqS(GetResRef(oRetrieved), "nw_it_gem002", __FUNCTION__, __LINE__);
+
+	Assert(!GetIsObjectValid(RetrieveCampaignObject("NWNX.CPluginExample", "A", GetLocation(oContainer), oContainer)), __FUNCTION__, __LINE__);
+	Assert(!GetIsObjectValid(RetrieveCampaignObject("NWNX.CPluginExample", "B", GetLocation(oContainer), oContainer)), __FUNCTION__, __LINE__);
 }
 
 void nwnx_general(){
@@ -187,6 +208,51 @@ void nwnx_general(){
 }
 
 
+void legacy_compatibility(){
+	// xp_ini
+	int INI_FLAG_NONE = 0;
+	int INI_FLAG_OPEN_FILE = 1;
+	int INI_FLAG_SAVE_FILE = 2;
+	int INI_FLAG_CLOSE_FILE = 3;
+	int INI_FLAG_CREATE_FILE = 4;
+	int INI_FLAG_DELETE_FILE = 5;
+	int INI_FLAG_FILE_OPENED = 6;
+	int INI_FLAG_GET_UNICODE = 7;
+	int INI_FLAG_SET_UNICODE = 8;
+	int INI_FLAG_GET_MULTIKEY = 9;
+	int INI_FLAG_SET_MULTIKEY = 10;
+	int INI_FLAG_GET_MULTILINE = 11;
+	int INI_FLAG_SET_MULTILINE = 12;
+	int INI_FLAG_GET_USESPACES = 13;
+	int INI_FLAG_SET_USESPACES = 14;
+	int INI_FLAG_GET_PATH = 15;
+	int INI_FLAG_FILE_EMPTY = 16;
+	int INI_FLAG_INVALID = 17;
+
+
+	int nIniIndex = NWNXFindPluginByClass("INI");
+	Assert(nIniIndex >= 0, __FILE__, __LINE__);
+	// These two are not correctly implemented in the plugin, but it shouldn't segfault the nwn2server
+	AssertEqS(NWNXGetPluginInfo(nIniIndex), "", __FILE__, __LINE__);
+	AssertEqS(NWNXGetPluginSemVer(nIniIndex), "", __FILE__, __LINE__);
+
+	Assert(NWNXGetInt("INI", "test.ini", "test.ini", INI_FLAG_OPEN_FILE), __FILE__, __LINE__);
+
+	AssertEqI(NWNXGetInt("INI", "test.ini", "main|IntValue", INI_FLAG_NONE), 42, __FILE__, __LINE__);
+	AssertEqF(NWNXGetFloat("INI", "test.ini", "main|FloatValue", INI_FLAG_NONE), 13.37, 0.0001, __FILE__, __LINE__);
+	AssertEqS(NWNXGetString("INI", "test.ini", "main|StringValue", INI_FLAG_NONE), "hello world", __FILE__, __LINE__);
+
+	NWNXSetInt("INI", "test.ini", "main|IntValue", INI_FLAG_NONE, 43);
+	NWNXSetFloat("INI", "test.ini", "main|FloatValue", INI_FLAG_NONE, 24.48);
+	NWNXSetString("INI", "test.ini", "main|StringValue", INI_FLAG_NONE, "Wow it worked :)");
+
+	AssertEqI(NWNXGetInt("INI", "test.ini", "main|IntValue", INI_FLAG_NONE), 43, __FILE__, __LINE__);
+	AssertEqF(NWNXGetFloat("INI", "test.ini", "main|FloatValue", INI_FLAG_NONE), 24.48, 0.0001, __FILE__, __LINE__);
+	AssertEqS(NWNXGetString("INI", "test.ini", "main|StringValue", INI_FLAG_NONE), "Wow it worked :)", __FILE__, __LINE__);
+
+	Assert(NWNXGetInt("INI", "test.ini", "", INI_FLAG_CLOSE_FILE), __FILE__, __LINE__);
+}
+
 
 
 void main()
@@ -199,6 +265,10 @@ void main()
 
 	// Unit tests
 	nwnx_general();
+	if(NWNXFindPluginByClass("INI") >= 0)
+		legacy_compatibility();
+	else
+		WriteTimestampedLogEntry("WARN: legacy_compatibility checks have been skipped. Load xp_ini plugin to run compatibility tests");
 	xp_sql();
 	DelayCommand(1.0, xp_time());
 	xp_funcs();
