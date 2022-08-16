@@ -1,6 +1,7 @@
 version: "3"
 services:
   nwn2server:
+    container_name: nwn2server
     build:
       context: .
       dockerfile: ./docker/nwn2server/Dockerfile

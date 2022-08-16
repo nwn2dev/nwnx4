@@ -179,3 +179,33 @@ the server at `127.0.0.1:5121`.
 You must install your custom content (modules, campaigns, haks, tlks,
 override, ...) inside the `package-skel\home\` folder. This custom content
 will be used by both the server and the game client.
+
+## Docker setup
+
+Running NWN2 server in Linux is now no longer a pipe dream through Docker.
+
+| Env. Variable            | Definition                                                                              | Default?                                |
+|--------------------------|-----------------------------------------------------------------------------------------|-----------------------------------------|
+| NWN2_INSTALL_DIR         | The full path to your Neverwinter Nights 2 installation directory path on the host.     | N/A                                     |
+| NWN2_NWN2PLAYER_INI_PATH | The full path to your nwn2player.ini file. Contains server options for the NWN2 server. | (dist)/docker/nwn2server/nwn2player.ini |
+| NWN2_NWNX_INI_PATH       | The full path to your nwnx.ini file. Contains the NWNX4 extension configuration.        | (dist)/docker/nwn2server/nwnx.ini       |
+| SERVER_PORT              | Server port used for your NWN2 server.                                                  | 5121                                    |
+
+As seen in the table above, the only required environment variable is NWN2_INSTALL_DIR. Once defined, lifting the server is a single command ran from the distribution:
+
+```powershell
+docker-compose up -d
+```
+
+This is great for a local testing, but perhaps not the best for a remote deployment. One other advantage of Docker is the packaging of the containers
+into a deployable image.
+
+```powershell
+docker save -o nwn2server.tar nwn2server
+```
+
+Then load the image elsewhere.
+
+```powershell
+docker load -i nwn2server.tar
+```
