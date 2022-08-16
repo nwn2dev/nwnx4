@@ -58,3 +58,7 @@ subdir('src/plugins/xp_srvadmin')
 subdir('src/plugins/xp_example_cplugin')
 
 install_data('README.md', install_dir: '.')
+
+# Docker setup
+install_subdir('docker', install_dir: '.')
+install_data('docker-compose.yml', install_dir: '.')

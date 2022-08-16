@@ -4,8 +4,8 @@ set -xe
 
 if [ ! -f /opt/nwn2_stage/.staged ]
 then
+  cp -nr /opt/nwn2/* /opt/nwn2_stage/
   touch /opt/nwn2_stage/.staged
-  cp -nr /opt/neverwinter_nights_2/* /opt/nwn2_stage/
 fi
 
 exec "$@"
