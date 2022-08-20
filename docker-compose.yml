@@ -7,7 +7,7 @@ services:
       dockerfile: ./docker/nwn2server/Dockerfile
     volumes:
       - "${NWN2_INSTALL_DIR}:/opt/nwn2:ro"
-      - "${NWN2_HOME_DIR}:/home/nwn2:ro"
+      - "${NWN2_HOME_DIR}:/root/Neverwinter Nights 2"
       - "nwn2_stage:/opt/nwn2_stage"
     ports:
       - "${SERVER_PORT:-5121}:5121/udp"
@@ -15,7 +15,7 @@ services:
       NWNX4_PLUGIN_LIST: xp_bugfix, xp_sqlite, xp_funcs, xp_time, xp_srvadmin, xp_objectattributes
       NWNX4_NWN2: /opt/nwn2_stage
       NWNX4_NWN2TEMP: /tmp/nwn2
-      NWNX4_PARAMETERS: -module 0_Tutorial
+      NWNX4_PARAMETERS: -module /opt/nwn20_Tutorial
       NWNX4_PROCESS_WATCHDOG: 1
       NWNX4_GAMESPY_WATCHDOG: 1
       NWNX4_GAMESPY_INTERVAL: 30
