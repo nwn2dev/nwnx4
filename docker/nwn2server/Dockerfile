@@ -13,6 +13,11 @@ RUN dpkg --add-architecture i386 && \
     pip install --no-cache --upgrade pip supervisor && \
     xvfb-run wineboot && \
     xvfb-run winetricks -q sound=disabled && \
+    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add - && \
+    apt-get install -y apt-transport-https && \
+    echo "deb https://artifacts.elastic.co/packages/8.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-8.x.list && \
+    apt-get update && apt-get install -y logstash && \
+    ln -s /usr/share/logstash/bin/logstash /usr/local/bin/logstash && \
     apt-get clean && \
     apt-get autoclean && \
     apt-get autoremove && \
@@ -25,9 +30,10 @@ COPY ./docker/nwn2server/granny2.dll /opt/nwn2_stage/
 # NWNX4 setup
 COPY ./NWNX4_Controller.exe /opt/nwnx4/
 COPY ./NWNX4_Hook.dll /opt/nwnx4/
-COPY ./docker/nwn2server/nwnx.ini /opt/nwnx4
 COPY ./nwn2server-dll/*.dll /opt/nwnx4/nwn2server-dll/
 COPY ./plugins/*.dll /opt/nwnx4/plugins/
+COPY ./docker/nwn2server/nwnx.ini /opt/nwnx4
+COPY ./docker/nwn2server/logstash.conf /opt/nwnx4
 
 # Final
 COPY ./docker/nwn2server/supervisord.conf /etc/
