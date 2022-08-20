@@ -6,12 +6,27 @@ services:
       context: .
       dockerfile: ./docker/nwn2server/Dockerfile
     volumes:
-      - "${NWN2_INSTALL_DIR}:/opt/nwn2"
-      - "${NWN2_NWN2PLAYER_INI_PATH:-./docker/nwn2server/nwn2player.ini}:/opt/nwn2_stage/nwn2player.ini:ro"
-      - "${NWN2_NWNX_INI_PATH:-./docker/nwn2server/nwnx.ini}:/opt/nwnx4/nwnx.ini:ro"
+      - "${NWN2_INSTALL_DIR}:/opt/nwn2:ro"
+      - "${NWN2_HOME_DIR}:/home/nwn2:ro"
       - "nwn2_stage:/opt/nwn2_stage"
     ports:
       - "${SERVER_PORT:-5121}:5121/udp"
+    environment:
+      NWNX4_PLUGIN_LIST: xp_bugfix, xp_sqlite, xp_funcs, xp_time, xp_srvadmin, xp_objectattributes
+      NWNX4_NWN2: /opt/nwn2_stage
+      NWNX4_NWN2TEMP: /tmp/nwn2
+      NWNX4_PARAMETERS: -module 0_Tutorial
+      NWNX4_PROCESS_WATCHDOG: 1
+      NWNX4_GAMESPY_WATCHDOG: 1
+      NWNX4_GAMESPY_INTERVAL: 30
+      NWNX4_GAMESPY_TOLERANCE: 4
+      NWNX4_GAMESPY_DELAY: 30
+      NWNX4_RESTART_DELAY: 5
+      NWNX4_NO_GP_FAULT_ERROR_BOX: 1
+      NWNX4_RESTART_CMD: ""  # By default, we want nothing here
+      NWNX4_GRACEFUL_SHUTDOWN_TIMEOUT: 10
+      NWNX4_GRACEFUL_SHUTDOWN_MESSAGE: Server is shutting down NOW!
+      NWNX4_GRACEFUL_SHUTDOWN_MESSAGE_WAIT: 5
 
 volumes:
   nwn2_stage:

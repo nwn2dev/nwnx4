@@ -25,14 +25,17 @@
 #ifndef INI_HPP
 #define INI_HPP
 
-#include <string>
-#include <iostream>
+#include <windows.h>
 #include <fstream>
-#include <sstream>
+#include <iostream>
+#include <map>
+#include <processenv.h>
 #include <regex>
+#include <sstream>
+#include <string>
 #include <unordered_map>
 
-
+typedef std::map<std::string, std::string> environment_t;
 
 struct SimpleIniConfig {
     SimpleIniConfig(std::string filePath) {
@@ -43,13 +46,15 @@ struct SimpleIniConfig {
             data = sstr.str();
         }
 
+		setupEnvironmentList();
+
         auto rgx = std::regex("^(?!\\s*[#;])\\s*([^=]+?)\\s*=\\s*(.*)\\s*$");
 
         std::smatch match;
         while(std::regex_search(data, match, rgx)){
             auto key = match[1].str();
             auto value = match[2].str();
-            values[key] = value;
+            values[key] = parseConfigValue(value);
             data = match.suffix().str();
         }
     }
@@ -80,7 +85,7 @@ struct SimpleIniConfig {
             return true;
         }
 
-        *dest = defaultValue;
+		*dest = defaultValue;
         return false;
     }
 
@@ -91,6 +96,44 @@ struct SimpleIniConfig {
 
 private:
     std::unordered_map<std::string, std::string> values;
+	environment_t env;
+
+	void setupEnvironmentList() {
+		// Get all current environment variables; meant for injection
+		auto free = [](LPTCH p) { FreeEnvironmentStrings(p); };
+		auto env_block = std::unique_ptr<TCHAR, decltype(free)>{
+		  GetEnvironmentStrings(), free};
+
+		for (LPTCH i = env_block.get(); *i != '\0'; ++i) {
+			std::string key;
+			std::string value;
+
+			for (; *i != '='; ++i)
+				key += *i;
+			++i;
+			for (; *i != '\0'; ++i)
+				value += *i;
+
+			transform(key.begin(), key.end(), key.begin(), ::toupper);
+
+			// Only get environment variables with the prefix
+			if (!key.starts_with("NWNX4_")) {
+				continue;
+			}
+
+			env[key] = value;
+		}
+	}
+
+	std::string parseConfigValue(std::string value) {
+		// Run through each NWNX4_ environment values
+		for (auto& it: env) {
+			auto regex = std::regex("%" + it.first + "%", std::regex_constants::icase);
+			value = std::regex_replace(value, regex, it.second);
+		}
+
+		return value;
+	}
 };
 
 #endif // INI_HPP

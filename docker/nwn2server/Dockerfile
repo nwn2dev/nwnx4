@@ -23,7 +23,11 @@ RUN mkdir -p /tmp/nwn2
 COPY ./docker/nwn2server/granny2.dll /opt/nwn2_stage/
 
 # NWNX4 setup
-COPY . /opt/nwnx4
+COPY ./NWNX4_Controller.exe /opt/nwnx4/
+COPY ./NWNX4_Hook.dll /opt/nwnx4/
+COPY ./docker/nwn2server/nwnx.ini /opt/nwnx4
+COPY ./nwn2server-dll/*.dll /opt/nwnx4/nwn2server-dll/
+COPY ./plugins/*.dll /opt/nwnx4/plugins/
 
 # Final
 COPY ./docker/nwn2server/supervisord.conf /etc/
