@@ -15,7 +15,7 @@ services:
       NWNX4_PLUGIN_LIST: xp_bugfix, xp_sqlite, xp_funcs, xp_time, xp_srvadmin, xp_objectattributes
       NWNX4_NWN2: /opt/nwn2_stage
       NWNX4_NWN2TEMP: /tmp/nwn2
-      NWNX4_PARAMETERS: -module /opt/nwn20_Tutorial
+      NWNX4_PARAMETERS: -module 0_Tutorial
       NWNX4_PROCESS_WATCHDOG: 1
       NWNX4_GAMESPY_WATCHDOG: 1
       NWNX4_GAMESPY_INTERVAL: 30
