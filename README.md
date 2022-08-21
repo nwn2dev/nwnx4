@@ -184,28 +184,36 @@ will be used by both the server and the game client.
 
 Running NWN2 server in Linux is now no longer a pipe dream through Docker.
 
-| Env. Variable            | Definition                                                                              | Default?                                |
-|--------------------------|-----------------------------------------------------------------------------------------|-----------------------------------------|
-| NWN2_INSTALL_DIR         | The full path to your Neverwinter Nights 2 installation directory path on the host.     | N/A                                     |
-| NWN2_NWN2PLAYER_INI_PATH | The full path to your nwn2player.ini file. Contains server options for the NWN2 server. | (dist)/docker/nwn2server/nwn2player.ini |
-| NWN2_NWNX_INI_PATH       | The full path to your nwnx.ini file. Contains the NWNX4 extension configuration.        | (dist)/docker/nwn2server/nwnx.ini       |
-| SERVER_PORT              | Server port used for your NWN2 server.                                                  | 5121                                    |
+| Env. Variable      | Definition                                                                          | Default? |
+|--------------------|-------------------------------------------------------------------------------------|----------|
+| NWN2_INSTALL_DIR   | The full path to your Neverwinter Nights 2 installation directory path on the host. | N/A      |
+| NWN2_HOME_DIR      | The full path to your Neverwinter Nights 2 home directory, on your user account.    | N/A      |
+| SERVER_PORT        | External server port used for your NWN2 server.                                     | 5121     |
 
-As seen in the table above, the only required environment variable is NWN2_INSTALL_DIR. Once defined, lifting the server is a single command ran from the distribution:
+The only required environment variables are NWN2_INSTALL_DIR and NWN_HOME_DIR. Once defined, lifting the server is a 
+single command ran from the distribution:
 
 ```powershell
 docker-compose up -d
 ```
 
-This is great for a local testing, but perhaps not the best for a remote deployment. One other advantage of Docker is the packaging of the containers
-into a deployable image.
+There are environment variables used on the nwnx.ini file that pertain to setting the configuration. In most cases,
+you will not have to modify any of the environment variables except NWNX4_PLUGIN_LIST and NWNX4_PARAMETERS.
 
-```powershell
-docker save -o nwn2server.tar nwn2server
-```
-
-Then load the image elsewhere.
-
-```powershell
-docker load -i nwn2server.tar
-```
+| Env. Variable                        | Definition                                                                       | Default?                                                                  |
+|--------------------------------------|----------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| NWNX4_PLUGIN_LIST                    | List of all plugins to load when starting the NWN2Server process                 | xp_bugfix, xp_sqlite, xp_funcs, xp_time, xp_srvadmin, xp_objectattributes |
+| NWNX4_NWN2                           | Path to NWN2 installation (where nwn2server.exe is located)                      | /opt/nwn2                                                                 |
+| NWNX4_NWN2TEMP                       | You can override the tempory path NWN2 uses                                      | /tmp/nwn2                                                                 |
+| NWNX4_PARAMETERS                     | Command line parameters to start the server with                                 | -module 0_Tutorial                                                        |
+| NWNX4_PROCESS_WATCHDOG               | Should NWNX restart the server if the server process has gone away ?             | 1                                                                         |
+| NWNX4_GAMESPY_WATCHDOG               | Should NWNX restart the server if it locks up ?                                  | 1                                                                         |
+| NWNX4_GAMESPY_INTERVAL               | How often should the gamespy watchdog query the server ?                         | 30                                                                        |
+| NWNX4_GAMESPY_TOLERANCE              | How often may the server not react to gamespy queries ?                          | 4                                                                         |
+| NWNX4_GAMESPY_DELAY                  | How long should NWNX wait before the gamespy watchdog kick in ?                  | 30                                                                        | 
+| NWNX4_RESTART_DELAY                  | If the server crashes, how long should NWNX wait before it restarts the server ? | 5                                                                         |
+| NWNX4_NO_GP_FAULT_ERROR_BOX          | Should NWNX disable the general protection fault error dialog ?                  | 1                                                                         |
+| NWNX4_RESTART_CMD                    | If you want NWNX to execute a CMD or BAT file before restarting the server after | ""                                                                        |
+| NWNX4_GRACEFUL_SHUTDOWN_TIMEOUT      | How long should NWNX wait for the server to shutdown gracefully                  | 10                                                                        |
+| NWNX4_GRACEFUL_SHUTDOWN_MESSAGE      | You can enter a server message that will be sent to all players                  | Server is shutting down NOW!                                              |
+| NWNX4_GRACEFUL_SHUTDOWN_MESSAGE_WAIT | How long should the shutdown server message be displayed ?                       | 5                                                                         |
