@@ -12,7 +12,7 @@ RUN dpkg --add-architecture i386 && \
     apt-get install -y xvfb wine python3 python3-pip && \
     pip install --no-cache --upgrade pip supervisor && \
     xvfb-run wineboot && \
-    xvfb-run winetricks -q winxp sound=disabled && \
+    xvfb-run winetricks -q sound=disabled && \
     wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add - && \
     apt-get install -y apt-transport-https && \
     echo "deb https://artifacts.elastic.co/packages/8.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-8.x.list && \
