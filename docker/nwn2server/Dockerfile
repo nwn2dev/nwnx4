@@ -53,4 +53,3 @@ EXPOSE 5121/udp
 # Establish entrypoint; run supervisord for tasks
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["supervisord"]
-

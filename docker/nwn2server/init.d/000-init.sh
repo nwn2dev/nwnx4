@@ -4,6 +4,8 @@ pushd /opt/nwn2
 
 # Stage data on startup; do not overwrite
 cp --parents -v -n \
+  Campaigns/Neverwinter\ Nights\ 2\ Campaign*/Campaign.cam \
+  \
   Data/2DA*.zip \
   Data/convo*.zip \
   Data/Ini*.zip \
@@ -25,6 +27,8 @@ cp --parents -v -n \
 
 # Stage all modules and configuration files if there are changes
 cp --parents -v -u \
+  Modules/*.mod \
+  \
   nwn?.ini \
   nwn?player.ini \
   nwnpatch.ini \
