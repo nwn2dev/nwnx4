@@ -23,6 +23,7 @@
 #include <codecvt>
 #include <shellapi.h>
 #include <Shlobj.h>
+#include <unordered_set>
 #include "scorcohook.h"
 
 /*
@@ -36,7 +37,8 @@ PluginHashMap plugins;
 LegacyPluginHashMap legacyplugins;
 
 LogNWNX* logger;
-std::string nwnxHome;
+std::filesystem::path nwnxUserDir;
+std::filesystem::path nwnxInstallDir;
 SimpleIniConfig* config;
 
 char returnBuffer[MAX_BUFFER];
@@ -521,24 +523,31 @@ DWORD FindHook()
 
 void init()
 {
-	std::filesystem::path nwnxHomePath{nwnxHome};
-
 	// Add nwn2server-dll to DLL search path
 	if(!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)){
 		logger->Err("* SetDefaultDllDirectories failed (%d)", GetLastError());
 	}
-	auto path = nwnxHomePath / "nwn2server-dll";
-	if(!AddDllDirectory(path.c_str())){
-		logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
+	auto dllDirPath = nwnxUserDir / "nwn2server-dll";
+	if(std::filesystem::exists(dllDirPath)){
+		if(!AddDllDirectory(dllDirPath.c_str())){
+			logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
+		}
+	}
+	dllDirPath = nwnxInstallDir / "nwn2server-dll";
+	if(std::filesystem::exists(dllDirPath)){
+		if(!AddDllDirectory(dllDirPath.c_str())){
+			logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
+		}
 	}
 
-	auto logfile = nwnxHomePath / "nwnx.txt";
+	const auto logfile = nwnxUserDir / "nwnx.txt";
 	logger = new LogNWNX(logfile.string());
 	logger->Info("NWN Extender 4 V.1.1.0");
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
 
-    logger->Info("NWNX directory: %s", nwnxHomePath.string().c_str());
+    logger->Info("NWNX user directory: %ls", nwnxUserDir.c_str());
+    logger->Info("NWNX install directory: %ls", nwnxInstallDir.c_str());
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
@@ -549,7 +558,7 @@ void init()
 	CloseHandle(shmem->ready_event);
 
 	// open ini file
-	auto inifile = nwnxHomePath / "nwnx.ini";
+	auto inifile = nwnxUserDir / "nwnx.ini";
 	logger->Debug("Reading inifile %s", inifile.c_str());
 	config = new SimpleIniConfig(inifile.string());
 	logger->Configure(config);
@@ -763,15 +772,19 @@ void loadPlugins()
 		// plugin_list not found in config
 		logger->Warn("No 'plugin_list' found in nwnx.ini. All plugins in the nwnx4 directory will be loaded. This behavior is not recommended !");
 
-		// Add all plugins in nwnx4 dir to pluginList
-		auto dir = std::filesystem::directory_entry(nwnxHome);
-		for(auto& file : std::filesystem::directory_iterator(dir.path())){
-			auto filename = file.path().filename().string();
+		std::unordered_set<std::string> addedPlugins;
 
-			if(filename.length() > 4
-			&& filename.substr(0, 3) == "xp_"
-			&& filename.substr(filename.size() - 4) == ".dll"){
-				pluginList.push_back(file);
+		// Add all plugins in nwnx4 dir to pluginList
+		for (const auto& dir : {nwnxUserDir, nwnxInstallDir}) {
+			for (auto& file : std::filesystem::directory_iterator(dir)) {
+				auto filename = file.path().filename().string();
+				if (filename.length() > 4 && filename.substr(0, 3) == "xp_" &&
+				    filename.substr(filename.size() - 4) == ".dll") {
+					if (!addedPlugins.contains(filename)) {
+						pluginList.push_back(file);
+						addedPlugins.insert(filename);
+					}
+				}
 			}
 		}
 	}
@@ -812,8 +825,14 @@ void loadPlugins()
 			pluginPath = "plugins" / pluginPath;
 		}
 		// If relative path, prepend the nwnx4 dir
-		if(pluginPath.is_relative())
-			pluginPath = std::filesystem::directory_entry(nwnxHome) / pluginPath;
+		if(pluginPath.is_relative()){
+
+			auto pluginFullPath = nwnxUserDir / pluginPath;
+			if(std::filesystem::exists(pluginFullPath))
+				pluginPath = pluginFullPath;
+			else
+				pluginPath = nwnxInstallDir / pluginPath;
+		}
 
 		auto pluginPathStr = pluginPath.string();
 		auto pluginName = pluginPath.stem().string();
@@ -840,10 +859,11 @@ void loadPlugins()
 			try {
 				CPlugin::InitInfo initInfo{
 					.dll_path              = pluginPathStr.c_str(),
-					.nwnx_path             = nwnxHome.c_str(),
+					.nwnx_user_path        = nwnxUserDir.string().c_str(),
 					.nwn2_install_path     = nwn2InstallDir.c_str(),
 					.nwn2_home_path        = nwn2HomeDir.c_str(),
 					.nwn2_module_path      = nwn2ModulePathCStr,
+					.nwnx_install_path     = nwnxInstallDir.string().c_str(),
 				};
 
 				// Instantiate & initialize CPlugin
@@ -885,7 +905,8 @@ void loadPlugins()
 			Plugin* pPlugin = ((GetPluginPointer)pGetPluginPointer)();
 			if (pPlugin != nullptr)
 			{
-				if (!pPlugin->Init(nwnxHome.data()))
+				auto nwnxUserDirStr = nwnxUserDir.string();
+				if (!pPlugin->Init(nwnxUserDirStr.data()))
 					logger->Err("* Loading plugin %s: Error during plugin initialization.", pluginName.c_str());
 				else
 				{
@@ -920,7 +941,8 @@ void loadPlugins()
 			LegacyPlugin* pPlugin = ((GetLegacyPluginPointer)pGetPluginPointer)();
 			if (pPlugin != nullptr)
 			{
-				if (!pPlugin->Init(nwnxHome.data()))
+				auto nwnxUserDirStr = nwnxUserDir.string();
+				if (!pPlugin->Init(nwnxUserDirStr.data()))
 					logger->Err("* Loading plugin %s: [LEGACY] Error during plugin initialization.", pluginName.c_str());
 				else
 				{
@@ -987,7 +1009,8 @@ int WINAPI NWNXWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			// Initialize plugins and load configuration data.
 			//
 
-			nwnxHome = shmem->nwnx_dir;
+			nwnxUserDir = std::filesystem::path{shmem->nwnx_user_dir};
+			nwnxInstallDir = std::filesystem::path{shmem->nwnx_install_dir};
 
 			// Initialize hook.
 			init();

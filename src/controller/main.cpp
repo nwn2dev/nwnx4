@@ -182,15 +182,6 @@ int main(int argc,char *argv[])
 	STARTUP_ACTION = no_action;
 	serviceNo = 1;
 
-	// Set the current working directory to the executeables base directory
-	wchar_t path_buffer[_MAX_PATH];
-	wchar_t drive[_MAX_DRIVE];
-	wchar_t dir[_MAX_DIR];
-	GetModuleFileName(nullptr, path_buffer, MAX_PATH);
-	_wsplitpath( path_buffer, drive, dir, nullptr, nullptr);
-	_wmakepath(path_buffer, drive, dir, nullptr, nullptr);
-	SetCurrentDirectory(path_buffer);
-
 	// set up logging and process command line parameters
 	process_command_line(argc, argv);
 

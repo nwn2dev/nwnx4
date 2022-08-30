@@ -26,6 +26,7 @@
 #include <cwchar>
 #include <detours/detours.h>
 #include <processenv.h>
+#include <filesystem>
 #include "udp.h"
 #include "../misc/log.h"
 #include "../misc/shmem.h"
@@ -67,17 +68,19 @@ public:
 private:
 	SimpleIniConfig* config;
 
-	char m_nwnx4Dir[MAX_PATH];
+	std::filesystem::path m_nwnx4UserDir;
+	std::filesystem::path m_nwnx4InstallDir;
+	std::filesystem::path m_nwn2InstallDir;
 
 	CUDP *udp;
 	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
 
 	unsigned long tick;
-	std::string nwninstalldir;
 	bool initialized;
 	bool shuttingDown;
 
+	void populateUserDir();
     void setupTempDirectories();
 
 	bool startServerProcessInternal();
