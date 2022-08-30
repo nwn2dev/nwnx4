@@ -179,14 +179,16 @@ jobs:
       - name: "Configure NWNX4"
         shell: bash
         run: |
+          mkdir -p /c/nwnx4_user/ /c/nwnx4_user/plugins/
+
           # Install old ini plugin for testing compatibility
-          cp .github/workflows/xp_ini.dll /c/nwnx4/plugins/
+          cp .github/workflows/xp_ini.dll /c/nwnx4_user/plugins/
           cp .github/workflows/test.ini /c/nwnx4_nwn2server/
 
-          cd /c/nwnx4/
+          cd /c/nwnx4_user/
 
           # Install default config for plugins
-          cp config.example/* .
+          cp /c/nwnx4/config.example/* .
 
           # Configure nwnx.ini to load the module
           sed -i -E '
@@ -215,12 +217,11 @@ jobs:
         run: |
           set -o pipefail
 
-          cd /c/nwnx4/
+          cd /c/nwnx4_user/
           echo "> $(date --rfc-3339=seconds --utc) Start NWNX4"
 
           # Start NWNX4_Controller.exe with admin privileges
-          powershell -Command "Start-Process NWNX4_Controller.exe -ArgumentList '-verbose','-interactive' -Verb RunAs"
-          # powershell -Command "Start-Process NWNX4_Gui.exe -Verb RunAs"
+          powershell -Command "Start-Process ../nwnx4/NWNX4_Controller.exe -ArgumentList '-verbose','-interactive' -Verb RunAs"
 
           sleep 20
           echo "> $(date --rfc-3339=seconds --utc) Check NWNX4"
@@ -250,7 +251,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          ! grep -E "ERROR:|WARN: " /c/nwnx4/*.txt /c/nwn2temp/NWN2/LOGS.0/*.txt
+          ! grep -E "ERROR:|WARN: " /c/nwnx4_user/*.txt /c/nwn2temp/NWN2/LOGS.0/*.txt
 
       - name: "Upload nwn2server logs"
         if: always()
@@ -258,7 +259,7 @@ jobs:
         with:
           path: |
             C:/nwn2temp/NWN2/LOGS.0/*.txt
-            C:/nwnx4/*.txt
+            C:/nwnx4_user/*.txt
           name: "test-logs-${{matrix.sql}}"
 
   # --------------------------------------------------
