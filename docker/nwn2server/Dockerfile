@@ -45,7 +45,7 @@ RUN chmod +x /docker-entrypoint.sh
 
 # Establish volumes (folders outside context directory)
 VOLUME /opt/nwn2_stage
-VOLUME /home/Neverwinter\ Nights\ 2
+VOLUME /root/'Neverwinter Nights 2'
 
 # Expose UDP port 5121 for port access
 EXPOSE 5121/udp

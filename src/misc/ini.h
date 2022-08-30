@@ -127,15 +127,15 @@ private:
 
 	std::string parseConfigValue(std::string value) {
 		// Run through each NWNX4_ environment value
-		auto lc_value = value;
-		transform(lc_value.begin(), lc_value.end(), lc_value.begin(), ::toupper);
+		auto uc_value = value;
+		transform(uc_value.begin(), uc_value.end(), uc_value.begin(), ::toupper);
 
 		for (auto& it: env) {
 			auto pattern = "%" + it.first + "%";
 			auto replace = it.second;
 			size_t start_pos = 0;
 
-			while ((start_pos = lc_value.find(pattern, start_pos)) != std::string::npos) {
+			while ((start_pos = uc_value.find(pattern, start_pos)) != std::string::npos) {
 				value.replace(start_pos, pattern.length(), replace);
 				start_pos += pattern.length();
 			}
