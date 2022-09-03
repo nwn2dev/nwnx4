@@ -36,7 +36,7 @@ CPluginHashMap cplugins;
 PluginHashMap plugins;
 LegacyPluginHashMap legacyplugins;
 
-LogNWNX* logger;
+std::unique_ptr<LogNWNX> logger;
 std::filesystem::path nwnxUserDir;
 std::filesystem::path nwnxInstallDir;
 SimpleIniConfig* config;
@@ -541,7 +541,7 @@ void init()
 	}
 
 	const auto logfile = nwnxUserDir / "nwnx.txt";
-	logger = new LogNWNX(logfile.string());
+	logger = std::make_unique<LogNWNX>(logfile.string());
 	logger->Info("NWN Extender 4 V.1.1.0");
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
 	logger->Info("visit us at http://www.nwnx.org");
@@ -659,7 +659,7 @@ void init()
 		missingFunction = true;
 	}
 
-	if(!SCORCOHook(logger))
+	if(!SCORCOHook(logger.get()))
 		missingFunction = true;
 
 	if (missingFunction)

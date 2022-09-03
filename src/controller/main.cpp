@@ -21,13 +21,10 @@
 #include "controller.h"
 #include "service.h"
 #include "../nwnx_version.h"
+#include "../misc/windows_utils.h"
 
-enum actions { no_action, run_interactive, run_service };
-BOOL STARTUP_ACTION;
-
-NWNXController* controller;
-
-LogNWNX* logger;
+std::unique_ptr<NWNXController> controller;
+std::unique_ptr<LogNWNX> logger;
 int serviceNo;
 
 void start_worker(void);
@@ -60,162 +57,167 @@ DWORD WINAPI workerProcessThread(LPVOID lpParam)
 	return 0;
 }
 
-/***************************************************************************
-	Entry Point / main()
-***************************************************************************/
+std::unordered_map<std::string, std::string> parse_command_line(int argc, char *argv[]){
+	std::unordered_map<std::string, std::string> ret;
+	for(int i = 1 ; i < argc ; i++){
+		std::string arg{argv[i]};
 
-void process_command_line(int argc,char *argv[])
-{
-	std::string logfile = "nwnx_controller.txt";
-	LogLevel logLevel = LogLevel::info;
-
-	// Search for verbosity arg
-	for (int i = 1; i < argc; i++)
-	{
-		if (_stricmp(argv[i], "-verbose") == 0){
-			logLevel = LogLevel::trace;
-		}
-	}
-
-	// decide on log target (depending on whether
-	// we run interactive or as a service).
-	logger = nullptr;
-	for (int i = 0; i < argc; i++)
-	{
-		if (
-			(_stricmp(argv[i], "-interactive") == 0) ||
-			(_stricmp(argv[i], "-help") == 0)
-			)
-		{
-			logger = new LogNWNX(logLevel);
-			break;
-		}
-	}
-	if (argc == 1)
-		logger = new LogNWNX(logLevel);
-	if (!logger)
-		logger = new LogNWNX(logfile, logLevel);
-
-	logger->Info("");
-	logger->Info("NWNX4 Server Controller version " NWNX_VERSION_INFO);
-	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
-	logger->Info("visit us at http://www.nwnx.org");
-
-	if (argc == 1)
-	{
-		logger->Err("No command line parameters specified.");
-		logger->Err("Use -help for a list of valid parameters.");
-		return;
-	}
-
-	// scan for service number parameter
-	for (int i = 0; i < argc; i++)
-	{
-		if (_stricmp(argv[i], "-serviceno") == 0)
-		{
-			if (argc > i)
-			{
-				// next parameter is the number
-				i++;
-				if (argv[i])
-				{
-					serviceNo = atoi(argv[i]);
-					if ((serviceNo < 1) || (serviceNo > 1024))
-						serviceNo = 1;
-				}
+		if(arg == "-serviceno" || arg == "-userdir"){
+			// Arguments in the form -flag value
+			if(++i >= argc){
+				std::cerr << "Error: Missing value for argument " << arg << std::endl;
+				throw "Argument error";
 			}
+			ret.insert({arg, std::string{argv[i]}});
+		}
+		else if(arg.size() >= 1 && arg[0] == '-'){
+			// Arguments in the form -flag
+			ret.insert({arg, ""});
+		}
+		else{
+			std::cerr << "Error: Command-line arguments must start with '-'. Found " << arg << std::endl;
+			throw "Argument error";
 		}
 	}
-
-	for (int i = 0; i < argc; i++)
-	{
-		if (_stricmp(argv[i], "-help") == 0)
-		{
-			logger->Info("Valid parameters are:");
-			logger->Info("   -serviceno          Specify service instance number");
-			logger->Info("   -startservice       Start the NWNX service");
-			logger->Info("   -stopservice        Stop the NWNX service");
-			logger->Info("   -installservice     Install the NWNX service");
-			logger->Info("   -uninstallservice   Uninstall the NWNX service");
-			logger->Info("   -interactive        Start in interactive mode");
-
-			STARTUP_ACTION = no_action;
-		}
-
-		if (_stricmp(argv[i], "-interactive") == 0)
-		{
-			STARTUP_ACTION = run_interactive;
-		}
-
-		if (_stricmp(argv[i], "-startservice") == 0)
-		{
-			StartNWNXService(serviceNo);
-		}
-		if (_stricmp(argv[i], "-stopservice") == 0)
-		{
-			StopNWNXService(serviceNo);
-		}
-
-		if (_stricmp(argv[i], "-runservice") == 0)
-		{
-			// if called from Service Control Manager...
-			STARTUP_ACTION = run_service;
-		}
-
-		if (_stricmp(argv[i], "-installservice") == 0)
-		{
-			installservice(serviceNo);
-		}
-
-		if (_stricmp(argv[i], "-uninstallservice") == 0)
-		{
-			uninstallservice(serviceNo);
-		}
-	}
+	return ret;
 }
-
 
 
 int main(int argc,char *argv[])
 {
-    // init
-	STARTUP_ACTION = no_action;
-	serviceNo = 1;
+	const auto args = parse_command_line(argc, argv);
 
-	// set up logging and process command line parameters
-	process_command_line(argc, argv);
+	// Initialize logger with decent defaults
+	LogLevel logLevel = args.contains("-verbose") ? LogLevel::trace : LogLevel::info;
+	logger = std::make_unique<LogNWNX>(logLevel);
 
-	// open ini file
-	std::string inifile("nwnx.ini");
-	logger->Trace("Reading ini file '%s'", inifile.c_str());
-	auto config = new SimpleIniConfig(inifile);
-	logger->Configure(config);
-	controller = new NWNXController(config);
-
-	if (STARTUP_ACTION == run_interactive)
-	{
-		// start in interactive mode
-		logger->Info("Running in interactive mode.");
-		logger->Info("Press enter to stop the controller.");
-		logger->Info("NWNX will continue to run within nwnserver.");
-		start_worker();
-		getc(stdin);
+	if(args.size() == 0){
+		logger->Err("No command line parameters specified.");
+		logger->Err("Use -help for a list of valid parameters.");
+		return 1;
 	}
-	else if (STARTUP_ACTION == run_service)
-	{
-		// start as service
-		wchar_t serviceName[64];
-		swprintf(serviceName, 64, L"NWNX4-%d", serviceNo);
 
-		SERVICE_TABLE_ENTRY DispatchTable[] = {{ serviceName, NWNXServiceStart}, { nullptr, nullptr }};
-		if (!StartServiceCtrlDispatcher(DispatchTable))
-		{
-			logger->Err("* StartServiceCtrlDispatcher (%d)", GetLastError());
+	// Print help
+	if(args.contains("-help") || args.contains("-h")){
+		logger->Info("Valid parameters are:");
+		logger->Info("   -verbose            Increase log verbosity");
+		logger->Info("   -userdir <PATH>     Set NWNX4 user dir path instead of using %%CD%%");
+		logger->Info("");
+		logger->Info("   -interactive        Start in interactive mode");
+		logger->Info("");
+		logger->Info("   -serviceno <NUM>    Specify service instance number");
+		logger->Info("   -startservice       Start the NWNX service");
+		logger->Info("   -stopservice        Stop the NWNX service");
+		logger->Info("   -installservice     Install the NWNX service");
+		logger->Info("   -uninstallservice   Uninstall the NWNX service");
+		return 0;
+	}
+
+	// Move inside NWNX4 UserDir
+	if(args.contains("-userdir")){
+		auto userDir = std::filesystem::path{args.at("-userdir")};
+		if(!std::filesystem::exists(userDir)){
+			std::filesystem::create_directories(userDir);
+		}
+		SetCurrentDirectoryA(args.at("-userdir").c_str());
+	}
+
+	// Parse service number (may be used later)
+	serviceNo = 1;
+	if(args.contains("-serviceno")){
+		try{
+			serviceNo = std::stoi(args.at("-serviceno"));
+		}
+		catch(std::invalid_argument){
+			std::cerr << "Error: Service number '" << args.at("-serviceno") << "' is not an int" << std::endl;
+			return 1;
+		}
+	}
+
+	if(args.contains("-interactive") || args.contains("-runservice")){
+		logger->Info("NWNX4 Server Controller version " NWNX_VERSION_INFO);
+		logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
+		logger->Info("Contribute to the project: https://github.com/nwn2dev/nwnx4");
+
+		if(args.contains("-runservice")){
+			// Redirect logs to a file instead
+			logger = std::make_unique<LogNWNX>("nwnx_controller.txt", logLevel);
+
+			// userdir not explicitely set, move to the exe dir
+			if(!args.contains("-userdir")){
+				char executablePath[MAX_PATH] = {0};
+				if(GetModuleFileNameA(nullptr, executablePath, MAX_PATH) == 0){
+					auto errInfo = GetLastErrorInfo();
+					logger->Warn("Could not get executable path: Error %d: %s", errInfo.first, errInfo.second);
+				}
+				else{
+					SetCurrentDirectoryA(executablePath);
+				}
+			}
 		}
 
+		// open ini file
+		std::string inifile("nwnx.ini");
+		logger->Info("Reading ini file '%s'", inifile.c_str());
+		auto config = SimpleIniConfig(inifile);
+
+		// Reconfigure logger according to INI config
+		logger->Configure(&config);
+
+		controller = std::make_unique<NWNXController>(&config);
+
+		if (args.contains("-interactive"))
+		{
+			// start in interactive mode
+			logger->Info("Running in interactive mode.");
+			logger->Info("Press enter to stop the controller.");
+			logger->Info("NWNX will continue to run within nwnserver.");
+			start_worker();
+			getc(stdin);
+		}
+		else if (args.contains("-runservice"))
+		{
+			// start as service
+			wchar_t serviceName[64];
+			swprintf(serviceName, 64, L"NWNX4-%d", serviceNo);
+
+			SERVICE_TABLE_ENTRY DispatchTable[] = {{ serviceName, NWNXServiceStart}, { nullptr, nullptr }};
+			if (!StartServiceCtrlDispatcher(DispatchTable))
+			{
+				auto errInfo = GetLastErrorInfo();
+				logger->Err("* StartServiceCtrlDispatcher (%d): %s", errInfo.first, errInfo.second);
+			}
+		}
+		else
+			assert(0);
 	}
-	else {
-		logger->Err("No action specified. Use -interactive or -runservice to start the server.");
+	else if(args.contains("-startservice")){
+		if(!StartNWNXService(serviceNo)){
+			logger->Err("Failed to start service");
+			return 1;
+		}
+	}
+	else if(args.contains("-stopservice")){
+		if(!StopNWNXService(serviceNo)){
+			logger->Err("Failed to stop service");
+			return 1;
+		}
+	}
+	else if(args.contains("-installservice")){
+		if(!installservice(serviceNo)){
+			logger->Err("Failed to install service");
+			return 1;
+		}
+	}
+	else if(args.contains("-uninstallservice")){
+		if(!uninstallservice(serviceNo)){
+			logger->Err("Failed to uninstall service");
+			return 1;
+		}
+	}
+	else{
+		logger->Err("No action specified. Use -interactive or -runservice to start the server. -help to print all commands.");
+		return 1;
 	}
 	return 0;
 }

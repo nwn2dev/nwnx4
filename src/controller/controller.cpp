@@ -20,8 +20,9 @@
 ***************************************************************************/
 
 #include "controller.h"
+#include "../misc/windows_utils.h"
 
-extern LogNWNX* logger;
+extern std::unique_ptr<LogNWNX> logger;
 
 static std::string GetNwn2InstallPath()
 /*++
@@ -160,14 +161,6 @@ Author:
 	}
 }
 
-static std::pair<DWORD, const char*> GetLastErrorInfo(){
-	char* lpMsgBuf;
-	DWORD dw = GetLastError();
-	FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_IGNORE_INSERTS,
-		nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPSTR)&lpMsgBuf, 0, nullptr);
-	return {dw, lpMsgBuf};
-}
 
 NWNXController::NWNXController(SimpleIniConfig* config)
 {
@@ -181,7 +174,7 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 	char executablePath[MAX_PATH] = {0};
 	if(GetModuleFileNameA(nullptr, executablePath, MAX_PATH) == 0){
 		auto errInfo = GetLastErrorInfo();
-		logger->Warn("Could not get executable path: Error %d: %s");
+		logger->Warn("Could not get executable path: Error %d: %s", errInfo.first, errInfo.second);
 		logger->Warn("Falling back to %s as nwnx4 install dir", m_nwnx4UserDir);
 		m_nwnx4InstallDir = m_nwnx4UserDir;
 	}

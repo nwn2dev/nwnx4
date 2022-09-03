@@ -4,6 +4,7 @@
 #include <cwchar>
 #include <future>
 #include <filesystem>
+#include <cassert>
 
 #include <winsock2.h>
 #include <windows.h>

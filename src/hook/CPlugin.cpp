@@ -4,7 +4,7 @@
 #include <cassert>
 #include <filesystem>
 
-extern LogNWNX* logger;
+extern std::unique_ptr<LogNWNX> logger;
 
 CPlugin::CPlugin(HINSTANCE hDLL, const CPlugin::InitInfo& initInfo)
 {

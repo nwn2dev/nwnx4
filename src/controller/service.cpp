@@ -20,9 +20,13 @@
 
 #include "service.h"
 
-extern LogNWNX* logger;
+extern std::unique_ptr<LogNWNX> logger;
 SERVICE_STATUS_HANDLE NWNXServiceStatusHandle;
 SERVICE_STATUS NWNXServiceStatus;
+
+extern int serviceNo;
+extern void start_worker(void);
+extern std::unique_ptr<NWNXController> controller;
 
 SC_HANDLE getSCManager()
 {
@@ -43,7 +47,7 @@ BOOL installservice(int serviceNo)
 	SC_HANDLE schSCManager, schService;
 	SERVICE_DESCRIPTION sdBuf;
 
-    wchar_t szPath[MAX_PATH], cmdLine[MAX_PATH];
+    wchar_t szPath[MAX_PATH], cmdLine[MAX_PATH * 2];
     wchar_t serviceName[64];
     wchar_t displayName[64];
 
@@ -59,9 +63,12 @@ BOOL installservice(int serviceNo)
         return FALSE;
     }
 
+    wchar_t userDir[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, userDir);
+
 	swprintf(serviceName, 64, L"NWNX4-%d", serviceNo);
 	swprintf(displayName, 64, L"NWNX4 Service %d", serviceNo);
-	swprintf(cmdLine, MAX_PATH, L"%s -serviceno %d -runservice", szPath, serviceNo);
+	swprintf(cmdLine, MAX_PATH, L"\"%s\" -serviceno %d -userdir \"%s\" -runservice", szPath, serviceNo, userDir);
     // non-const cast: we can assume ChangeServiceConfig2 does not write to this
 	sdBuf.lpDescription = (wchar_t*)L"Neverwinter Nights Extender 4 service instance";
 
@@ -96,6 +103,7 @@ BOOL installservice(int serviceNo)
     }
 
     CloseServiceHandle(schService);
+    logger->Info("* Installed service %ls with userdir %ls", serviceName, userDir);
     return TRUE;
 
 }
