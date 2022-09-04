@@ -11,8 +11,9 @@ struct NWNXCPlugin_InitInfo
 {
 	/// Path to this plugin DLL file
 	const char* dll_path;
-	/// Path to the NWNX4 base directory, where nwnx4_controller.exe is located.
-	const char* nwnx_path;
+    /// Path to the NWNX4 user directory, where config files are stored and log files should be
+    /// written.
+	const char* nwnx_user_path;
 	/// Path to the NWN2 installation directory, where nwn2server.exe is located.
 	const char* nwn2_install_path;
 	/// Path to the NWN2 home folder, usually 'Documents\Neverwinter Nights 2'
@@ -21,6 +22,8 @@ struct NWNXCPlugin_InitInfo
 	/// Note: this value depends on the parameters list in nwnx.ini. If the server has not been
 	/// started with -module or -moduledir, this value is set to NULL.
 	const char* nwn2_module_path;
+    /// Path to the NWNX4 user directory, where nwnx4_controller.exe is located.
+    const char* nwnx_install_path;
 };
 
 //
