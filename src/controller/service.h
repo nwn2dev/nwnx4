@@ -21,10 +21,6 @@
 #include "controller.h"
 #include "../misc/log.h"
 
-extern int serviceNo;
-extern void start_worker(void);
-extern NWNXController* controller;
-
 VOID WINAPI NWNXServiceCtrlHandler (DWORD opcode); 
 DWORD NWNXServiceInitialization(DWORD argc, LPTSTR *argv, DWORD *specificError); 
 

@@ -78,11 +78,11 @@ void LogNWNX::Log(LogLevel level, const char* format, va_list a){
     std::string fmt;
     fmt += nowStr;
     switch(level){
-        case LogLevel::error:   fmt += "ERROR:"; break;
-        case LogLevel::warning: fmt += "WARN: "; break;
-        case LogLevel::info:    fmt += "Info: "; break;
-        case LogLevel::debug:   fmt += "Dbg:  "; break;
-        case LogLevel::trace:   fmt += "Trace:"; break;
+        case LogLevel::error:   fmt += "ERROR: "; break;
+        case LogLevel::warning: fmt += " WARN: "; break;
+        case LogLevel::info:    fmt += " Info: "; break;
+        case LogLevel::debug:   fmt += "  Dbg: "; break;
+        case LogLevel::trace:   fmt += "Trace: "; break;
         default: return;
     }
     fmt += format;
@@ -99,7 +99,7 @@ void LogNWNX::Log(LogLevel level, const char* format, va_list a){
 }
 
 void LogNWNX::LogStr(const char* message){
-    if (m_ofStream) {
+    if (m_ofStream.is_open()) {
         m_ofStream << message << std::endl;
         m_ofStream.flush();
     }

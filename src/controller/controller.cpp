@@ -20,8 +20,9 @@
 ***************************************************************************/
 
 #include "controller.h"
+#include "../misc/windows_utils.h"
 
-extern LogNWNX* logger;
+extern std::unique_ptr<LogNWNX> logger;
 
 static std::string GetNwn2InstallPath()
 /*++
@@ -160,6 +161,7 @@ Author:
 	}
 }
 
+
 NWNXController::NWNXController(SimpleIniConfig* config)
 {
     this->config = config;
@@ -167,9 +169,30 @@ NWNXController::NWNXController(SimpleIniConfig* config)
     // Setup temporary directories.
     this->setupTempDirectories();
 
+	m_nwnx4UserDir = std::filesystem::current_path();
+
+	char executablePath[MAX_PATH] = {0};
+	if(GetModuleFileNameA(nullptr, executablePath, MAX_PATH) == 0){
+		auto errInfo = GetLastErrorInfo();
+		logger->Warn("Could not get executable path: Error %d: %s", errInfo.first, errInfo.second);
+		logger->Warn("Falling back to %s as nwnx4 install dir", m_nwnx4UserDir);
+		m_nwnx4InstallDir = m_nwnx4UserDir;
+	}
+	else{
+		m_nwnx4InstallDir = std::filesystem::path{executablePath}.parent_path();
+	}
+
 	// Set nwnx4 dir env variable
-	GetCurrentDirectoryA(MAX_PATH, m_nwnx4Dir);
-	SetEnvironmentVariableA("NWNX4_DIR", m_nwnx4Dir);
+	SetEnvironmentVariableA("NWNX4_DIR", m_nwnx4UserDir.string().c_str()); // Kept for compatibility
+	SetEnvironmentVariableA("NWNX4_USER_DIR", m_nwnx4UserDir.string().c_str());
+	SetEnvironmentVariableA("NWNX4_INSTALL_DIR", m_nwnx4InstallDir.string().c_str());
+
+
+	// Populate user dir if it's currently empty
+	if(std::filesystem::is_empty(m_nwnx4UserDir)){
+		populateUserDir();
+	}
+
 
     tick = 0;
 	initialized = false;
@@ -207,6 +230,7 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 		}
 	}
 
+	std::string nwninstalldir;
 	if (!config->Read("nwn2", &nwninstalldir))
 	{
 		try{
@@ -217,8 +241,9 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 			return;
 		}
 	}
+	m_nwn2InstallDir = nwninstalldir;
 
-	logger->Trace("NWN2 install dir: %s", nwninstalldir.c_str());
+	logger->Trace("NWN2 install dir: %ls", m_nwn2InstallDir.c_str());
 	logger->Trace("NWN2 parameters: %s", parameters.c_str());
 }
 
@@ -228,6 +253,20 @@ NWNXController::~NWNXController()
 
 	if (udp)
 		delete udp;
+}
+
+void NWNXController::populateUserDir(){
+	if(!std::filesystem::exists(m_nwnx4UserDir / "plugins"))
+		std::filesystem::create_directory(m_nwnx4UserDir / "plugins");
+
+	if(!std::filesystem::exists(m_nwnx4UserDir / "nwn2server-dll"))
+		std::filesystem::create_directory(m_nwnx4UserDir / "nwn2server-dll");
+
+	for (auto& file : std::filesystem::directory_iterator(m_nwnx4InstallDir / "config.example")) {
+		auto filename = file.path().filename();
+		if(!std::filesystem::exists(m_nwnx4UserDir / filename))
+			std::filesystem::copy_file(file, m_nwnx4UserDir / filename);
+	}
 }
 
 void NWNXController::setupTempDirectories() {
@@ -265,31 +304,21 @@ void NWNXController::notifyServiceShutdown()
 
 bool NWNXController::startServerProcessInternal()
 {
-    SHARED_MEMORY shmem;
-	std::string nwnexe("\\nwn2server.exe");
-	auto pszHookDLLPath = "NWNX4_Hook.dll";
-
 	ZeroMemory(&si, sizeof(si));
 	ZeroMemory(&pi, sizeof(pi));
 	si.cb = sizeof(si);
 
-	auto exePath = nwninstalldir + nwnexe;
-	logger->Trace("Starting server executable %s in %s", exePath.c_str(), nwninstalldir.c_str());
+	auto exePath = m_nwn2InstallDir / "nwn2server.exe";
+	logger->Trace("Starting server executable: %ls", exePath.c_str());
 
-	char szDllPath[MAX_PATH];
-	LPSTR pszFilePart = nullptr;
-
-    if (!GetFullPathNameA(pszHookDLLPath, arrayof(szDllPath), szDllPath, &pszFilePart))
-	{
-		logger->Info("Error: %s could not be found.", pszHookDLLPath);
-		return false;
-	}
+	const auto hookDllPath = m_nwnx4InstallDir / "NWNX4_Hook.dll";
 
 	SECURITY_ATTRIBUTES SecurityAttributes;
 	SecurityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
 	SecurityAttributes.bInheritHandle = TRUE;
 	SecurityAttributes.lpSecurityDescriptor = 0;
 
+    SHARED_MEMORY shmem;
 	shmem.ready_event = CreateEvent(&SecurityAttributes, TRUE, FALSE, nullptr);
 	if(!shmem.ready_event)
 	{
@@ -315,12 +344,12 @@ bool NWNXController::startServerProcessInternal()
 		return false;
 	}
 
-	logger->Trace("Starting: %s\\%s", nwninstalldir.c_str(), params);
-	logger->Trace("with %s", szDllPath);
+	logger->Trace("CLI Arguments: %s", params);
+	logger->Trace("Injecting DLL %ls", hookDllPath.c_str());
 
-	if (!DetourCreateProcessWithDllExA(exePath.c_str(), params,
-                                    nullptr, nullptr, TRUE, dwFlags, nullptr, nwninstalldir.c_str(),
-                                    &si, &pi, szDllPath, nullptr))
+	if (!DetourCreateProcessWithDllExA(exePath.string().c_str(), params,
+                                    nullptr, nullptr, TRUE, dwFlags, nullptr, m_nwn2InstallDir.string().c_str(),
+                                    &si, &pi, hookDllPath.string().c_str(), nullptr))
 	{
 		auto err = GetLastError();
 		logger->Err("DetourCreateProcessWithDll failed: %d", err);
@@ -342,8 +371,11 @@ bool NWNXController::startServerProcessInternal()
 		{0xb6, 0xd7, 0x00, 0x60, 0x97, 0xb0, 0x10, 0xe3}
 	};
 
-	strncpy_s(shmem.nwnx_dir, MAX_PATH, m_nwnx4Dir, MAX_PATH);
-	logger->Debug("Injecting NWNX4 directory as '%s'", shmem.nwnx_dir);
+	strncpy_s(shmem.nwnx_user_dir, MAX_PATH, m_nwnx4UserDir.string().c_str(), MAX_PATH);
+	logger->Debug("Injecting NWNX4 user directory as '%s'", shmem.nwnx_user_dir);
+
+	strncpy_s(shmem.nwnx_install_dir, MAX_PATH, m_nwnx4InstallDir.string().c_str(), MAX_PATH);
+	logger->Debug("Injecting NWNX4 install directory as '%s'", shmem.nwnx_install_dir);
 
 	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {
 	    logger->Err("! Error: Could not copy payload to process. Error %d", GetLastError());

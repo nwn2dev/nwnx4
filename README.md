@@ -20,18 +20,24 @@ You must install:
 - [Visual C++ 2015 x86 Runtime](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe) <!-- msvc 2019 -->
 - [.NET Framework 4.7.2](https://download.visualstudio.microsoft.com/download/pr/1f5af042-d0e4-4002-9c59-9ba66bcf15f6/124d2afe5c8f67dfa910da5f9e3db9c1/ndp472-kb4054531-web.exe) or above <!-- xp_bugfix -->
 
-### First installation
+### Installation
+
 
 1. Download and extract the [NWNX4 zip
-   file](https://github.com/nwn2dev/nwnx4/releases) in any directory
-2. Copy all files from the `config.example/` folder to your nwnx4 folder (i.e.
-   to their parent directory)
-3. Customize the configuration files you just copied to suit your needs:
+   file](https://github.com/nwn2dev/nwnx4/releases) in `C:\Program Files
+   (x86)\nwnx4` (recommended). This folder is referenced as the "_Install
+   dir_"
+2. Create a new empty folder somewhere in your user profile, like
+   `%USERPROFILE%\Documents\nwnx4`. This folder is referenced as the "_User
+   dir_".
+3. Copy all files from `C:\Program Files (x86)\nwnx4\config.example\` to your
+   _User dir_ (`%USERPROFILE%\Documents\nwnx4`)
+4. Customize the configuration files you just copied to suit your needs:
     - `nwnx.ini`:
         + `plugin_list`: the list of all nwnx4 plugins that will be loaded.
-          You may want to add or remove some of them.
-        + `nwn2`: full or relative path to the NWN2 install folder. By default
-          nwnx4 will try to detect an existing NWN2 installation.
+          You may want to add or remove some of them. Additional plugins
+          should be installed in the `plugins` folder in _User dir_ (you may
+          need to create it).
         + `parameters`: nwn2server command line arguments. Examples:
             * `-module YourModuleName` to automatically load a module as a
               .mod file
@@ -39,27 +45,46 @@ You must install:
     - `xp_*.ini`: these are the plugins configuration files. Most plugins are
       shipped with convenient defaults, but you may need to tweak some of
       them. Note that the presence of a plugin configuration file does not
-      mean the plugin will be loaded (see `plugin_list` in `nwnx.ini`).
-4. Copy the `.nss` files from the `nwscript/` folder into your
-   module folder, **or** import `nwscript/nwnx.erf` into your module using the
-   NWN2 toolset. Overwrite existing files if prompted.
-5. Start NWNX4:
-    + Run `NWNX4_GUI.exe` for the GUI version
-    + Run `NWNX4_Controller.exe -interactive` in a shell for the command-line
-      version.
+      mean the plugin is loaded (see `plugin_list` in `nwnx.ini`).
+
+There are 3 methods for launching the server:
+- Using `NWNX4_GUI.exe` (graphical interface)
+    + Create a shortcut to `NWNX4_GUI.exe`, open its properties and edit the
+      "Run in" field to set to your _User dir_.
+    + Then Double click the shortcut to launch the server
+- Using `NWNX4_Controller.exe` (command-line)
+    + Run `NWNX4_Controller.exe -userdir "%USERPROFILE%\Documents\nwnx4"
+      -interactive` in a cmd window. If `-userdir` is not provided, the
+      current working directory will be used instead.
+- Using a Windows service:
+    + Run `NWNX4_Controller.exe -userdir "%USERPROFILE%\Documents\nwnx4"
+      -installservice` in a cmd window to register the service. If `-userdir`
+      is not provided, the _User dir_ will be the current working directory.
+    + Run `NWNX4_Controller.exe -startservice` to start the service and launch
+      the server
+
+
+#### Alternative install: single-folder
+
+Before NWNX4 v1.2.0, the _Install dir_ and _User dir_ were the same folder.
+This behavior is still supported but discouraged for server setups, as it
+makes updating NWNX4 harder.
+
+Double-clicking `NWNX4_GUI.exe` will launch NWNX4 with merged folder.
+
 
 ### Updating NWNX4
 
-1. Download and extract the [NWNX4 zip
-   file](https://github.com/nwn2dev/nwnx4/releases) into your existing nwnx4
-   directory, and overwrite everything
-2. Only configuration files inside `config.example/` will be updated. The
-   existing configuration files in the NWNX4 folder are not overwritten, but
-   **you may need to manually update** those configuration files (see the
-   [release notes](https://github.com/nwn2dev/nwnx4/releases)).
-3. Copy the `.nss` files from the `nwscript/` folder into your
-   module folder, **or** import `nwscript/nwnx.erf` into your module using the
-   NWN2 toolset. Overwrite existing files if prompted.
+1. Delete or rename your current NWNX4 _Install dir_
+2. Replace it with the latest [NWNX4 zip
+   file](https://github.com/nwn2dev/nwnx4/releases)
+3. Compare the new config files in `config.example/` with your existing config
+   files in the NWNX4 _User dir_. Read the release notes to see exactly what
+   changed.
+4. Copy the `.nss` files from the `nwscript/` folder into your module folder,
+   **or** import `nwscript/nwnx.erf` into your module using the NWN2 toolset.
+   Overwrite existing files if prompted.
+
 
 # Building from sources
 
@@ -118,7 +143,7 @@ This section will guide you through the process of creating a folder / zip
 file containing everything players will need to quickly run a NWN2 server with
 your custom content, for single-player or multi-player usage.
 
-## Skeleton
+### Skeleton
 
 Download this repository and copy the `package-skel` directory to any
 location. This folder contains some handy scripts, and the base structure for
@@ -133,7 +158,7 @@ package-skel\
 └── start-server.bat  Launcher for the server (with nwnx4)
 ```
 
-## NWNX4
+### NWNX4
 
 Download the [nwnx4 zip file](https://github.com/nwn2dev/nwnx4/releases), and
 extract it into `package-skel\nwnx4\`.
@@ -156,7 +181,7 @@ arguments are recommended but not required:
 parameters = -home "%NWNX4_DIR%\..\home" -moduledir YourModule -publicserver 0 -maxclients 1 -servervault 1
 ```
 
-## Game launcher
+### Game launcher
 
 Skywing's Client Extension can automatically detect NWN2 installation
 directory and provides a better NWN2 player experience. [Download it from the

@@ -73,7 +73,7 @@ BEGIN_EVENT_TABLE( MainFrame, wxFrame )
 	EVT_COMMAND  (ID_MAINFRAME, wxEVT_SERVER_KILLED, MainFrame::OnServerKilled)
 END_EVENT_TABLE()
 
-LogNWNX* logger;
+std::unique_ptr<LogNWNX> logger;
 
 /*!
  * MainFrame constructors
@@ -96,7 +96,7 @@ MainFrame::~MainFrame() {
  */
 bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
 {
-    logger = new GuiLog();
+    logger = std::make_unique<GuiLog>();
 
 ////@begin MainFrame creation
     wxFrame::Create( parent, id, caption, pos, size, style );
@@ -114,10 +114,10 @@ bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption,
 	m_startedAt->AppendText(now.Format());
 
     // open ini file
-    std::string inifile("nwnx.ini");
-    auto config = new SimpleIniConfig(inifile);
+    std::string inifile{"nwnx.ini"};
+    auto config = SimpleIniConfig{inifile};
 
-    controller = new NWNXController(config);
+    controller = new NWNXController{&config};
 
 	m_CmdLine->AppendText(controller->parameters);
 	m_PWEnabled->SetValue(controller->processWatchdog);
