@@ -1,14 +1,15 @@
 version: "3"
 services:
-  nwn2server:
-    container_name: nwn2server
-    image: nwn2server:latest
+  nwnx4:
+    container_name: nwnx4
+    image: nwnx4:latest
     build:
       context: ..
-      dockerfile: ./docker/nwn2server/Dockerfile
+      dockerfile: ./docker/nwnx4/Dockerfile
     volumes:
-      - "${NWN2_INSTALL_DIR}:/opt/nwn2:ro"
-      - "${NWN2_HOME_DIR}:/root/Neverwinter Nights 2"
+      - "${NWNX4_USER_DIR}:/opt/nwnx4"
+      - "${NWN2_INSTALL_DIR}:/srv/nwn2:ro"
+      - "${NWN2_HOME_DIR}:/home/nwnx4/Neverwinter Nights 2"
     ports:
       - "${SERVER_PORT:-5121}:5121/udp"
-    env_file: ./nwn2server/.env
+    user: "1000:1000"
