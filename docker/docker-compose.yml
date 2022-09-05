@@ -8,8 +8,7 @@ services:
       dockerfile: ./docker/nwnx4/Dockerfile
     volumes:
       - "${NWNX4_USER_DIR}:/opt/nwnx4"
-      - "${NWN2_INSTALL_DIR}:/srv/nwn2:ro"
-      - "${NWN2_HOME_DIR}:/home/nwnx4/Neverwinter Nights 2"
+      - "${NWN2_INSTALL_DIR}:/srv/nwn2"
+      - "${NWN2_HOME_DIR}:/root/Neverwinter Nights 2"
     ports:
       - "${SERVER_PORT:-5121}:5121/udp"
-    user: "1000:1000"

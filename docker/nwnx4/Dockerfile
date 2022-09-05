@@ -1,59 +1,56 @@
 FROM debian:bullseye
 
+ARG NWNX4_DIST_DIR=dist/
+
 ENV DISPLAY :0
 
 # All downloads will go to /usr/local/bin
 WORKDIR /usr/local/bin
 
 # Install all base requirements
-RUN dpkg --add-architecture i386 && \
-    apt-get update && apt-get upgrade -y && \
-    apt-get install -y software-properties-common apt-transport-https wget openssl xvfb && \
+RUN dpkg --add-architecture i386 \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y software-properties-common apt-transport-https wget openssl xvfb \
     \
-    apt-get install -y python3 python3-pip && \
-    pip install --no-cache --upgrade pip supervisor && \
+    && apt-get install -y python3 python3-pip \
+    && pip install --no-cache --upgrade pip supervisor \
     \
-    wget -O- https://dl.winehq.org/wine-builds/winehq.key | gpg --dearmor | tee /usr/share/keyrings/winehq.gpg && \
-    echo deb [signed-by=/usr/share/keyrings/winehq.gpg] https://dl.winehq.org/wine-builds/debian/ bullseye main | tee /etc/apt/sources.list.d/winehq.list && \
-    apt-get update && \
-    apt-get install -y --install-recommends wine32 && \
+    && wget -qO- https://dl.winehq.org/wine-builds/winehq.key | gpg --dearmor > /etc/apt/trusted.gpg.d/wine.gpg \
+    && echo 'deb http://dl.winehq.org/wine-builds/debian/ bullseye main' > /etc/apt/sources.list.d/wine.list \
+    && apt-get update \
+    && apt-get install -y --install-recommends winehq-stable \
     \
-    wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks && \
-    chmod +x winetricks && \
+    && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks \
+    && chmod +x winetricks \
     \
-    apt-get clean && \
-    apt-get autoclean && \
-    apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && apt-get autoclean \
+    && apt-get autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
-# Setup user
-RUN groupadd -g 1000 nwnx4 && \
-    useradd -g 1000 -u 1000 -G sudo -d /home/nwnx4 --create-home nwnx4
-
-# All run commands will be ran as nwnx4:nwnx4
-USER nwnx4:nwnx4
-
-COPY --chown=nwnx4:nwnx4 . /srv/nwnx4/
-COPY --chown=nwnx4:nwnx4 docker/nwnx4/supervisord.conf /etc/
-COPY --chown=nwnx4:nwnx4 docker/nwnx4/docker-entrypoint.sh /
-COPY --chown=nwnx4:nwnx4 docker/nwnx4/nwn2.reg /etc/nwn2/
+# Setup base distribution setup and base Docker commands
+COPY $NWNX4_DIST_DIR/* /srv/nwnx4/
+COPY docker/nwnx4/supervisord.conf /etc/
+COPY docker/nwnx4/docker-entrypoint.sh /
+COPY docker/nwnx4/nwn2.reg /root/.wine/
 
 # Entrypoint is set to execution
 RUN chmod +x /docker-entrypoint.sh
 
 # Apply wine setup and NWN2 registry keys
 ENV WINEARCH=win32
-ENV WINEDLLPATH=/etc/nwn2
-ENV WINEDLLOVERRIDES="granny2,mmdevapi=b,n"
+ENV WINEDEBUG=-fixme
 
-COPY --chown=nwnx4:nwnx4 docker/nwnx4/*.dll /etc/nwn2/
-
-RUN xvfb-run winetricks -q sound=disabled && \
-    xvfb-run wine regedit /C /etc/nwn2/nwn2.reg && sleep 1 && \
-    rm -rf /tmp/wine* && \
+RUN xvfb-run wineboot \
+    && xvfb-run winetricks -q sound=disabled \
+    && xvfb-run wine regedit /C "$HOME/.wine/nwn2.reg" && sleep 5 \
+    && rm -rf /tmp/wine* \
     \
-    mkdir -p "$HOME/.wine/drive_c/users/nwnx4/Temp/NWN2/LOGS.0" && \
-    ln -s /tmp/nwn2-logs "$HOME/.wine/drive_c/users/nwnx4/Temp/NWN2/LOGS.0"
+    && mkdir -p "$HOME/.wine/drive_c/users/nwnx4/Temp/NWN2/LOGS.0" \
+    && ln -s /tmp/nwn2-logs "$HOME/.wine/drive_c/users/nwnx4/Temp/NWN2/LOGS.0"
+
+# Add any DLLs in the nwnx4 image folder to system32, so we can use them instead of local copies
+COPY docker/nwnx4/*.dll /home/nwnx4/.wine/drive_c/windows/system32/
 
 # Set to NWNX4 user directory
 WORKDIR /opt/nwnx4
