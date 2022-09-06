@@ -199,7 +199,7 @@ bool SCORCOHook(LogNWNX* logger)
 	DWORD sco = FindHookSCO();
 	if (sco)
 	{
-		logger->Info("o SCO located at %x.", sco);
+		logger->Debug("SCO located at %x.", sco);
 		//odmbc.Log(0, "o SCO located at %x.\n", sco);
 		//sco_success = HookCode((PVOID) sco, SCOHookProc, (PVOID*) &OriginalSCO);
 		*(DWORD*)&OriginalSCO = sco;
@@ -207,21 +207,21 @@ bool SCORCOHook(LogNWNX* logger)
 	}
 	else
 	{
-		logger->Err("! SCO locate failed.");
+		logger->Err("SCO locate failed.");
 		return false;
 	}
 
 	DWORD rco = FindHookRCO();
 	if (rco)
 	{
-		logger->Info("o RCO located at %x.", rco);
+		logger->Debug("RCO located at %x.", rco);
 		//rco_success = HookCode((PVOID) rco, RCOHookProc, (PVOID*) &OriginalRCO);
 		*(DWORD*)&OriginalRCO = rco;
 		rco_success = DetourAttach(&(PVOID&)OriginalRCO, RCOHookProc)==0;
 	}
 	else
 	{
-		logger->Err("! RCO locate failed.");
+		logger->Err("RCO locate failed.");
 		return false;
 	}
     detour_success = DetourTransactionCommit()==0;

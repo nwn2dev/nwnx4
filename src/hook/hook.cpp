@@ -25,6 +25,8 @@
 #include <Shlobj.h>
 #include <unordered_set>
 #include "scorcohook.h"
+#include "../misc/windows_utils.h"
+#include "../nwnx_version.h"
 
 /*
  * Globals.
@@ -84,9 +86,9 @@ unsigned char* FindPattern(const unsigned char* pattern)
 
 int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 {
-	logger->Debug("call to NWNXGetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)", sPlugin, sFunction, sParam1, nParam2);
+	logger->Trace("call to NWNXGetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)", sPlugin, sFunction, sParam1, nParam2);
 
-	std::string pluginClass(sPlugin);
+	std::string_view pluginClass{sPlugin};
 
 	// NWNX internal forwarding
 	if (pluginClass == "NWNX")
@@ -114,109 +116,103 @@ int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			return -1;
 		}
 		else{
-			logger->Err("* NWNXGetInt: Unsupported NWNX function '%s'.", sFunction);
+			logger->Err("NWNXGetInt: Unsupported NWNX function '%s'.", sFunction);
 			return 0;
 		}
 	}
 
 	// CPlugin forwarding
-	auto cpluginIt = cplugins.find(pluginClass);
+	auto cpluginIt = cplugins.find(sPlugin);
 	if(cpluginIt != cplugins.end()){
 		return cpluginIt->second->GetInt(sFunction, sParam1, nParam2);
 	}
 
 	// Plugin class forwarding
-	auto pluginIt = plugins.find(pluginClass);
+	auto pluginIt = plugins.find(sPlugin);
 	if (pluginIt != plugins.end())
 	{
 		return pluginIt->second->GetInt(sFunction, sParam1, nParam2);
 	}
 
-	logger->Warn("* NWNXGetInt: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
+	logger->Warn("NWNXGetInt: Function class '%s' is not provided by any plugin. Check plugin_list in nwnx.ini.", sPlugin);
 	return 0;
 }
 
 
 void NWNXSetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2, int nValue)
 {
-	logger->Debug("call to NWNXSetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, nValue=%d)",
+	logger->Trace("call to NWNXSetInt(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, nValue=%d)",
 		sPlugin, sFunction, sParam1, nParam2, nValue);
 
-	std::string pluginClass(sPlugin);
-
 	// CPlugin forwarding
-	auto cpluginIt = cplugins.find(pluginClass);
+	auto cpluginIt = cplugins.find(sPlugin);
 	if(cpluginIt != cplugins.end()){
 		cpluginIt->second->SetInt(sFunction, sParam1, nParam2, nValue);
 		return;
 	}
 
 	// Plugin class forwarding
-	auto pluginIt = plugins.find(pluginClass);
+	auto pluginIt = plugins.find(sPlugin);
 	if (pluginIt != plugins.end())
 	{
 		pluginIt->second->SetInt(sFunction, sParam1, nParam2, nValue);
 		return;
 	}
 
-	logger->Warn("* NWNXSetInt: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
+	logger->Warn("NWNXSetInt: Function class '%s' is not provided by any plugin. Check plugin_list in nwnx.ini.", sPlugin);
 }
 
 float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 {
-	logger->Debug("call to NWNXGetFloat(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)",
+	logger->Trace("call to NWNXGetFloat(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)",
 		sPlugin, sFunction, sParam1, nParam2);
 
-	std::string pluginClass(sPlugin);
-
 	// CPlugin forwarding
-	auto cpluginIt = cplugins.find(pluginClass);
+	auto cpluginIt = cplugins.find(sPlugin);
 	if(cpluginIt != cplugins.end()){
 		return cpluginIt->second->GetFloat(sFunction, sParam1, nParam2);
 	}
 
 	// Plugin class forwarding
-	auto pluginIt = plugins.find(pluginClass);
+	auto pluginIt = plugins.find(sPlugin);
 	if (pluginIt != plugins.end())
 	{
 		return pluginIt->second->GetFloat(sFunction, sParam1, nParam2);
 	}
 
-	logger->Warn("* NWNXGetFloat: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
+	logger->Warn("NWNXGetFloat: Function class '%s' is not provided by any plugin. Check plugin_list in nwnx.ini.", sPlugin);
 	return 0.0;
 }
 
 void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, float fValue)
 {
-	logger->Debug("call to NWNXSetFloat(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, fValue=%f)",
+	logger->Trace("call to NWNXSetFloat(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, fValue=%f)",
 		sPlugin, sFunction, sParam1, nParam2, fValue);
 
-	std::string pluginClass(sPlugin);
-
 	// CPlugin forwarding
-	auto cpluginIt = cplugins.find(pluginClass);
+	auto cpluginIt = cplugins.find(sPlugin);
 	if(cpluginIt != cplugins.end()){
 		cpluginIt->second->SetFloat(sFunction, sParam1, nParam2, fValue);
 		return;
 	}
 
 	// Plugin class forwarding
-	auto pluginIt = plugins.find(pluginClass);
+	auto pluginIt = plugins.find(sPlugin);
 	if (pluginIt != plugins.end())
 	{
 		pluginIt->second->SetFloat(sFunction, sParam1, nParam2, fValue);
 		return;
 	}
 
-	logger->Warn("* NWNXSetFloat: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
+	logger->Warn("NWNXSetFloat: Function class '%s' is not provided by any plugin. Check plugin_list in nwnx.ini.", sPlugin);
 }
 
 char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 {
-	logger->Debug("call to NWNXGetString(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)",
+	logger->Trace("call to NWNXGetString(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)",
 		sPlugin, sFunction, sParam1, nParam2);
 
-	std::string pluginClass(sPlugin);
+	std::string_view pluginClass{sPlugin};
 
 	// NWNX internal forwarding
 	if (pluginClass == "NWNX")
@@ -287,13 +283,13 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 			return nullptr;
 		}
 		else{
-			logger->Err("* NWNXGetString: Unsupported NWNX function '%s'.", sFunction);
+			logger->Err("NWNXGetString: Unsupported NWNX function '%s'.", sFunction);
 			return nullptr;
 		}
 	}
 
 	// CPlugin forwarding
-	auto cpluginIt = cplugins.find(pluginClass);
+	auto cpluginIt = cplugins.find(sPlugin);
 	if(cpluginIt != cplugins.end()){
 		returnBuffer[0] = '\0';
 		cpluginIt->second->GetString(sFunction, sParam1, nParam2, returnBuffer, MAX_BUFFER);
@@ -301,112 +297,75 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	}
 
 	// Plugin class forwarding
-	auto pluginIt = plugins.find(pluginClass);
+	auto pluginIt = plugins.find(sPlugin);
 	if (pluginIt != plugins.end())
 	{
 		return pluginIt->second->GetString(sFunction, sParam1, nParam2);
 	}
 
-	logger->Warn("* NWNXGetString: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
+	logger->Warn("NWNXGetString: Function class '%s' is not provided by any plugin. Check plugin_list in nwnx.ini.", sPlugin);
 	return nullptr;
 }
 
 void NWNXSetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2, char* sValue)
 {
-	logger->Debug("call to NWNXSetString(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, sValue=%s)",
+	logger->Trace("call to NWNXSetString(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d, sValue=%s)",
 		sPlugin, sFunction, sParam1, nParam2, sValue);
 
-	std::string pluginClass(sPlugin);
-
 	// CPlugin forwarding
-	auto cpluginIt = cplugins.find(pluginClass);
+	auto cpluginIt = cplugins.find(sPlugin);
 	if(cpluginIt != cplugins.end()){
 		cpluginIt->second->SetString(sFunction, sParam1, nParam2, sValue);
 		return;
 	}
 
 	// Plugin class forwarding
-	auto pluginIt = plugins.find(pluginClass);
+	auto pluginIt = plugins.find(sPlugin);
 	if (pluginIt != plugins.end())
 	{
 		pluginIt->second->SetString(sFunction, sParam1, nParam2, sValue);
 		return;
 	}
 
-	logger->Warn("* NWNXSetString: Function class '%s' not provided by any plugin. Check your installation.", pluginClass.c_str());
+	logger->Warn("NWNXSetString: Function class '%s' is not provided by any plugin. Check plugin_list in nwnx.ini.", sPlugin);
 }
 
-
-void PayLoad(char *gameObject, char* nwnName, char* nwnValue)
+void LegacyPluginPayLoad(char *gameObject, char* nwnName, char* nwnValue)
 {
 	// NWNX!TIME!START!PARAM"
-	logger->Trace("* Payload called");
+	logger->Trace("Payload called");
 
 	if (!nwnName || !nwnValue)
 		return;
 
-	if (strncmp(nwnName, "NWNX!", 5) != 0) 	// not for us
+	std::string_view name{nwnName};
+	if (!name.starts_with("NWNX!")) 	// not for us
 		return;
 
 	std::string fClass, function;
-	std::string name(nwnName);
 
-
-	// Reimplementation without wxwidget
 	auto sep = name.find('!', 5);
 	if(sep != std::string::npos)
 	{
 		fClass = name.substr(5, sep - 5);
-		logger->Trace("* fClass=%s", fClass.c_str());
+		logger->Trace("fClass=%s", fClass.c_str());
 	}
 	else
 	{
-		logger->Info("* Function class not specified.");
+		logger->Info("Function class not specified.");
 		return;
 	}
 
 	if(sep + 1 < name.size()){
 		function = name.substr(sep + 1);
-		logger->Trace("* function=%s", function.c_str());
+		logger->Trace("function=%s", function.c_str());
 	}
 	else
-		logger->Info("* Function not specified.");
+		logger->Info("Function not specified.");
 
 
-	logger->Trace("* Function class '%s', function '%s'.", fClass.c_str(), function.c_str());
+	logger->Trace("Function class '%s', function '%s'.", fClass.c_str(), function.c_str());
 
-
-
-	// // maybe replace this code with old version..
-	// wxStringTokenizer tkz(name, wxT("!"));
-	// tkz.GetNextToken();
-
-	// if (tkz.HasMoreTokens())
-	// {
-	// 	fClass = tkz.GetNextToken();
-	// 	logger->Trace("* fClass=%s", fClass);
-	// }
-	// else
-	// {
-	// 	logger->Info("* Function class not specified.");
-	// 	return;
-	// }
-
-	// if (tkz.HasMoreTokens())
-	// {
-	// 	function = tkz.GetNextToken();
-	// 	logger->Trace("* function=%s", function);
-	// 	while (tkz.HasMoreTokens())
-	// 	{
-	// 		function.append(wxT("!") + tkz.GetNextToken());
-	// 	}
-	// }
-	// else
-	// {
-	// 	logger->Info("* Function not specified.");
-	// }
-
-	// logger->Trace("* Function class '%s', function '%s'.", fClass, function);
 
 	// try to call the plugin
 	auto it = legacyplugins.find(fClass);
@@ -436,7 +395,7 @@ void PayLoad(char *gameObject, char* nwnName, char* nwnValue)
 	{
 		//if (queryFunctions(fClass, function, nwnValue) == false)
 		//{
-			logger->Info("* Function class '%s' not provided by any plugin. Check your installation.",
+			logger->Info("Function class '%s' is not provided by any plugin. Check plugin_list in nwnx.ini.",
 				fClass.c_str());
 			*nwnValue = 0x0; //??
 		//}
@@ -465,7 +424,7 @@ void __declspec(naked) SetLocalStringHookProc()
 		lea eax, dword ptr ss:[ecx-0x190] // game object (param 1) ??
 		push eax
 
-		call PayLoad
+		call LegacyPluginPayLoad
 		add esp, 0xC
 
 		pop ebp		// restore register contents
@@ -525,41 +484,45 @@ void init()
 {
 	// Add nwn2server-dll to DLL search path
 	if(!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)){
-		logger->Err("* SetDefaultDllDirectories failed (%d)", GetLastError());
+		auto errInfo = GetLastErrorInfo();
+		logger->Err("SetDefaultDllDirectories failed. Error %d: %s", errInfo.first, errInfo.second);
 	}
 	auto dllDirPath = nwnxUserDir / "nwn2server-dll";
 	if(std::filesystem::exists(dllDirPath)){
 		if(!AddDllDirectory(dllDirPath.c_str())){
-			logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
+			auto errInfo = GetLastErrorInfo();
+			logger->Err("AddDllDirectoryA failed. Error %d: %s", errInfo.first, errInfo.second);
 		}
 	}
 	dllDirPath = nwnxInstallDir / "nwn2server-dll";
 	if(std::filesystem::exists(dllDirPath)){
 		if(!AddDllDirectory(dllDirPath.c_str())){
-			logger->Err("* AddDllDirectoryA failed (%d)", GetLastError());
+			auto errInfo = GetLastErrorInfo();
+			logger->Err("AddDllDirectoryA failed. Error %d: %s", errInfo.first, errInfo.second);
 		}
 	}
 
 	const auto logfile = nwnxUserDir / "nwnx.txt";
 	logger = std::make_unique<LogNWNX>(logfile.string());
-	logger->Info("NWN Extender 4 V.1.1.0");
+	logger->Info("NWNX4 " NWNX_VERSION_INFO);
 	logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
-	logger->Info("visit us at http://www.nwnx.org");
+	logger->Info("Contribute to the project at https://github.com/nwn2dev/nwnx4 !");
 
-    logger->Info("NWNX user directory: %ls", nwnxUserDir.c_str());
-    logger->Info("NWNX install directory: %ls", nwnxInstallDir.c_str());
+    logger->Info("NWNX4 user directory: %ls", nwnxUserDir.c_str());
+    logger->Info("NWNX4 install directory: %ls", nwnxInstallDir.c_str());
 
     // signal controller that we are ready
 	if (!SetEvent(shmem->ready_event))
 	{
-		logger->Err("* SetEvent failed (%d)", GetLastError());
+		auto errInfo = GetLastErrorInfo();
+		logger->Err("SetEvent failed. Error %d: %s", errInfo.first, errInfo.second);
 		return;
 	}
 	CloseHandle(shmem->ready_event);
 
 	// open ini file
 	auto inifile = nwnxUserDir / "nwnx.ini";
-	logger->Debug("Reading inifile %s", inifile.c_str());
+	logger->Info("NWNX4 Config: %ls", inifile.c_str());
 	config = new SimpleIniConfig(inifile.string());
 	logger->Configure(config);
 
@@ -684,10 +647,10 @@ void init()
 	{
 		DWORD dwMode = SetErrorMode(SEM_NOGPFAULTERRORBOX);
 		SetErrorMode(dwMode | SEM_NOGPFAULTERRORBOX);
-		logger->Info("* General protection fault error dialog disabled.");
+		logger->Info("General protection fault error dialog disabled.");
 	}
 
-	logger->Info("* NWNX4 activated.");
+	logger->Info("NWNX4 activated.");
 }
 
 /***************************************************************************
@@ -764,7 +727,7 @@ std::unordered_map<std::string, std::string> ParseServerCommandLine(){
 //
 void loadPlugins()
 {
-	logger->Info("* Loading plugins...");
+	logger->Info("Loading plugins...");
 
 	std::vector<std::filesystem::path> pluginList;
 	std::string pluginListStr;
@@ -843,13 +806,8 @@ void loadPlugins()
 		if (hDLL == nullptr)
 		{
 			// Failed to load the plugin
-			char* lpMsgBuf;
-			DWORD dw = GetLastError();
-			FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_IGNORE_INSERTS,
-				nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPSTR) &lpMsgBuf, 0, nullptr);
-
-			logger->Err("* Cannot load plugin dll %s: Error %d: %s", pluginName.c_str(), dw, lpMsgBuf);
+			auto errInfo = GetLastErrorInfo();
+			logger->Err("Cannot load plugin dll %s: Error %d: %s", pluginName.c_str(), errInfo.first, errInfo.second);
 			continue;
 		}
 
@@ -872,11 +830,11 @@ void loadPlugins()
 				if(cplugin->GetIsLoaded()){
 					auto id = cplugin->GetID();
 					if(cplugins.contains(id)){
-						logger->Warn("* Skipping C plugin v%d '%s': Class %s already registered by another plugin.",
+						logger->Warn("Skipping C plugin v%d '%s': Class %s already registered by another plugin.",
 							*cpluginABIVersion, pluginName.c_str(), id.c_str());
 					}
 					else{
-						logger->Info("* Loading C plugin v%d '%s': Successfully registered as ID: %s",
+						logger->Info("Loading C plugin v%d '%s': Successfully registered as ID: %s",
 							*cpluginABIVersion, pluginName.c_str(), id.c_str());
 						logger->Info("    Version: %s", cplugin->GetVersion().c_str());
 						logger->Info("    Info: %s", cplugin->GetInfo().c_str());
@@ -884,11 +842,11 @@ void loadPlugins()
 					}
 				}
 				else{
-					logger->Err("* Failed to initialize C plugin v%d '%s'",
+					logger->Err("Failed to initialize C plugin v%d '%s'",
 						*cpluginABIVersion, pluginName.c_str());
 				}
 			} catch (const std::exception& exception) {
-				logger->Err("* Exception thrown while loading C plugin v%d '%s': %s",
+				logger->Err("Exception thrown while loading C plugin v%d '%s': %s",
 					*cpluginABIVersion, pluginName.c_str(), exception.what());
 			}
 
@@ -907,27 +865,27 @@ void loadPlugins()
 			{
 				auto nwnxUserDirStr = nwnxUserDir.string();
 				if (!pPlugin->Init(nwnxUserDirStr.data()))
-					logger->Err("* Loading plugin %s: Error during plugin initialization.", pluginName.c_str());
+					logger->Err("Loading plugin %s: Error during plugin initialization (init() returned false).", pluginName.c_str());
 				else
 				{
 					char fClass[128];
 					pPlugin->GetFunctionClass(fClass);
 					if (plugins.find(fClass) == plugins.end())
 					{
-						logger->Info("* Loading plugin %s: Successfully registered as class: %s",
+						logger->Info("Loading plugin %s: Successfully registered as class: %s",
 							pluginName.c_str(), fClass);
 						plugins[fClass] = pPlugin;
 					}
 					else
 					{
-						logger->Warn("* Skipping plugin %s: Class %s already registered by another plugin.",
+						logger->Warn("Skipping plugin %s: Class %s already registered by another plugin.",
 							pluginName.c_str(), fClass);
 						FreeLibrary(hDLL);
 					}
 				}
 			}
 			else
-				logger->Err("* Loading plugin %s: Error while instancing plugin.", pluginName.c_str());
+				logger->Err("Loading plugin %s: Error while instancing plugin (GetPluginPointerV2() returned null).", pluginName.c_str());
 
 			continue;
 		}
@@ -943,33 +901,33 @@ void loadPlugins()
 			{
 				auto nwnxUserDirStr = nwnxUserDir.string();
 				if (!pPlugin->Init(nwnxUserDirStr.data()))
-					logger->Err("* Loading plugin %s: [LEGACY] Error during plugin initialization.", pluginName.c_str());
+					logger->Err("Loading plugin %s: [LEGACY] Error during plugin initialization (init() returned false).", pluginName.c_str());
 				else
 				{
 					char fClass[128];
 					pPlugin->GetFunctionClass(fClass);
 					if (plugins.find(fClass) == plugins.end())
 					{
-						logger->Info("* Loading plugin %s: [LEGACY] Successfully registered as class: %s",
+						logger->Info("Loading plugin %s: [LEGACY] Successfully registered as class: %s",
 							pluginName.c_str(), fClass);
 						legacyplugins[fClass] = pPlugin;
 					}
 					else
 					{
-						logger->Warn("* Skipping plugin %s: [LEGACY] Class %s already registered by another plugin.",
+						logger->Warn("Skipping plugin %s: [LEGACY] Class %s already registered by another plugin.",
 							pluginName.c_str(), fClass);
 						FreeLibrary(hDLL);
 					}
 				}
 			}
 			else
-				logger->Err("* Loading plugin %s: [LEGACY] Error while instancing plugin.", pluginName.c_str());
+				logger->Err("Loading plugin %s: [LEGACY] Error while instancing plugin (GetPluginPointer() returned null).", pluginName.c_str());
 
 			continue;
 		}
 
-		// No compatible API found
-		logger->Info("* Loading plugin %s: Error. Could not retrieve instantiation function.", pluginName.c_str());
+		// No compatible ABI found
+		logger->Err("Loading plugin %s: Error. Could not find a compatible ABI.", pluginName.c_str());
 	}
 }
 
@@ -1059,7 +1017,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 		// otherwise clean shutdown.
 		//
 
-//		wxLogMessage(wxT("* NWNX4 shutting down."));
+//		wxLogMessage(wxT("NWNX4 shutting down."));
 	}
     return TRUE;
 }
