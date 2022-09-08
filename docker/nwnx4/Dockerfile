@@ -6,12 +6,7 @@ ARG NWNX4_DIST_DIR=dist/
 # Install requirements
 RUN dpkg --add-architecture i386 \
     && apt-get update \
-    && apt-get install -y gnupg wget xvfb supervisor \
-    \
-    && wget -qO- https://dl.winehq.org/wine-builds/winehq.key | gpg --dearmor > /etc/apt/trusted.gpg.d/wine.gpg \
-    && echo 'deb http://dl.winehq.org/wine-builds/debian/ bullseye main' > /etc/apt/sources.list.d/wine.list \
-    && apt-get update \
-    && apt-get install -y --install-recommends winehq-stable \
+    && apt-get install -y wget supervisor xvfb wine32 \
     \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
@@ -33,9 +28,6 @@ COPY --chown=nwnx4:nwnx4 $NWNX4_DIST_DIR /opt/nwnx4/
 # Add the key registry for NWN2 setup
 COPY --chown=nwnx4:nwnx4 docker/nwnx4/nwn2.reg /opt/
 
-# Add DLLs needed to run (granny2 can be unstable)
-COPY --chown=nwnx4:nwnx4 --chmod=644 docker/nwnx4/granny2_patch.dll /opt/
-
 # Configure Wine
 ENV WINEARCH=win32
 
@@ -49,6 +41,9 @@ RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
     && wineserver --wait \
     \
     && rm -rf /tmp/wine*
+
+# Add NWN2 stage folder to image
+COPY --chown=nwnx4:nwnx4 docker/nwnx4/nwn2-stage /opt/nwn2-stage
 
 # Associated NWN2/NWNX4 volumes bindings
 VOLUME ["/srv/nwnx4-user", "/srv/nwn2", "/srv/nwn2-home", "/srv/nwn2-logs"]
