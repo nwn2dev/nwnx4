@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Set the ownership of all core folders to nwnx4 user/group
 for file in /srv/{nwnx4-user,nwn2-home,nwn2-logs}; do
-  chown nwnx4:nwnx4 "$file"
+  chown nwnx4:nwnx4 -R "$file"
 done
 
 # If the NWN2 stage file does not exist in NWN2 install directory, drop
