@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX SQLite - Database plugin for SQLite
-    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com) 
+    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,20 +25,19 @@
 #include "../database/dbplugin.h"
 #include "lib/sqlite3.h"
 
-class SQLite : public DBPlugin
-{
+class SQLite : public DBPlugin {
 public:
 	SQLite();
 	~SQLite() override;
 
-	bool Init(char* nwnxhome);  
+	bool Init(char* nwnxhome);
 
 private:
 	std::string dbfile;
 	bool firstfetch;
 	bool wrapTransaction;
 
-	sqlite3 *sdb;
+	sqlite3* sdb;
 	sqlite3_stmt* pStmt;
 
 	bool Connect();
@@ -49,10 +48,10 @@ private:
 	int GetAffectedRows() override;
 	void GetEscapeString(char* str, char* buffer) override;
 	int GetErrno() override;
-	const char *GetErrorMessage() override;
+	const char* GetErrorMessage() override;
 	int GetLastInsertID() override;
 	bool WriteScorcoData(BYTE* pData, int Length) override;
-	BYTE* ReadScorcoData(char *param, int *size) override;
+	BYTE* ReadScorcoData(char* param, int* size) override;
 
 	/// Free *pStmt if possible
 	static void SafeFinalize(sqlite3_stmt** pStmt);

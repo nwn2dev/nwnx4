@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX Funcs - Various functions plugin
-    Copyright (C) 2010 Andrew Brockert (Zebranky, andrew@mercuric.net) 
+    Copyright (C) 2010 Andrew Brockert (Zebranky, andrew@mercuric.net)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,12 +22,11 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
-#include "windows.h"
-#include "../plugin.h"
 #include "../../misc/log.h"
+#include "../plugin.h"
+#include "windows.h"
 
-class Funcs : public Plugin
-{
+class Funcs : public Plugin {
 public:
 	Funcs();
 	~Funcs();

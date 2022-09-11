@@ -1,7 +1,7 @@
 /***************************************************************************
     NWNX Hook - Responsible for the actual hooking
     Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@nwnx.org)
-	Copyright (C) 2008 Skywing (skywing@valhallalegends.com)
+    Copyright (C) 2008 Skywing (skywing@valhallalegends.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,13 +28,9 @@
 /*
  * Toplevel exception filter to report the crash to the master server process.
  */
-LONG
-WINAPI
-CrashDumpExceptionFilter(
-	__in PEXCEPTION_POINTERS ExceptionInfo
-	)
+LONG WINAPI CrashDumpExceptionFilter(__in PEXCEPTION_POINTERS ExceptionInfo)
 {
-//	DWORD OldProt;
+	//	DWORD OldProt;
 
 	//
 	// First, ensure that we're not doing something while another thread is
@@ -49,8 +45,8 @@ CrashDumpExceptionFilter(
 	// a secondary failure that would obscure the actual, underlying issue.
 	//
 
-	if (InterlockedIncrement( &g_InCrash ) != 1)
-		Sleep( INFINITE );
+	if (InterlockedIncrement(&g_InCrash) != 1)
+		Sleep(INFINITE);
 
 	//
 	// Make the section view writable now.  We initially make it read only so
@@ -60,22 +56,18 @@ CrashDumpExceptionFilter(
 	// process is in a healthy state at this point.
 	//
 
-//	VirtualProtect(
-//		g_CrashDumpSectionView,
-//		sizeof( *g_CrashDumpSectionView ),
-//		PAGE_READWRITE,
-//		&OldProt
-//		);
+	//	VirtualProtect(
+	//		g_CrashDumpSectionView,
+	//		sizeof( *g_CrashDumpSectionView ),
+	//		PAGE_READWRITE,
+	//		&OldProt
+	//		);
 
 	//
 	// Fill out the information.
 	//
 
-	memcpy(
-		&g_CrashDumpSectionView->ExceptionPointers,
-		ExceptionInfo,
-		sizeof( EXCEPTION_POINTERS )
-		);
+	memcpy(&g_CrashDumpSectionView->ExceptionPointers, ExceptionInfo, sizeof(EXCEPTION_POINTERS));
 
 	g_CrashDumpSectionView->ClientExceptionPointers = ExceptionInfo;
 	g_CrashDumpSectionView->ThreadId                = GetCurrentThreadId();
@@ -84,9 +76,8 @@ CrashDumpExceptionFilter(
 	// Set the event that tells the master that we've got a crash.
 	//
 
-	if (g_CrashDumpSectionView->CrashReportEvent)
-	{
-		SetEvent( g_CrashDumpSectionView->CrashReportEvent );
+	if (g_CrashDumpSectionView->CrashReportEvent) {
+		SetEvent(g_CrashDumpSectionView->CrashReportEvent);
 
 		//
 		// We're done here, the process is toast, we are just going to wait for
@@ -96,17 +87,14 @@ CrashDumpExceptionFilter(
 		//
 
 		if (g_CrashDumpSectionView->CrashAckEvent)
-			WaitForSingleObject( g_CrashDumpSectionView->CrashAckEvent, 30000 );
+			WaitForSingleObject(g_CrashDumpSectionView->CrashAckEvent, 30000);
 	}
 
 	//
 	// Hrm, nobody seems to be home.  We'll just let it die.
 	//
 
-	TerminateProcess(
-		GetCurrentProcess(),
-		ExceptionInfo->ExceptionRecord->ExceptionCode
-		);
+	TerminateProcess(GetCurrentProcess(), ExceptionInfo->ExceptionRecord->ExceptionCode);
 
 	//
 	// Shouldn't happen.
@@ -118,51 +106,31 @@ CrashDumpExceptionFilter(
 /*
  * Register crash dump handler.
  */
-bool
-RegisterCrashDumpHandler(
-	)
+bool RegisterCrashDumpHandler()
 {
 	HANDLE Section;
-	WCHAR  SectionName[ 128 ];
+	WCHAR SectionName[128];
 
-	StringCbPrintfW(
-		SectionName,
-		sizeof( SectionName ),
-		L"NWN2ServerCrashDumpSection-%lu",
-		GetCurrentProcessId()
-		);
+	StringCbPrintfW(SectionName, sizeof(SectionName), L"NWN2ServerCrashDumpSection-%lu",
+	                GetCurrentProcessId());
 
 	g_InCrash = 0;
 
-	Section = CreateFileMappingW(
-		INVALID_HANDLE_VALUE,
-		0,
-		PAGE_READWRITE,
-		0,
-		sizeof( CRASH_DUMP_SECTION ),
-		SectionName
-		);
+	Section = CreateFileMappingW(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0,
+	                             sizeof(CRASH_DUMP_SECTION), SectionName);
 
-	if (Section == INVALID_HANDLE_VALUE)
-	{
-//		DebugPrint( "Failed to create section, %lu\n", GetLastError() );
+	if (Section == INVALID_HANDLE_VALUE) {
+		//		DebugPrint( "Failed to create section, %lu\n", GetLastError() );
 
 		return false;
 	}
 
-	g_CrashDumpSectionView = (PCRASH_DUMP_SECTION)MapViewOfFile(
-		Section,
-		FILE_MAP_WRITE,
-		0,
-		0,
-		0
-		);
+	g_CrashDumpSectionView = (PCRASH_DUMP_SECTION)MapViewOfFile(Section, FILE_MAP_WRITE, 0, 0, 0);
 
-	if (!g_CrashDumpSectionView)
-	{
-//		DebugPrint( "Failed to map section view, %lu\n", GetLastError() );
+	if (!g_CrashDumpSectionView) {
+		//		DebugPrint( "Failed to map section view, %lu\n", GetLastError() );
 
-		CloseHandle( Section );
+		CloseHandle(Section);
 
 		return false;
 	}
@@ -171,15 +139,13 @@ RegisterCrashDumpHandler(
 	// Zero the section view.
 	//
 
-	ZeroMemory( g_CrashDumpSectionView, sizeof( CRASH_DUMP_SECTION ) );
+	ZeroMemory(g_CrashDumpSectionView, sizeof(CRASH_DUMP_SECTION));
 
 	//
 	// Set up our handler.
 	//
 
-	SetUnhandledExceptionFilter(
-		CrashDumpExceptionFilter
-		);
+	SetUnhandledExceptionFilter(CrashDumpExceptionFilter);
 
 	//
 	// We're all done.

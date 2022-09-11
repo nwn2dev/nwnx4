@@ -2,17 +2,15 @@
 
 #include <stdint.h>
 
-extern "C"
-{
+extern "C" {
 
 /// Information provided by nwnx4 during plugin initialization.
 ///
-struct NWNXCPlugin_InitInfo
-{
+struct NWNXCPlugin_InitInfo {
 	/// Path to this plugin DLL file
 	const char* dll_path;
-    /// Path to the NWNX4 user directory, where config files are stored and log files should be
-    /// written.
+	/// Path to the NWNX4 user directory, where config files are stored and log files should be
+	/// written.
 	const char* nwnx_user_path;
 	/// Path to the NWN2 installation directory, where nwn2server.exe is located.
 	const char* nwn2_install_path;
@@ -22,8 +20,8 @@ struct NWNXCPlugin_InitInfo
 	/// Note: this value depends on the parameters list in nwnx.ini. If the server has not been
 	/// started with -module or -moduledir, this value is set to NULL.
 	const char* nwn2_module_path;
-    /// Path to the NWNX4 user directory, where nwnx4_controller.exe is located.
-    const char* nwnx_install_path;
+	/// Path to the NWNX4 user directory, where nwnx4_controller.exe is located.
+	const char* nwnx_install_path;
 };
 
 //
@@ -86,11 +84,8 @@ __declspec(dllexport) int32_t __cdecl NWNXCPlugin_GetInt(void* cplugin,
 /// @param sFunction NWScript function argument. Null-terminated string
 /// @param sParam1 NWScript function argument. Null-terminated string
 /// @param nParam2 NWScript function argument.
-__declspec(dllexport) void __cdecl NWNXCPlugin_SetInt(void* cplugin,
-                                                      const char* sFunction,
-                                                      const char* sParam1,
-                                                      int32_t nParam2,
-                                                      int32_t nValue);
+__declspec(dllexport) void __cdecl NWNXCPlugin_SetInt(
+    void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, int32_t nValue);
 
 /// Executed by NWScript function `NWNXGetFloat`
 /// @param cplugin User data pointer, as returned by `NWNXCPlugin_New`
@@ -109,11 +104,8 @@ __declspec(dllexport) float __cdecl NWNXCPlugin_GetFloat(void* cplugin,
 /// @param sParam1 NWScript function argument. Null-terminated string
 /// @param nParam2 NWScript function argument.
 /// @param fValue NWScript function argument. 32-bit floating point.
-__declspec(dllexport) void __cdecl NWNXCPlugin_SetFloat(void* cplugin,
-                                                        const char* sFunction,
-                                                        const char* sParam1,
-                                                        int32_t nParam2,
-                                                        float fValue);
+__declspec(dllexport) void __cdecl NWNXCPlugin_SetFloat(
+    void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, float fValue);
 
 /// Executed by NWScript function `NWNXGetString`
 /// @param cplugin User data pointer, as returned by `NWNXCPlugin_New`
@@ -135,11 +127,8 @@ __declspec(dllexport) void __cdecl NWNXCPlugin_GetString(void* cplugin,
 /// @param sParam1 NWScript function argument. Null-terminated string
 /// @param nParam2 NWScript function argument.
 /// @param sValue null-terminated string
-__declspec(dllexport) void __cdecl NWNXCPlugin_SetString(void* cplugin,
-                                                         const char* sFunction,
-                                                         const char* sParam1,
-                                                         int32_t nParam2,
-                                                         const char* sValue);
+__declspec(dllexport) void __cdecl NWNXCPlugin_SetString(
+    void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, const char* sValue);
 
 /// Executed by NWScript function `RetrieveCampaignObject`, before `NWNXCPlugin_GetGFF`. This
 /// function checks if the GFF object to get does exist and returns the size of the buffer to
@@ -147,8 +136,7 @@ __declspec(dllexport) void __cdecl NWNXCPlugin_SetString(void* cplugin,
 /// @return the size of the buffer NWN2 needs to allocate for receiving the GFF data. 0 if the
 ///     GFF data does not exist. Returning 0 will prevent `NWNXCPlugin_GetGFF` from being
 ///     executed
-__declspec(dllexport) size_t
-  __cdecl NWNXCPlugin_GetGFFSize(void* cplugin, const char* sVarName);
+__declspec(dllexport) size_t __cdecl NWNXCPlugin_GetGFFSize(void* cplugin, const char* sVarName);
 
 /// Executed by NWScript function `RetrieveCampaignObject`, after `NWNXCPlugin_GetGFFSize`. This
 /// function copies the GFF data into the result buffer. Note that this function is only called

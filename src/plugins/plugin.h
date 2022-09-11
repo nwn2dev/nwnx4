@@ -21,22 +21,21 @@
 #pragma once
 
 #define NOMINMAX
-#include <windows.h>
 #include <string>
 #include <string_view>
+#include <windows.h>
 
-#define MAX_BUFFER 64*1024
+#define MAX_BUFFER 64 * 1024
 
-class Plugin
-{
+class Plugin {
 public:
-	Plugin() = default;
+	Plugin()          = default;
 	virtual ~Plugin() = default;
 
-	Plugin(const Plugin&) = delete;
+	Plugin(const Plugin&)            = delete;
 	Plugin& operator=(const Plugin&) = delete;
-	Plugin(Plugin&&) = delete;
-	Plugin& operator=(Plugin&&) = delete;
+	Plugin(Plugin&&)                 = delete;
+	Plugin& operator=(Plugin&&)      = delete;
 
 	// Called when a plugin DLL gets loaded.
 	virtual bool Init(char*);

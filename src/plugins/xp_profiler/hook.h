@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX Profiler - Responsible for the actual hooking
-	Copyright (C) 2003 Ingmar Stieger (Papillon, papillon@blackdagger.com)
+    Copyright (C) 2003 Ingmar Stieger (Papillon, papillon@blackdagger.com)
     Copyright (C) 2006 Ingmar Stieger (Papillon, papillon@nwnx.org)
 
     This program is free software; you can redistribute it and/or modify
@@ -22,18 +22,17 @@
 #if !defined(HOOK_H_INCLUDED)
 #define HOOK_H_INCLUDED
 
-#include <windows.h>
-#include <string.h>
-#include <stdio.h>
-#include <detours/detours.h>
-#include "../plugin.h"
 #include "../../misc/log.h"
+#include "../plugin.h"
+#include <detours/detours.h>
+#include <stdio.h>
+#include <string.h>
+#include <windows.h>
 
 typedef unsigned long dword;
 typedef unsigned short int word;
 typedef unsigned char byte;
 
 void HookRunScript();
-
 
 #endif

@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX FastBoot - NWN2Server Zero Module Copy (Startup Time Improvements)
-    Copyright (C) 2008 Skywing (skywing@valhallalegends.com) 
+    Copyright (C) 2008 Skywing (skywing@valhallalegends.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,15 +22,14 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
+#include "../../misc/IATHook.h"
+#include "../../misc/log.h"
+#include "../plugin.h"
+#include <specstrings.h>
 #include <windows.h>
 #include <windowsx.h>
-#include <specstrings.h>
-#include "../plugin.h"
-#include "../../misc/log.h"
-#include "../../misc/IATHook.h"
 
-class FastBoot : public Plugin
-{
+class FastBoot : public Plugin {
 public:
 	FastBoot();
 	~FastBoot();
@@ -45,26 +44,15 @@ public:
 	char* GetString(char* sFunction, char* sParam1, int nParam2);
 	void GetFunctionClass(char* fClass);
 
-
-
 private:
-
 	LogNWNX* logger;
-	bool     logged;
+	bool logged;
 
 	bool disableModuleCopy();
 
-	static
-	BOOL
-	WINAPI
-	ModuleCopyFileA(
-		__in LPCSTR lpExistingFileName,
-		__in LPCSTR lpNewFileName,
-		__in BOOL bFailIfExists
-		);
-
-
-
+	static BOOL WINAPI ModuleCopyFileA(__in LPCSTR lpExistingFileName,
+	                                   __in LPCSTR lpNewFileName,
+	                                   __in BOOL bFailIfExists);
 };
 
 #endif

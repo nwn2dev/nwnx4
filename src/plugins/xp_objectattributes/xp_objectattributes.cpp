@@ -3,7 +3,7 @@
     Copyright (C) 2008-2011 Skywing (skywing@valhallalegends.com).  This
     instance of the core XPObjectAttributes functionality is licensed under the
     GPLv2 for the usage of the NWNX4 project, nonwithstanding other licenses
-    granted by the copyright holder. 
+    granted by the copyright holder.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,35 +26,27 @@
 
 #define PLUGIN_VERSION "0.0.1"
 
-ObjectAttributesPlugin *plugin;
-			
+ObjectAttributesPlugin* plugin;
 
 /***************************************************************************
     NWNX and DLL specific functions
 ***************************************************************************/
 
-DLLEXPORT Plugin* GetPluginPointerV2()
-{
-	return plugin;
-}
+DLLEXPORT Plugin* GetPluginPointerV2() { return plugin; }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-	{
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
 		plugin = new ObjectAttributesPlugin();
 
 		char szPath[MAX_PATH];
 		GetModuleFileNameA(hModule, szPath, MAX_PATH);
 		plugin->SetPluginFullPath(szPath);
-	}
-	else if (ul_reason_for_call == DLL_PROCESS_DETACH)
-	{
+	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
 		delete plugin;
 	}
-    return TRUE;
+	return TRUE;
 }
-
 
 /***************************************************************************
     Implementation of ObjectAttributes Plugin
@@ -62,21 +54,18 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
 ObjectAttributesPlugin::ObjectAttributesPlugin()
 {
-	header =
-		"NWNX ObjectAttributes Plugin " PLUGIN_VERSION "\n" \
-		"(c) 2008-2011 by Skywing \n" \
-		"Visit NWNX at: http://www.nwnx.org\n";
+	header = "NWNX ObjectAttributes Plugin " PLUGIN_VERSION "\n"
+	         "(c) 2008-2011 by Skywing \n"
+	         "Visit NWNX at: http://www.nwnx.org\n";
 
-	description = "This plugin provides scripting support functionality to edit game object attributes.";
+	description
+	    = "This plugin provides scripting support functionality to edit game object attributes.";
 
 	subClass = "NWNX4-ObjectAttributes";
 	version  = PLUGIN_VERSION;
 }
 
-ObjectAttributesPlugin::~ObjectAttributesPlugin()
-{
-	logger->Info("* Plugin unloaded.");
-}
+ObjectAttributesPlugin::~ObjectAttributesPlugin() { logger->Info("* Plugin unloaded."); }
 
 bool ObjectAttributesPlugin::Init(char* nwnxhome)
 {
@@ -107,12 +96,7 @@ void ObjectAttributesPlugin::SetString(char* sFunction, char* sParam1, int nPara
 	// Invoke the main dispatcher.
 	//
 
-	OnXPObjectAttributesSetString(
-		"OBJECTATTRIBUTES",
-		sFunction,
-		sParam1,
-		nParam2,
-		sValue);
+	OnXPObjectAttributesSetString("OBJECTATTRIBUTES", sFunction, sParam1, nParam2, sValue);
 }
 
 char* ObjectAttributesPlugin::GetString(char* sFunction, char* sParam1, int nParam2)

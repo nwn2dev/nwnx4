@@ -31,12 +31,11 @@
  * Includes
  */
 
-#include <memory>
-
-#include "../controller/controller.h"
-#include "worker.h"
-#include "GuiLog.h"
 #include "../../nwnx_version.h"
+#include "../controller/controller.h"
+#include "GuiLog.h"
+#include "worker.h"
+#include <memory>
 
 /*!
  * Forward declarations
@@ -50,28 +49,28 @@
  */
 
 ////@begin control identifiers
-#define ID_MAINFRAME 10000
-#define ID_PANEL1 10001
-#define ID_TEXTCTRL1 10002
-#define ID_TEXTCTRL2 10003
-#define ID_PW_ENABLED 10004
-#define ID_TEXTCTRL3 10005
-#define ID_TEXTCTRL4 10006
-#define ID_GW_ENABLED 10007
-#define ID_TEXTCTRL 10008
-#define ID_TEXTCTRL6 10010
-#define ID_TEXTCTRL5 10009
-#define ID_TEXTCTRL7 10011
-#define ID_TEXTCTRL_LOG 10017
-#define ID_BTNSTART 10012
-#define ID_BTNSTOP 10013
-#define ID_BTNRESTART 10014
-#define ID_HELP 10015
-#define ID_FORUM 10016
-#define SYMBOL_MAINFRAME_STYLE wxCAPTION|wxSYSTEM_MENU|wxMINIMIZE_BOX|wxCLOSE_BOX
-#define SYMBOL_MAINFRAME_TITLE _("NWNX4 " NWNX_VERSION )
-#define SYMBOL_MAINFRAME_IDNAME ID_MAINFRAME
-#define SYMBOL_MAINFRAME_SIZE wxSize(400, 260)
+#define ID_MAINFRAME              10000
+#define ID_PANEL1                 10001
+#define ID_TEXTCTRL1              10002
+#define ID_TEXTCTRL2              10003
+#define ID_PW_ENABLED             10004
+#define ID_TEXTCTRL3              10005
+#define ID_TEXTCTRL4              10006
+#define ID_GW_ENABLED             10007
+#define ID_TEXTCTRL               10008
+#define ID_TEXTCTRL6              10010
+#define ID_TEXTCTRL5              10009
+#define ID_TEXTCTRL7              10011
+#define ID_TEXTCTRL_LOG           10017
+#define ID_BTNSTART               10012
+#define ID_BTNSTOP                10013
+#define ID_BTNRESTART             10014
+#define ID_HELP                   10015
+#define ID_FORUM                  10016
+#define SYMBOL_MAINFRAME_STYLE    wxCAPTION | wxSYSTEM_MENU | wxMINIMIZE_BOX | wxCLOSE_BOX
+#define SYMBOL_MAINFRAME_TITLE    _("NWNX4 " NWNX_VERSION)
+#define SYMBOL_MAINFRAME_IDNAME   ID_MAINFRAME
+#define SYMBOL_MAINFRAME_SIZE     wxSize(400, 260)
 #define SYMBOL_MAINFRAME_POSITION wxDefaultPosition
 ////@end control identifiers
 
@@ -87,97 +86,106 @@
  * MainFrame class declaration
  */
 
-class MainFrame: public wxFrame
-{    
-    DECLARE_CLASS( MainFrame )
-    DECLARE_EVENT_TABLE()
+class MainFrame : public wxFrame {
+	DECLARE_CLASS(MainFrame)
+	DECLARE_EVENT_TABLE()
 
 public:
-    /// Constructors
-    MainFrame(wxWindow* parent, wxWindowID id = SYMBOL_MAINFRAME_IDNAME, const wxString& caption = SYMBOL_MAINFRAME_TITLE, const wxPoint& pos = SYMBOL_MAINFRAME_POSITION, const wxSize& size = SYMBOL_MAINFRAME_SIZE, long style = SYMBOL_MAINFRAME_STYLE);
-    ~MainFrame();
+	/// Constructors
+	MainFrame(wxWindow* parent,
+	          wxWindowID id           = SYMBOL_MAINFRAME_IDNAME,
+	          const wxString& caption = SYMBOL_MAINFRAME_TITLE,
+	          const wxPoint& pos      = SYMBOL_MAINFRAME_POSITION,
+	          const wxSize& size      = SYMBOL_MAINFRAME_SIZE,
+	          long style              = SYMBOL_MAINFRAME_STYLE);
+	~MainFrame();
 
-    bool Create(wxWindow* parent, wxWindowID id = SYMBOL_MAINFRAME_IDNAME, const wxString& caption = SYMBOL_MAINFRAME_TITLE, const wxPoint& pos = SYMBOL_MAINFRAME_POSITION, const wxSize& size = SYMBOL_MAINFRAME_SIZE, long style = SYMBOL_MAINFRAME_STYLE);
+	bool Create(wxWindow* parent,
+	            wxWindowID id           = SYMBOL_MAINFRAME_IDNAME,
+	            const wxString& caption = SYMBOL_MAINFRAME_TITLE,
+	            const wxPoint& pos      = SYMBOL_MAINFRAME_POSITION,
+	            const wxSize& size      = SYMBOL_MAINFRAME_SIZE,
+	            long style              = SYMBOL_MAINFRAME_STYLE);
 
-    /// Initialises member variables
-    void Init();
+	/// Initialises member variables
+	void Init();
 
-    void OnClose(wxCloseEvent& event);
+	void OnClose(wxCloseEvent& event);
 
-    /// Creates the controls and sizers
-    void CreateControls();
+	/// Creates the controls and sizers
+	void CreateControls();
 
-////@begin MainFrame event handler declarations
+	////@begin MainFrame event handler declarations
 
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_PW_ENABLED
-    void OnPwEnabledClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_PW_ENABLED
+	void OnPwEnabledClick(wxCommandEvent& event);
 
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_GW_ENABLED
-    void OnGwEnabledClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_GW_ENABLED
+	void OnGwEnabledClick(wxCommandEvent& event);
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTNSTART
-    void OnBtnstartClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTNSTART
+	void OnBtnstartClick(wxCommandEvent& event);
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTNSTOP
-    void OnBtnstopClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTNSTOP
+	void OnBtnstopClick(wxCommandEvent& event);
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTNRESTART
-    void OnBtnrestartClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTNRESTART
+	void OnBtnrestartClick(wxCommandEvent& event);
 
-    /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_EXIT
-    void OnEXITClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_EXIT
+	void OnEXITClick(wxCommandEvent& event);
 
-    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_HELP
-    void OnHelpClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_HELP
+	void OnHelpClick(wxCommandEvent& event);
 
-    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_FORUM
-    void OnForumClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_FORUM
+	void OnForumClick(wxCommandEvent& event);
 
-    /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_ABOUT
-    void OnABOUTClick( wxCommandEvent& event );
+	/// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_ABOUT
+	void OnABOUTClick(wxCommandEvent& event);
 
-////@end MainFrame event handler declarations
+	////@end MainFrame event handler declarations
 
-	void OnServerStarted(wxCommandEvent &event);
-	void OnServerStopped(wxCommandEvent &event);
-    void OnServerKilled(wxCommandEvent &event);
+	void OnServerStarted(wxCommandEvent& event);
+	void OnServerStopped(wxCommandEvent& event);
+	void OnServerKilled(wxCommandEvent& event);
 
-////@begin MainFrame member function declarations
+	////@begin MainFrame member function declarations
 
-    /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
+	/// Retrieves bitmap resources
+	wxBitmap GetBitmapResource(const wxString& name);
 
-    /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
-////@end MainFrame member function declarations
+	/// Retrieves icon resources
+	wxIcon GetIconResource(const wxString& name);
+	////@end MainFrame member function declarations
 
-    /// Should we show tooltips?
-    static bool ShowToolTips();
+	/// Should we show tooltips?
+	static bool ShowToolTips();
 
-////@begin MainFrame member variables
-    wxTextCtrl* m_startedAt;
-    wxTextCtrl* m_CmdLine;
-    wxCheckBox* m_PWEnabled;
-    wxTextCtrl* m_PWInterval;
-    wxTextCtrl* m_PWRestarts;
-    wxCheckBox* m_GWEnabled;
-    wxTextCtrl* m_GWInterval;
-    wxTextCtrl* m_GWRetries;
-    wxTextCtrl* m_GWRestarts;
-    wxTextCtrl* m_GWLockups;
-    wxTextCtrl* m_log;
-    wxButton* m_BtnStart;
-    wxButton* m_BtnStop;
-    wxButton* m_BtnRestart;
-////@end MainFrame member variables
+	////@begin MainFrame member variables
+	wxTextCtrl* m_startedAt;
+	wxTextCtrl* m_CmdLine;
+	wxCheckBox* m_PWEnabled;
+	wxTextCtrl* m_PWInterval;
+	wxTextCtrl* m_PWRestarts;
+	wxCheckBox* m_GWEnabled;
+	wxTextCtrl* m_GWInterval;
+	wxTextCtrl* m_GWRetries;
+	wxTextCtrl* m_GWRestarts;
+	wxTextCtrl* m_GWLockups;
+	wxTextCtrl* m_log;
+	wxButton* m_BtnStart;
+	wxButton* m_BtnStop;
+	wxButton* m_BtnRestart;
+	////@end MainFrame member variables
 
 private:
 	std::unique_ptr<NWNXController> m_controller;
-    std::unique_ptr<SimpleIniConfig> m_config;
-    wxLogTextCtrl* m_logger;
+	std::unique_ptr<SimpleIniConfig> m_config;
+	wxLogTextCtrl* m_logger;
 	wxTimer m_timer;
 	std::unique_ptr<NWNXWorker> worker;
 };
 
 #endif
-    // _MAINFRAME_H_
+// _MAINFRAME_H_

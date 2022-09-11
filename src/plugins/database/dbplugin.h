@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX Database plugin - Generic base class for database plugins
-    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com) 
+    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,16 +22,15 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
-#include <windows.h>
-#include "../plugin.h"
-#include "../../misc/log.h"
 #include "../../misc/ini.h"
+#include "../../misc/log.h"
+#include "../plugin.h"
+#include <windows.h>
 
-#define BUFFER_SIZE 1024*64
-#define MAXSQL 1024
+#define BUFFER_SIZE 1024 * 64
+#define MAXSQL      1024
 
-class DBPlugin : public Plugin
-{
+class DBPlugin : public Plugin {
 public:
 	DBPlugin();
 	virtual ~DBPlugin();
@@ -45,13 +44,13 @@ public:
 	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue);
 	char* GetString(char* sFunction, char* sParam1, int nParam2);
 	virtual bool WriteScorcoData(BYTE* pData, int Length);
-	virtual BYTE* ReadScorcoData(char *param, int *size);
+	virtual BYTE* ReadScorcoData(char* param, int* size);
 
 	void GetFunctionClass(char* fClass);
 
 protected:
 	LogNWNX* logger;
-	SimpleIniConfig *config;
+	SimpleIniConfig* config;
 	std::string scorcoSQL;
 
 	virtual bool Execute(char* query);
@@ -60,9 +59,9 @@ protected:
 	virtual int GetAffectedRows();
 	virtual void GetEscapeString(char* str, char* buffer);
 	virtual int GetErrno();
-	virtual const char *GetErrorMessage();
+	virtual const char* GetErrorMessage();
 	virtual int GetLastInsertID();
-	void SetScorcoSQL(const char *request);
+	void SetScorcoSQL(const char* request);
 };
 
 #endif
