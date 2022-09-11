@@ -114,6 +114,25 @@ jobs:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
 
+  clang-format:
+    name: clang-format check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install clang-format
+        run: |
+          sudo apt install clang-format-14
+          clang-format --version
+
+      - name: Check files format
+        run: |
+          git ls-files \*.h \*.cpp \*.c \
+            | grep -vE '^src/plugins/xp_sqlite/lib/|^src/plugins/xp_bugfix/|^src/NWN2Lib/' \
+            | xargs -d\\n clang-format --dry-run --Werror
+
   # --------------------------------------------------
 
   test:
