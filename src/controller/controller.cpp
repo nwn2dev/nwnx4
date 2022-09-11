@@ -213,7 +213,7 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 
 	if (!config->Read("parameters", &parameters) )
 	{
-		logger->Info("Parameter setting not found in nwnx.ini. Starting server with empty commandline.");
+		logger->Warn("Parameter setting not found in nwnx.ini. Starting server with empty commandline.");
 	}
 	parameters += " ";
 
@@ -222,11 +222,12 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 		config->Read("gamespyPort", &gamespyPort, 5121);
 		try
 		{
-			udp = new CUDP("localhost", gamespyPort);
+			udp = std::make_unique<CUDP>("localhost", gamespyPort);
 		}
 		catch (std::bad_alloc)
 		{
-			udp = nullptr;
+			logger->Err("Failed to open socket for Gamespy watchdog. Gamspy watchdog disabled");
+			gamespyWatchdog = false;
 		}
 	}
 
@@ -235,9 +236,10 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 	{
 		try{
 			nwninstalldir = GetNwn2InstallPath();
+			logger->Info("Detected NWN2 install dir: %s", nwninstalldir.c_str());
 		}
 		catch(std::exception){
-			logger->Info("* NWN2 installation directory not found. Check your nwnx.ini file.");
+			logger->Err("NWN2 installation directory not found. Check your nwnx.ini file.");
 			return;
 		}
 	}
@@ -250,9 +252,6 @@ NWNXController::NWNXController(SimpleIniConfig* config)
 NWNXController::~NWNXController()
 {
 	killServerProcess();
-
-	if (udp)
-		delete udp;
 }
 
 void NWNXController::populateUserDir(){
@@ -309,9 +308,14 @@ bool NWNXController::startServerProcessInternal()
 	si.cb = sizeof(si);
 
 	auto exePath = m_nwn2InstallDir / "nwn2server.exe";
-	logger->Trace("Starting server executable: %ls", exePath.c_str());
+	if(!std::filesystem::exists(exePath)){
+		logger->Err("NWN2 server executable not found: %ls", exePath.c_str());
+		return false;
+	}
+	logger->Debug("nwn2server executable: %ls", exePath.c_str());
 
 	const auto hookDllPath = m_nwnx4InstallDir / "NWNX4_Hook.dll";
+	logger->Debug("nwnx4 hook DLL: %ls", hookDllPath.c_str());
 
 	SECURITY_ATTRIBUTES SecurityAttributes;
 	SecurityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -322,7 +326,8 @@ bool NWNXController::startServerProcessInternal()
 	shmem.ready_event = CreateEvent(&SecurityAttributes, TRUE, FALSE, nullptr);
 	if(!shmem.ready_event)
 	{
-		logger->Info("CreateEvent failed (%d)", GetLastError());
+		auto errInfo = GetLastErrorInfo();
+		logger->Err("CreateEvent failed. Error %d: %s", errInfo.first, errInfo.second);
 		return false;
 	}
 
@@ -333,28 +338,22 @@ bool NWNXController::startServerProcessInternal()
 	char params[USHRT_MAX];
 
 	if (ExpandEnvironmentStringsA(("nwn2server.exe " + parameters).c_str(), params, USHRT_MAX) == 0) {
-		char* lpMsgBuf;
-		DWORD dw = GetLastError();
-		FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_IGNORE_INSERTS,
-			nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPSTR)&lpMsgBuf, 0, nullptr);
-
-		logger->Err("Could not substitute environment variables in NWN2Server command line: %s", params);
-		logger->Err("    Error %d: %s", dw, lpMsgBuf);
+		auto errInfo = GetLastErrorInfo();
+		logger->Err("Could not substitute environment variables in nwn2server command line: %s", params);
+		logger->Err("    Error %d: %s", errInfo.first, errInfo.second);
 		return false;
 	}
 
-	logger->Trace("CLI Arguments: %s", params);
-	logger->Trace("Injecting DLL %ls", hookDllPath.c_str());
+	logger->Debug("nwn2server CLI arguments: %s", params);
 
 	if (!DetourCreateProcessWithDllExA(exePath.string().c_str(), params,
                                     nullptr, nullptr, TRUE, dwFlags, nullptr, m_nwn2InstallDir.string().c_str(),
                                     &si, &pi, hookDllPath.string().c_str(), nullptr))
 	{
-		auto err = GetLastError();
-		logger->Err("DetourCreateProcessWithDll failed: %d", err);
-		if (err == 740) {
-			logger->Err("You probably need to run the command as administrator.");
+		auto errInfo = GetLastErrorInfo();
+		logger->Err("Failed to launch and hook nwn2server. Error %d: %s", errInfo.first, errInfo.second);
+		if (errInfo.first == 740) {
+			logger->Err("Hint: You probably need to run the command as administrator.");
 		}
 		CloseHandle( shmem.ready_event );
 		ZeroMemory( &pi, sizeof( PROCESS_INFORMATION ) );
@@ -372,13 +371,14 @@ bool NWNXController::startServerProcessInternal()
 	};
 
 	strncpy_s(shmem.nwnx_user_dir, MAX_PATH, m_nwnx4UserDir.string().c_str(), MAX_PATH);
-	logger->Debug("Injecting NWNX4 user directory as '%s'", shmem.nwnx_user_dir);
+	logger->Debug("Hook: Injecting NWNX4 user directory as '%s'", shmem.nwnx_user_dir);
 
 	strncpy_s(shmem.nwnx_install_dir, MAX_PATH, m_nwnx4InstallDir.string().c_str(), MAX_PATH);
-	logger->Debug("Injecting NWNX4 install directory as '%s'", shmem.nwnx_install_dir);
+	logger->Debug("Hook: Injecting NWNX4 install directory as '%s'", shmem.nwnx_install_dir);
 
 	if (!DetourCopyPayloadToProcess(pi.hProcess, my_guid, &shmem, sizeof(SHARED_MEMORY))) {
-	    logger->Err("! Error: Could not copy payload to process. Error %d", GetLastError());
+		auto errInfo = GetLastErrorInfo();
+	    logger->Err("Error: Could not copy payload to process. Error %d: %s", errInfo.first, errInfo.second);
 	    return false;
 	}
 
@@ -390,7 +390,7 @@ bool NWNXController::startServerProcessInternal()
 	switch(WaitForSingleObject(shmem.ready_event, 60000))
 	{
 		case WAIT_TIMEOUT:
-			logger->Info("! Error: Server did not initialize properly (timeout).");
+			logger->Err("Error: Server did not initialize properly (timeout).");
 			CloseHandle( shmem.ready_event );
 			CloseHandle( pi.hProcess );
 			CloseHandle( pi.hThread );
@@ -398,7 +398,7 @@ bool NWNXController::startServerProcessInternal()
 			return false;
 			break;
 		case WAIT_FAILED:
-			logger->Info("! Error: Server did not initialize properly (wait failed).");
+			logger->Err("Error: Server did not initialize properly (wait failed).");
 			CloseHandle( shmem.ready_event );
 			CloseHandle( pi.hProcess );
 			CloseHandle( pi.hThread );
@@ -407,14 +407,15 @@ bool NWNXController::startServerProcessInternal()
 			break;
 		case WAIT_OBJECT_0:
 			CloseHandle(shmem.ready_event);
-			logger->Info("* Success: Server initialized properly.");
+			logger->Info("Success: Server initialized properly.");
 			break;
 	}
 
     DWORD dwResult = 0;
     if (!GetExitCodeProcess(pi.hProcess, &dwResult))
 	{
-		logger->Info("GetExitCodeProcess failed: %d\n", GetLastError());
+		auto errInfo = GetLastErrorInfo();
+		logger->Info("GetExitCodeProcess failed. Error %d: %s", errInfo.first, errInfo.second);
 		return false;
     }
 
@@ -425,7 +426,7 @@ bool NWNXController::startServerProcessInternal()
 	// Reset GameSpy failed response count.
 	gamespyRetries = 0;
 
-	logger->Info("* Hook installed and initialized successfully");
+	logger->Info("Hook installed and initialized successfully");
 	initialized = true;
 
 	return true;
@@ -447,7 +448,7 @@ void NWNXController::restartServerProcess()
 
 		ZeroMemory(&si,sizeof(si));
 		si.cb = sizeof(si);
-		logger->Info("* Starting maintenance file %s", restartCmd.c_str());
+		logger->Info("Starting maintenance file %s", restartCmd.c_str());
 		restartCmd = std::string("cmd.exe /c ") + restartCmd;
 		if (CreateProcessA(nullptr, (LPSTR)restartCmd.c_str(), nullptr, nullptr, FALSE, NORMAL_PRIORITY_CLASS, nullptr, nullptr, &si, &pi))
 		{
@@ -458,9 +459,9 @@ void NWNXController::restartServerProcess()
 	}
 
 	// Finally restart the server
-	logger->Info("* Waiting %d seconds before restarting the server.", restartDelay);
+	logger->Info("Waiting %d seconds before restarting the server.", restartDelay);
 	Sleep(restartDelay * 1000);
-	logger->Info("* Restarting server.");
+	logger->Info("Restarting server.");
 	startServerProcess();
 }
 
@@ -475,9 +476,9 @@ void NWNXController::killServerProcess(bool graceful)
 
 	if (graceful)
 	{
-		logger->Info( "* Telling server to stop itself..." );
+		logger->Info( "Telling server to stop itself..." );
 		if (!performGracefulShutdown())
-			logger->Info( "* WARNING: Failed to gracefully shutdown the server process." );
+			logger->Warn("Failed to gracefully shutdown the server process." );
 	}
 
 	// Mark us as not initialized.
@@ -551,7 +552,7 @@ bool NWNXController::performGracefulShutdown()
 	// initiate shutdown.
 	if (gracefulShutdownMessage != "")
 	{
-		logger->Info( "* Sending shutdown server message and waiting %d seconds.", gracefulShutdownMessageWait);
+		logger->Info( "Sending shutdown server message and waiting %d seconds.", gracefulShutdownMessageWait);
 		broadcastServerMessage(gracefulShutdownMessage.c_str());
 		Sleep(gracefulShutdownMessageWait * 1000);
 	}
@@ -649,7 +650,7 @@ void NWNXController::runProcessWatchdog()
 {
 	if (checkProcessActive() == false)
 	{
-		logger->Info("* Server process has gone away.");
+		logger->Warn("Server process has gone away.");
 		restartServerProcess();
 	}
 }

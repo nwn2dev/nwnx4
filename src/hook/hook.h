@@ -88,7 +88,7 @@ void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, fl
 char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2);
 void NWNXSetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2, char* sValue);
 extern void (*SetLocalStringNextHook)();
-void PayLoad(char *gameObject, char* name, char* value);
+void LegacyPluginPayLoad(char *gameObject, char* name, char* value);
 void SetLocalStringHookProc();
 DWORD FindHook();
 unsigned char* FindPattern(const unsigned char* pattern);

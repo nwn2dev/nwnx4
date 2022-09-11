@@ -72,7 +72,7 @@ private:
 	std::filesystem::path m_nwnx4InstallDir;
 	std::filesystem::path m_nwn2InstallDir;
 
-	CUDP *udp;
+	std::unique_ptr<CUDP> udp;
 	STARTUPINFOA si;
 	PROCESS_INFORMATION pi;
 

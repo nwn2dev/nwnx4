@@ -135,9 +135,9 @@ int main(int argc,char *argv[])
 	}
 
 	if(args.contains("-interactive") || args.contains("-runservice")){
-		logger->Info("NWNX4 Server Controller version " NWNX_VERSION_INFO);
+		logger->Info("NWNX4 " NWNX_VERSION_INFO);
 		logger->Info("(c) 2008 by Ingmar Stieger (Papillon)");
-		logger->Info("Contribute to the project: https://github.com/nwn2dev/nwnx4");
+		logger->Info("Contribute to the project at https://github.com/nwn2dev/nwnx4 !");
 
 		if(args.contains("-runservice")){
 			// Redirect logs to a file instead
@@ -171,7 +171,7 @@ int main(int argc,char *argv[])
 			// start in interactive mode
 			logger->Info("Running in interactive mode.");
 			logger->Info("Press enter to stop the controller.");
-			logger->Info("NWNX will continue to run within nwnserver.");
+			logger->Info("NWNX4 plugins will continue working inside the nwn2server process.");
 			start_worker();
 			getc(stdin);
 		}

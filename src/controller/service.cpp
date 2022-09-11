@@ -19,6 +19,7 @@
 ***************************************************************************/
 
 #include "service.h"
+#include "../misc/windows_utils.h"
 
 extern std::unique_ptr<LogNWNX> logger;
 SERVICE_STATUS_HANDLE NWNXServiceStatusHandle;
@@ -36,8 +37,10 @@ SC_HANDLE getSCManager()
     nullptr,                    // ServicesActive database
     SC_MANAGER_ALL_ACCESS);  // full access rights
 
-	if (schSCManager == nullptr)
-		logger->Err("* Failed to connect to service manager (%d)", GetLastError());
+	if (schSCManager == nullptr){
+        auto errInfo = GetLastErrorInfo();
+		logger->Err("Failed to connect to service manager. Error %d: %s", errInfo.first, errInfo.second);
+    }
 
 	return schSCManager;
 }
@@ -51,7 +54,7 @@ BOOL installservice(int serviceNo)
     wchar_t serviceName[64];
     wchar_t displayName[64];
 
-	logger->Info("* Installing NWNX Service %d...", serviceNo);
+	logger->Info("Installing NWNX Service %d...", serviceNo);
 
 	schSCManager = getSCManager();
 	if (nullptr == schSCManager)
@@ -59,7 +62,8 @@ BOOL installservice(int serviceNo)
 
     if(!GetModuleFileName(nullptr, szPath, MAX_PATH ) )
     {
-		logger->Err("* GetModuleFileName failed (%d)", GetLastError());
+        auto errInfo = GetLastErrorInfo();
+		logger->Err("GetModuleFileName failed. Error %d: %s", errInfo.first, errInfo.second);
         return FALSE;
     }
 
@@ -89,7 +93,8 @@ BOOL installservice(int serviceNo)
 
     if (schService == nullptr)
     {
-		logger->Err("* CreateService failed (%d)", GetLastError());
+        auto errInfo = GetLastErrorInfo();
+		logger->Err("CreateService failed. Error %d: %s", errInfo.first, errInfo.second);
         return FALSE;
     }
 
@@ -103,7 +108,7 @@ BOOL installservice(int serviceNo)
     }
 
     CloseServiceHandle(schService);
-    logger->Info("* Installed service %ls with userdir %ls", serviceName, userDir);
+    logger->Info("Installed service %ls with userdir %ls", serviceName, userDir);
     return TRUE;
 
 }
@@ -114,7 +119,7 @@ BOOL uninstallservice(int serviceNo)
     wchar_t serviceName[64];
 
     swprintf(serviceName, 64, L"NWNX4-%d", serviceNo);
-	logger->Info("* Uninstalling NWNX Service %d...", serviceNo);
+	logger->Info("Uninstalling NWNX Service %d...", serviceNo);
 
 	schSCManager = getSCManager();
 	if (nullptr == schSCManager)
@@ -127,17 +132,19 @@ BOOL uninstallservice(int serviceNo)
 
     if (schService == nullptr)
     {
-        logger->Err("* OpenService failed (%d)", GetLastError());
+        auto errInfo = GetLastErrorInfo();
+        logger->Err("OpenService failed. Error %d: %s", errInfo.first, errInfo.second);
         return FALSE;
     }
 
     if (!DeleteService(schService))
     {
-		logger->Err("* DeleteService failed (%d)", GetLastError());
+        auto errInfo = GetLastErrorInfo();
+		logger->Err("DeleteService failed. Error %d: %s", errInfo.first, errInfo.second);
         return FALSE;
     }
     else
-		logger->Info("* DeleteService succeeded");
+		logger->Info("DeleteService succeeded");
 
     CloseServiceHandle(schService);
     return TRUE;
@@ -160,7 +167,8 @@ void WINAPI NWNXServiceStart(DWORD argc, LPTSTR *argv) {
     NWNXServiceStatusHandle = RegisterServiceCtrlHandler(serviceName, NWNXServiceCtrlHandler);
 
     if (NWNXServiceStatusHandle == (SERVICE_STATUS_HANDLE) 0) {
-        logger->Err("* RegisterServiceCtrlHandler failed %d", GetLastError());
+        auto errInfo = GetLastErrorInfo();
+        logger->Err("RegisterServiceCtrlHandler failed. Error %d: %s", errInfo.first, errInfo.second);
         return;
     }
 
@@ -185,8 +193,9 @@ void WINAPI NWNXServiceStart(DWORD argc, LPTSTR *argv) {
     NWNXServiceStatus.dwWaitHint = 0;
 
     if (!SetServiceStatus(NWNXServiceStatusHandle, &NWNXServiceStatus)) {
-        status = GetLastError();
-        logger->Err("* SetServiceStatus error %ld", status);
+        auto errInfo = GetLastErrorInfo();
+        status = errInfo.first;
+        logger->Err("SetServiceStatus error. Error %d: %s", errInfo.first, errInfo.second);
     }
 
     // This is where the service does its work.
@@ -204,8 +213,6 @@ DWORD NWNXServiceInitialization(DWORD argc, LPTSTR *argv, DWORD *specificError)
 
 VOID WINAPI NWNXServiceCtrlHandler(DWORD Opcode)
 {
-	DWORD status;
-
 	switch(Opcode)
 	{
 		case SERVICE_CONTROL_STOP:
@@ -220,8 +227,8 @@ VOID WINAPI NWNXServiceCtrlHandler(DWORD Opcode)
 
 			if (!SetServiceStatus(NWNXServiceStatusHandle, &NWNXServiceStatus))
 			{
-				status = GetLastError();
-				logger->Err("* SetServiceStatus error %ld", status);
+                auto errInfo = GetLastErrorInfo();
+				logger->Err("SetServiceStatus error. Error %d: %s", errInfo.first, errInfo.second);
 			}
 
 			// Cleanly shutdown the server process.
@@ -236,11 +243,11 @@ VOID WINAPI NWNXServiceCtrlHandler(DWORD Opcode)
 
 			if (!SetServiceStatus(NWNXServiceStatusHandle, &NWNXServiceStatus))
 			{
-				status = GetLastError();
-				logger->Err("* SetServiceStatus error %ld", status);
+                auto errInfo = GetLastErrorInfo();
+				logger->Err("SetServiceStatus error. Error %d: %s", errInfo.first, errInfo.second);
 			}
 
-			logger->Info("* Service successfully stopped.");
+			logger->Info("Service successfully stopped.");
 			return;
 
 			case SERVICE_CONTROL_INTERROGATE:
@@ -248,14 +255,14 @@ VOID WINAPI NWNXServiceCtrlHandler(DWORD Opcode)
 				break;
 
 			default: ;
-			logger->Err("* Unrecognized opcode %ld", Opcode);
+			logger->Err("Unrecognized opcode %ld", Opcode);
 	}
 
 	// Send current status.
 	if (!SetServiceStatus (NWNXServiceStatusHandle,  &NWNXServiceStatus))
 	{
-		status = GetLastError();
-		logger->Err("* SetServiceStatus error %ld", status);
+        auto errInfo = GetLastErrorInfo();
+		logger->Err("SetServiceStatus error. Error %d: %s", errInfo.first, errInfo.second);
 	}
 	return;
 }
@@ -283,7 +290,8 @@ BOOL StartNWNXService(int serviceNo)
 
     if (schService == nullptr)
     {
-		logger->Err("* OpenService failed (%d)", GetLastError());
+        auto errInfo = GetLastErrorInfo();
+		logger->Err("OpenService failed. Error %d: %s", errInfo.first, errInfo.second);
         return FALSE;
     }
 
@@ -296,7 +304,7 @@ BOOL StartNWNXService(int serviceNo)
     }
     else
     {
-        logger->Info("* Starting NWNX service %d...", serviceNo);
+        logger->Info("Starting NWNX service %d...", serviceNo);
     }
 
     // Check the status until the service is no longer start pending.
@@ -361,17 +369,17 @@ BOOL StartNWNXService(int serviceNo)
 
     if (ssStatus.dwCurrentState == SERVICE_RUNNING)
     {
-		logger->Info("* Service successfully started.");
+		logger->Info("Service successfully started.");
         return 1;
     }
     else
     {
-        logger->Err("! Service not started.");
-		logger->Err("! Current State: %d", ssStatus.dwCurrentState);
-		logger->Err("! Exit Code: %d", ssStatus.dwWin32ExitCode);
-		logger->Err("! Service Specific Exit Code: %d", ssStatus.dwServiceSpecificExitCode);
-		logger->Err("! Check Point: %d", ssStatus.dwCheckPoint);
-		logger->Err("! Wait Hint: %d", ssStatus.dwWaitHint);
+        logger->Err("Service not started.");
+		logger->Err("Current State: %d", ssStatus.dwCurrentState);
+		logger->Err("Exit Code: %d", ssStatus.dwWin32ExitCode);
+		logger->Err("Service Specific Exit Code: %d", ssStatus.dwServiceSpecificExitCode);
+		logger->Err("Check Point: %d", ssStatus.dwCheckPoint);
+		logger->Err("Wait Hint: %d", ssStatus.dwWaitHint);
         return 0;
     }
 }
@@ -407,11 +415,12 @@ DWORD StopNWNXService(int serviceNo)
 
     if (schService == nullptr)
     {
-		logger->Err("* OpenService failed (%d)", GetLastError());
+        auto errInfo = GetLastErrorInfo();
+		logger->Err("OpenService failed. Error %d: %s", errInfo.first, errInfo.second);
         return FALSE;
     }
 
-	logger->Info("* Stopping NWNX service %d...", serviceNo);
+	logger->Info("Stopping NWNX service %d...", serviceNo);
 
     // Make sure the service is not already stopped
     if (!QueryServiceStatusEx(
