@@ -1,6 +1,8 @@
 #ifndef _NWNX4_NWN2LIB_NWN2COMMON_H
 #define _NWNX4_NWN2LIB_NWN2COMMON_H
 
+#include <windows.h>
+
 //
 // General header file for reverse engineered NWN2 information, not specific to
 // the client or server binary.
