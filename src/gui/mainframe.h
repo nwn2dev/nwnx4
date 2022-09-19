@@ -31,6 +31,8 @@
  * Includes
  */
 
+#include <memory>
+
 #include "../controller/controller.h"
 #include "worker.h"
 #include "GuiLog.h"
@@ -170,11 +172,11 @@ public:
 ////@end MainFrame member variables
 
 private:
-	NWNXController* controller;
-    SimpleIniConfig* configuration;
+	std::unique_ptr<NWNXController> m_controller;
+    std::unique_ptr<SimpleIniConfig> m_config;
     wxLogTextCtrl* m_logger;
 	wxTimer m_timer;
-	NWNXWorker* worker;
+	std::unique_ptr<NWNXWorker> worker;
 };
 
 #endif

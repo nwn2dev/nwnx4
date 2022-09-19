@@ -55,7 +55,7 @@ struct SimpleIniConfig {
     }
 
     template<typename T>
-    bool Read(const std::string key, T* dest, T defaultValue) const {
+    bool Read(const std::string key, T* dest, const T& defaultValue) const {
 
         auto v = values.find(key);
         if (v != values.end()) {
@@ -86,7 +86,7 @@ struct SimpleIniConfig {
 
     template<typename T>
     bool Read(const std::string key, T* dest) const {
-        return Read(key, dest, *dest);
+        return Read(key, dest, T{*dest});
     }
 
 private:

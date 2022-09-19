@@ -85,11 +85,7 @@ MainFrame::MainFrame(wxWindow* parent, wxWindowID id, const wxString& caption, c
     Create( parent, id, caption, pos, size, style );
 }
 
-MainFrame::~MainFrame() {
-    if (controller != nullptr) {
-        delete controller;
-    }
-}
+MainFrame::~MainFrame() {}
 
 /*!
  * MainFrame creator
@@ -105,7 +101,7 @@ bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption,
     SetIcon(GetIconResource(wxT("res/nwnx4_icon.xpm")));
 ////@end MainFrame creation
 
-	m_logger = new wxLogTextCtrl(m_log);
+    m_logger = new wxLogTextCtrl(m_log);
 	wxLog::SetActiveTarget(m_logger);
 
 	wxLogMessage(wxT("Running in GUI mode."));
@@ -114,22 +110,21 @@ bool MainFrame::Create(wxWindow* parent, wxWindowID id, const wxString& caption,
 	m_startedAt->AppendText(now.Format());
 
     // open ini file
-    std::string inifile{"nwnx.ini"};
-    auto config = SimpleIniConfig{inifile};
+    m_config = std::make_unique<SimpleIniConfig>("nwnx.ini");
 
-    controller = new NWNXController{&config};
+    m_controller = std::make_unique<NWNXController>(m_config.get());
 
-	m_CmdLine->AppendText(controller->parameters);
-	m_PWEnabled->SetValue(controller->processWatchdog);
-	m_GWEnabled->SetValue(controller->gamespyWatchdog);
+	m_CmdLine->AppendText(m_controller->parameters);
+	m_PWEnabled->SetValue(m_controller->processWatchdog);
+	m_GWEnabled->SetValue(m_controller->gamespyWatchdog);
     m_PWInterval->AppendText(wxT("1"));
-	m_GWInterval->AppendText(wxString::Format(wxT("%d"), controller->gamespyInterval));
-    m_GWRetries->AppendText(wxString::Format(wxT("%d"), controller->gamespyTolerance));
+	m_GWInterval->AppendText(wxString::Format(wxT("%d"), m_controller->gamespyInterval));
+    m_GWRetries->AppendText(wxString::Format(wxT("%d"), m_controller->gamespyTolerance));
 
 	m_BtnStop->Enable(false);
 
 	// Create worker thread
-	worker = new NWNXWorker(controller, this);
+	worker = std::make_unique<NWNXWorker>(m_controller.get(), this);
 	if (worker->Create() != wxTHREAD_NO_ERROR)
 	{
 		wxLogError(wxT("Can't create worker thread!"));
@@ -444,8 +439,8 @@ void MainFrame::OnServerStopped(wxCommandEvent &event)
 
 void MainFrame::OnPwEnabledClick( wxCommandEvent& event )
 {
-	controller->processWatchdog = m_PWEnabled->GetValue();
-	if (controller->processWatchdog)
+	m_controller->processWatchdog = m_PWEnabled->GetValue();
+	if (m_controller->processWatchdog)
 		wxLogMessage(wxT("Process watchdog set to: enabled"));
 	else
 		wxLogMessage(wxT("Process watchdog set to: disabled"));
@@ -458,8 +453,8 @@ void MainFrame::OnPwEnabledClick( wxCommandEvent& event )
 
 void MainFrame::OnGwEnabledClick( wxCommandEvent& event )
 {
-	controller->gamespyWatchdog = m_GWEnabled->GetValue();
-	if (controller->gamespyWatchdog)
+	m_controller->gamespyWatchdog = m_GWEnabled->GetValue();
+	if (m_controller->gamespyWatchdog)
 		wxLogMessage(wxT("Gamespy watchdog set to: enabled"));
 	else
 		wxLogMessage(wxT("Gamespy watchdog set to: disabled"));
