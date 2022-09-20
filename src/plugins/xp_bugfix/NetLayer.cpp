@@ -31,7 +31,7 @@
 #include "NetLayer.h"
 #include "Reflector.h"
 
-extern LogNWNX* _logger;
+extern std::unique_ptr<LogNWNX> logger;
 
 #define RECV_RECONNECT_TIMEOUT 10000
 
@@ -603,7 +603,7 @@ void ResetWindow(unsigned long PlayerId)
 			NULL,
 			&SetWindowExtensions))
 		{
-			_logger->Info("! Failed to configure window extensions.  AuroraServerNetLayer.dll may be out of date.");
+			logger->Err("! Failed to configure window extensions.  AuroraServerNetLayer.dll may be out of date.");
 		}
 
 		Handle = AuroraServerNetLayerCreateTlsServer_(Connections[PlayerId], &Callbacks, TlsCert);
@@ -640,7 +640,7 @@ bool ReplaceNetLayer()
 
 	if (!AuroraServerNetLayer)
 	{
-		_logger->Info("* Failed to load AuroraServerNetLayer.dll");
+		logger->Err("* Failed to load AuroraServerNetLayer.dll");
 		return false;
 	}
 
@@ -652,12 +652,12 @@ bool ReplaceNetLayer()
 		{
 			if (!DllImports[i].Required)
 			{
-				_logger->Info(
+				logger->Warn(
 					"* Warning: You need to update your AuroraServerNetLayer.dll; missing optional entrypoint AuroraServerNetLayer!%s",
 					DllImports[i].Name);
 				continue;
 			}
-			_logger->Info("* Unable to resolve AuroraServerNetLayer!%s", DllImports[i].Name);
+			logger->Err("* Unable to resolve AuroraServerNetLayer!%s", DllImports[i].Name);
 			return false;
 		}
 	}
@@ -665,20 +665,20 @@ bool ReplaceNetLayer()
 	AuroraServerMsgCheck = LoadLibraryA("AuroraServerMsgCheck.dll");
 	if (!AuroraServerMsgCheck)
 	{
-		_logger->Info("* Failed to load AuroraServerMsgCheck.dll; is it located in the same directory as AuroraServerNetLayer.dll?");
+		logger->Err("* Failed to load AuroraServerMsgCheck.dll; is it located in the same directory as AuroraServerNetLayer.dll?");
 	}
 	else
 	{
 		ValidateReceiveProtocolMessage = (ValidateReceiveProtocolMessageProc)GetProcAddress(AuroraServerMsgCheck, "ValidateReceiveProtocolMessage");
 		if (ValidateReceiveProtocolMessage == NULL)
 		{
-			_logger->Info("* Failed to resolve ValidateReceiveProtocolMessage in AuroraServerMsgCheck.dll");
+			logger->Err("* Failed to resolve ValidateReceiveProtocolMessage in AuroraServerMsgCheck.dll");
 		}
 
 		ValidateReceiveDatagram = (ValidateReceiveDatagramProc)GetProcAddress(AuroraServerMsgCheck, "ValidateReceiveDatagram");
 		if (ValidateReceiveDatagram == NULL)
 		{
-			_logger->Info("* Failed to resolve ValidateReceiveDatagram in AuroraServerMsgCheck.dll");
+			logger->Err("* Failed to resolve ValidateReceiveDatagram in AuroraServerMsgCheck.dll");
 		}
 	}
 
@@ -745,7 +745,7 @@ bool EnableTls()
 	    (AuroraServerNetLayerQuery_ == NULL) ||
 		(AuroraServerNetLayerSendEx_ == NULL))
 	{
-		_logger->Info("! EnableTls: Old version of AuroraServerNetLayer in use without TLS support.");
+		logger->Warn("! EnableTls: Old version of AuroraServerNetLayer in use without TLS support.");
 		return false;
 	}
 
@@ -756,7 +756,7 @@ bool EnableTls()
 		NULL,
 		NULL ) == FALSE)
 	{
-		_logger->Info("! EnableTls: Failed to initialize TLS.  Check that .NET Framework 4.7.2 or newer is enabled.  https://support.microsoft.com/en-us/help/4054530/microsoft-net-framework-4-7-2-offline-installer-for-windows");
+		logger->Err("! EnableTls: Failed to initialize TLS.  Check that .NET Framework 4.7.2 or newer is enabled.  https://support.microsoft.com/en-us/help/4054530/microsoft-net-framework-4-7-2-offline-installer-for-windows");
 		return false;
 	}
 
@@ -778,7 +778,7 @@ bool EnableTls()
 		NULL,
 		&Cert ) == FALSE)
 	{
-		_logger->Info("! EnableTls: Failed to create server certificate and store it in directory '%s'.  Check that .NET Framework 4.7.2 or newer is enabled.  https://support.microsoft.com/en-us/help/4054530/microsoft-net-framework-4-7-2-offline-installer-for-windows",
+		logger->Err("! EnableTls: Failed to create server certificate and store it in directory '%s'.  Check that .NET Framework 4.7.2 or newer is enabled.  https://support.microsoft.com/en-us/help/4054530/microsoft-net-framework-4-7-2-offline-installer-for-windows",
 			NWNXHome);
 		return false;
 	}
@@ -793,7 +793,7 @@ bool EnableTls()
 
 	TlsCertificateHashToString( Cert.Sha512, HostKey, sizeof( HostKey ) );
 
-	_logger->Info("* EnableTls: Enabled TLS with host key %s", HostKey);
+	logger->Info("* EnableTls: Enabled TLS with host key %s", HostKey);
 	return true;
 }
 
@@ -1475,7 +1475,7 @@ OnNetLayerWindowReceive(
 
 	if (Winfo->m_PlayerId != PlayerId)
 	{
-		_logger->Info("OnNetLayerWindowReceive: *** SLIDING WINDOW PLAYER ID MISMATCH !! %lu, %lu, %lu (%p, %p)",
+		logger->Err("OnNetLayerWindowReceive: *** SLIDING WINDOW PLAYER ID MISMATCH !! %lu, %lu, %lu (%p, %p)",
 			PlayerId,
 			Winfo->m_PlayerId,
 			Pinfo->m_nSlidingWindowId,
@@ -1688,7 +1688,7 @@ OnNetLayerWindowSend(
 	Winfo = &NetLayerInternal->Windows[ Pinfo->m_nSlidingWindowId ];
 
 	DebugPrint( "OnNetLayerWindowSend: Send to player %lu WindowId %lu %lu bytes\n", PlayerId, Pinfo->m_nSlidingWindowId, Length );
-//	_logger->Info( wxT("OnNetLayerWindowSend: Send to player %lu WindowId %lu %lu bytes\n"), PlayerId, Pinfo->m_nSlidingWindowId, Length );
+//	logger->Info( wxT("OnNetLayerWindowSend: Send to player %lu WindowId %lu %lu bytes\n"), PlayerId, Pinfo->m_nSlidingWindowId, Length );
 
 	if (!Pinfo->m_bPlayerInUse)
 	{
@@ -1698,7 +1698,7 @@ OnNetLayerWindowSend(
 
 	if (Winfo->m_PlayerId != PlayerId)
 	{
-		_logger->Info("OnNetLayerWindowSend: *** SLIDING WINDOW PLAYER ID MISMATCH !! %lu, %lu, %lu (%p, %p)",
+		logger->Err("OnNetLayerWindowSend: *** SLIDING WINDOW PLAYER ID MISMATCH !! %lu, %lu, %lu (%p, %p)",
 			PlayerId,
 			Winfo->m_PlayerId,
 			Pinfo->m_nSlidingWindowId,
@@ -1722,7 +1722,7 @@ OnNetLayerWindowSend(
 
 	if (Winfo->m_ConnectionId >= NetI->NumConnections)
 	{
-		_logger->Info("OnNetLayerWindowSend: *** ConnectionId for player %lu window %lu out of range !! %lu >= %lu (NetI %p)",
+		logger->Err("OnNetLayerWindowSend: *** ConnectionId for player %lu window %lu out of range !! %lu >= %lu (NetI %p)",
 			PlayerId,
 			Pinfo->m_nSlidingWindowId,
 			Winfo->m_ConnectionId,
@@ -1801,7 +1801,7 @@ OnNetLayerWindowStreamError(
 	// drop the server's player state for that player.
 	//
 
-	_logger->Info("OnNetLayerWindowStreamError: Stream error %lu for player %lu...",
+	logger->Err("OnNetLayerWindowStreamError: Stream error %lu for player %lu...",
 		ErrorCode,
 		PlayerId);
 	DebugPrint("OnNetLayerWindowStreamError: Stream error %lu for player %lu...\n",
