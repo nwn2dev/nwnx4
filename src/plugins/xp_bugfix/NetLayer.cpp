@@ -1726,12 +1726,14 @@ OnNetLayerWindowSend(
 			PlayerId,
 			Pinfo->m_nSlidingWindowId,
 			Winfo->m_ConnectionId,
-			NetI->NumConnections);
+			NetI->NumConnections,
+			NetI);
 		DebugPrint("OnNetLayerWindowSend: *** ConnectionId for player %lu window %lu out of range !! %lu >= %lu (NetI %p)\n",
 			PlayerId,
 			Pinfo->m_nSlidingWindowId,
 			Winfo->m_ConnectionId,
-			NetI->NumConnections);
+			NetI->NumConnections,
+			NetI);
 
 		if (IsDebuggerPresent( ))
 			__debugbreak( );
