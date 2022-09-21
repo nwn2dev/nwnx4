@@ -756,6 +756,8 @@ void loadPlugins()
 
 
 	std::string nwn2InstallDir{std::filesystem::current_path().string()};
+	std::string nwnxUserDirStr{nwnxUserDir.string()};
+	std::string nwnxInstallDirStr {nwnxInstallDir.string()};
 
 	// Get nwn2 home directory (for loading CPlugins)
 	auto serverArgs = ParseServerCommandLine();
@@ -817,11 +819,11 @@ void loadPlugins()
 			try {
 				CPlugin::InitInfo initInfo{
 					.dll_path              = pluginPathStr.c_str(),
-					.nwnx_user_path        = nwnxUserDir.string().c_str(),
+					.nwnx_user_path        = nwnxUserDirStr.c_str(),
 					.nwn2_install_path     = nwn2InstallDir.c_str(),
 					.nwn2_home_path        = nwn2HomeDir.c_str(),
 					.nwn2_module_path      = nwn2ModulePathCStr,
-					.nwnx_install_path     = nwnxInstallDir.string().c_str(),
+					.nwnx_install_path     = nwnxInstallDirStr.c_str(),
 				};
 
 				// Instantiate & initialize CPlugin
