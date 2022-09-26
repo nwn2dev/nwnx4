@@ -18,16 +18,18 @@
 
 ***************************************************************************/
 
-#include "mainframe.h"
 #include "nwnx.h"
 #include "DlgAbout.h"
+#include "mainframe.h"
 
 bool NWNXGUI::OnInit()
 {
-    m_locale.Init(wxLANGUAGE_DEFAULT, NULL);
-	MainFrame* frame = new MainFrame(nullptr, ID_MAINFRAME, SYMBOL_MAINFRAME_TITLE, SYMBOL_MAINFRAME_POSITION, SYMBOL_MAINFRAME_SIZE, SYMBOL_MAINFRAME_STYLE);
+	m_locale.Init(wxLANGUAGE_DEFAULT, NULL);
+	MainFrame* frame
+	    = new MainFrame(nullptr, ID_MAINFRAME, SYMBOL_MAINFRAME_TITLE, SYMBOL_MAINFRAME_POSITION,
+	                    SYMBOL_MAINFRAME_SIZE, SYMBOL_MAINFRAME_STYLE);
 
 	frame->Show(true);
 	SetTopWindow(frame);
-	return TRUE;	
+	return TRUE;
 }

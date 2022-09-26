@@ -29,57 +29,46 @@
 
 SQLite* plugin;
 
-DLLEXPORT Plugin* GetPluginPointerV2()
-{
-	return plugin;
-}
+DLLEXPORT Plugin* GetPluginPointerV2() { return plugin; }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-	{
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
 		plugin = new SQLite();
 
 		char szPath[MAX_PATH];
 		GetModuleFileNameA(hModule, szPath, MAX_PATH);
 		plugin->SetPluginFullPath(szPath);
-	}
-	else if (ul_reason_for_call == DLL_PROCESS_DETACH)
-	{
+	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
 		delete plugin;
 	}
-    return TRUE;
+	return TRUE;
 }
-
 
 /***************************************************************************
     Implementation of SQLite Plugin
 ***************************************************************************/
 
-SQLite::SQLite(): DBPlugin()
+SQLite::SQLite()
+    : DBPlugin()
 {
-	header =
-		"NWNX SQLite Plugin V.1.1.0\n" \
-		"(c) 2007 by Ingmar Stieger (Papillon)\n" \
-		"visit us at http://www.nwnx.org\n" \
-		"(built using SQLite " SQLITE_VERSION ")\n";
+	header = "NWNX SQLite Plugin V.1.1.0\n"
+	         "(c) 2007 by Ingmar Stieger (Papillon)\n"
+	         "visit us at http://www.nwnx.org\n"
+	         "(built using SQLite " SQLITE_VERSION ")\n";
 
-	description =
-		"This plugin provides database storage. It uses " \
-	    "SQLite " SQLITE_VERSION " as database server and therefore is " \
-		"very ease to configure and maintain.";
+	description = "This plugin provides database storage. It uses "
+	              "SQLite " SQLITE_VERSION " as database server and therefore is "
+	              "very ease to configure and maintain.";
 
 	subClass = "SQLite";
-	version = "1.1.0";
+	version  = "1.1.0";
 
 	firstfetch = false;
-	pStmt = nullptr;
+	pStmt      = nullptr;
 }
 
-SQLite::~SQLite()
-{
-	Disconnect();
-}
+SQLite::~SQLite() { Disconnect(); }
 
 bool SQLite::Init(char* nwnxhome)
 {
@@ -91,14 +80,13 @@ bool SQLite::Init(char* nwnxhome)
 
 	// Make sqlite database path relative to nwnx directory
 	auto path = std::filesystem::path(dbfile);
-	if(path.is_relative())
+	if (path.is_relative())
 		path = std::filesystem::path(nwnxhome) / dbfile;
 	dbfile = path.string();
 
 	// Open database
 	logger->Info("* SQLite database file is %s", dbfile.c_str());
-	if (!Connect())
-	{
+	if (!Connect()) {
 		return false;
 	}
 
@@ -110,23 +98,21 @@ bool SQLite::Connect()
 {
 	// Open database
 	int rc = sqlite3_open(dbfile.c_str(), &sdb);
-	if (rc != SQLITE_OK)
-	{
+	if (rc != SQLITE_OK) {
 		logger->Err("* Could not open database: %s", sqlite3_errmsg(sdb));
-	    sqlite3_close(sdb);
+		sqlite3_close(sdb);
 		sdb = nullptr;
 		return false;
 	}
 
 	sqlite3_extended_result_codes(sdb, true);
 
-	if(wrapTransaction){
+	if (wrapTransaction) {
 		// begin implicit transaction
 		rc = sqlite3_prepare_v2(sdb, "BEGIN", -1, &pStmt, nullptr);
 		if (rc != SQLITE_OK)
 			logger->Info("* %s", sqlite3_errmsg(sdb));
-		else
-		{
+		else {
 			rc = sqlite3_step(pStmt);
 			if ((rc & 0xff) != SQLITE_DONE)
 				logger->Info("* %s", sqlite3_errmsg(sdb));
@@ -142,13 +128,12 @@ void SQLite::Disconnect()
 	// End statement if any
 	SafeFinalize(&pStmt);
 
-	if(wrapTransaction){
+	if (wrapTransaction) {
 		// Commit on exit
 		auto rc = sqlite3_prepare_v2(sdb, "COMMIT", -1, &pStmt, nullptr);
 		if (rc != SQLITE_OK)
 			logger->Info("* %s", sqlite3_errmsg(sdb));
-		else
-		{
+		else {
 			rc = sqlite3_step(pStmt);
 			if ((rc & 0xff) != SQLITE_DONE)
 				logger->Info("* %s", sqlite3_errmsg(sdb));
@@ -169,8 +154,7 @@ bool SQLite::Execute(char* query)
 	// prepare query
 	logger->Info("* Executing: %s", query);
 	rc = sqlite3_prepare_v2(sdb, query, -1, &pNewStmt, nullptr);
-	if (rc != SQLITE_OK)
-	{
+	if (rc != SQLITE_OK) {
 		logger->Err("! SQL Error: %s", sqlite3_errmsg(sdb));
 		SafeFinalize(&pNewStmt);
 
@@ -183,82 +167,68 @@ bool SQLite::Execute(char* query)
 
 	// execute query
 	rc = sqlite3_step(pNewStmt);
-	switch(rc & 0xff)
-	{
+	switch (rc & 0xff) {
 		case SQLITE_DONE:
 			logger->Trace("* Step: SQLITE_DONE");
-			if (sqlite3_column_name(pNewStmt,0) != nullptr)
-			{
+			if (sqlite3_column_name(pNewStmt, 0) != nullptr) {
 				// pNewStmt returned an empty resultset (as opposed
 				// to a query that returns no result set at all, like
-				// UPDATE). Empty pStmt so SQLFetch knows there is no data 
+				// UPDATE). Empty pStmt so SQLFetch knows there is no data
 				SafeFinalize(&pStmt);
 			}
 			SafeFinalize(&pNewStmt);
-		break;
+			break;
 		case SQLITE_ROW:
 			logger->Trace("* Step: SQLITE_ROW");
 			SafeFinalize(&pStmt);
-			pStmt = pNewStmt;
+			pStmt      = pNewStmt;
 			firstfetch = true;
-		break;
+			break;
 		case SQLITE_ERROR:
 			SafeFinalize(&pNewStmt);
 
 			// For COMMIT: try to repeat the command with all resultsets closed
 			int errorno = sqlite3_errcode(sdb);
-			if (errorno == SQLITE_ERROR_OPENSTMT)
-			{
+			if (errorno == SQLITE_ERROR_OPENSTMT) {
 				logger->Trace("* Closing open resultset.");
 				SafeFinalize(&pStmt);
-				rc = sqlite3_prepare(sdb, (const char*) query, -1, &pNewStmt, nullptr);
+				rc = sqlite3_prepare(sdb, (const char*)query, -1, &pNewStmt, nullptr);
 				rc = sqlite3_step(pNewStmt) & 0xff;
 				SafeFinalize(&pNewStmt);
 			}
 
-			if (rc == SQLITE_ERROR)
-			{
+			if (rc == SQLITE_ERROR) {
 				logger->Err("! SQL Error: %s (%d)", sqlite3_errmsg(sdb), errorno);
 			}
 			return FALSE;
-		break;
+			break;
 	}
 
 	return TRUE;
 }
 
-int SQLite::GetAffectedRows()
-{
-	return sqlite3_changes(sdb);
-}
+int SQLite::GetAffectedRows() { return sqlite3_changes(sdb); }
 
 int SQLite::Fetch(char* buffer)
 {
 	int rc;
-	if (firstfetch)
-	{
+	if (firstfetch) {
 		// sqlite3_step has already been called in SQLite::Execute
 		firstfetch = false;
-		rc = SQLITE_ROW;	
-	}
-	else
-	{
+		rc         = SQLITE_ROW;
+	} else {
 		// Execute step again to go to next result
 		logger->Trace("* Fetch: fetching next result row");
 		rc = sqlite3_step(pStmt);
-		if ((rc & 0xff) == SQLITE_ERROR)
-		{
+		if ((rc & 0xff) == SQLITE_ERROR) {
 			logger->Err("! SQL Error (fetch): %s", sqlite3_errmsg(sdb));
 		}
 	}
 
-	if ((rc & 0xff) == SQLITE_ROW)
-	{
+	if ((rc & 0xff) == SQLITE_ROW) {
 		// There is a row available
 		return true;
-	}
-	else
-	{
+	} else {
 		// No more rows / there was an error
 		SafeFinalize(&pStmt);
 		return false;
@@ -270,8 +240,7 @@ int SQLite::GetData(int iCol, char* buffer)
 	const char* pCol;
 
 	// Check that a statement has been executed previously
-	if (!pStmt)
-	{
+	if (!pStmt) {
 		logger->Trace("* GetData: No valid statement prepared.");
 		nwnxcpy(buffer, "");
 		return -1;
@@ -279,16 +248,13 @@ int SQLite::GetData(int iCol, char* buffer)
 
 	logger->Trace("* GetData: Get column %d, buffer size %d bytes", iCol, MAX_BUFFER);
 
-	pCol = (const char*) sqlite3_column_text(pStmt, iCol);
-	if (pCol != nullptr)
-	{
+	pCol = (const char*)sqlite3_column_text(pStmt, iCol);
+	if (pCol != nullptr) {
 		// There is some data
 		nwnxcpy(buffer, pCol);
 		logger->Info("* Returning: %s", buffer);
 		return 0;
-	}
-	else
-	{
+	} else {
 		// There is no data / value is null
 		nwnxcpy(buffer, "");
 		logger->Info("* Returning: (empty)");
@@ -298,8 +264,7 @@ int SQLite::GetData(int iCol, char* buffer)
 
 void SQLite::SafeFinalize(sqlite3_stmt** pStmt)
 {
-	if (*pStmt != nullptr)
-	{
+	if (*pStmt != nullptr) {
 		sqlite3_finalize(*pStmt);
 		*pStmt = nullptr;
 	}
@@ -307,8 +272,7 @@ void SQLite::SafeFinalize(sqlite3_stmt** pStmt)
 
 void SQLite::GetEscapeString(char* str, char* buffer)
 {
-	if (*str == '\0')
-	{
+	if (*str == '\0') {
 		nwnxcpy(buffer, "");
 		return;
 	}
@@ -318,20 +282,11 @@ void SQLite::GetEscapeString(char* str, char* buffer)
 	sqlite3_free(to);
 }
 
-int SQLite::GetErrno()
-{
-	return sqlite3_errcode(sdb);
-}
+int SQLite::GetErrno() { return sqlite3_errcode(sdb); }
 
-const char *SQLite::GetErrorMessage()
-{
-	return sqlite3_errmsg(sdb);
-}
+const char* SQLite::GetErrorMessage() { return sqlite3_errmsg(sdb); }
 
-int SQLite::GetLastInsertID()
-{
-	return sqlite3_last_insert_rowid(sdb);
-}
+int SQLite::GetLastInsertID() { return sqlite3_last_insert_rowid(sdb); }
 
 bool SQLite::WriteScorcoData(BYTE* pData, int Length)
 {
@@ -342,22 +297,21 @@ bool SQLite::WriteScorcoData(BYTE* pData, int Length)
 
 	// Replace %s with ?1 for better compatibility with MySQL
 	const auto match = scorcoSQL.find("%s");
-	if(match != std::string::npos)
+	if (match != std::string::npos)
 		scorcoSQL.replace(match, 2, "?1");
 
 	// Prepare new SQL statement
 	auto rc = sqlite3_prepare_v2(sdb, scorcoSQL.c_str(), -1, &pStmt, nullptr);
-	if (rc != SQLITE_OK)
-	{
-		logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL.c_str(), sqlite3_errmsg(sdb));
+	if (rc != SQLITE_OK) {
+		logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL.c_str(),
+		            sqlite3_errmsg(sdb));
 		SafeFinalize(&pStmt);
 		return false;
 	}
 
 	// Bind blob parameter
 	rc = sqlite3_bind_blob(pStmt, 1, pData, Length, SQLITE_STATIC);
-	if (rc != SQLITE_OK)
-	{
+	if (rc != SQLITE_OK) {
 		logger->Err("! SQL Error: Cannot bind blob: %s", sqlite3_errmsg(sdb));
 		SafeFinalize(&pStmt);
 		return false;
@@ -365,8 +319,7 @@ bool SQLite::WriteScorcoData(BYTE* pData, int Length)
 
 	// execute step
 	rc = sqlite3_step(pStmt);
-	switch(rc & 0xff)
-	{
+	switch (rc & 0xff) {
 		case SQLITE_DONE:
 			// successfully inserted
 			logger->Trace("* Step: SQLITE_DONE");
@@ -382,18 +335,18 @@ bool SQLite::WriteScorcoData(BYTE* pData, int Length)
 	return true;
 }
 
-BYTE* SQLite::ReadScorcoData(char *param, int *size)
+BYTE* SQLite::ReadScorcoData(char* param, int* size)
 {
 	logger->Info("* RCO query: %s", scorcoSQL.c_str());
 
 	// Prepare SQL statement
-	if (strcmp(param, "FETCHMODE") != 0){
+	if (strcmp(param, "FETCHMODE") != 0) {
 		SafeFinalize(&pStmt);
 
 		auto rc = sqlite3_prepare_v2(sdb, scorcoSQL.c_str(), -1, &pStmt, nullptr);
-		if (rc != SQLITE_OK)
-		{
-			logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL.c_str(), sqlite3_errmsg(sdb));
+		if (rc != SQLITE_OK) {
+			logger->Err("! SQL Error: Cannot prepare query %s: %s", scorcoSQL.c_str(),
+			            sqlite3_errmsg(sdb));
 			SafeFinalize(&pStmt);
 			return nullptr;
 		}
@@ -403,18 +356,17 @@ BYTE* SQLite::ReadScorcoData(char *param, int *size)
 	// Execute step
 	Fetch(nullptr);
 
-	if(sqlite3_column_count(pStmt) == 0)
+	if (sqlite3_column_count(pStmt) == 0)
 		return nullptr;
 
 	// Extract raw object data
 	auto value = sqlite3_column_blob(pStmt, 0);
-	if (value != nullptr)
-	{
+	if (value != nullptr) {
 		auto valueLen = sqlite3_column_bytes(pStmt, 0);
 
-		NWN2_HeapMgr *pHeapMgr = NWN2_HeapMgr::Instance();
-		NWN2_Heap *pHeap = pHeapMgr->GetDefaultHeap();
-		void* buf = pHeap->Allocate(valueLen);
+		NWN2_HeapMgr* pHeapMgr = NWN2_HeapMgr::Instance();
+		NWN2_Heap* pHeap       = pHeapMgr->GetDefaultHeap();
+		void* buf              = pHeap->Allocate(valueLen);
 
 		// Could not allocate memory
 		if (buf == nullptr)
@@ -425,9 +377,7 @@ BYTE* SQLite::ReadScorcoData(char *param, int *size)
 		*size = valueLen;
 
 		return (BYTE*)buf;
-	}
-	else
-	{
+	} else {
 		logger->Info("* Empty RCO resultset");
 		return nullptr;
 	}

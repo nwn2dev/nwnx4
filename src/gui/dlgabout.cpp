@@ -19,23 +19,22 @@
 ***************************************************************************/
 
 #include "dlgabout.h"
-#include "res/nwnx4_logo.xpm"
 #include "../nwnx_version.h"
+#include "res/nwnx4_logo.xpm"
 
-AboutDialog::AboutDialog(
-	wxWindow *parent,
-	wxWindowID id,
-	const wxString &title,
-	const wxPoint &position,
-	const wxSize& size,
-	long style)
-	: wxDialog(parent, id, title, position, size, style)
+AboutDialog::AboutDialog(wxWindow* parent,
+                         wxWindowID id,
+                         const wxString& title,
+                         const wxPoint& position,
+                         const wxSize& size,
+                         long style)
+    : wxDialog(parent, id, title, position, size, style)
 {
 	wxString aboutText;
 
-    aboutText.append(wxT("NWNX4 GUI Version " NWNX_VERSION_INFO "\n"));
-    aboutText.append(wxT("Neverwinter Nights Extender for NWN2\n\n"));
-    aboutText.append(wxT("Copyright (C) 2021 Crom, ihatemundays (Scott Munday)\n\n"));
+	aboutText.append(wxT("NWNX4 GUI Version " NWNX_VERSION_INFO "\n"));
+	aboutText.append(wxT("Neverwinter Nights Extender for NWN2\n\n"));
+	aboutText.append(wxT("Copyright (C) 2021 Crom, ihatemundays (Scott Munday)\n\n"));
 
 	aboutText.append(wxT("Built (respectfully) from NWNX4 GUI Version 0.0.9\n"));
 	aboutText.append(wxT("Neverwinter Nights Extender for NWN2\n\n"));
@@ -45,30 +44,27 @@ AboutDialog::AboutDialog(
 	aboutText.append(wxT("Virusman, Grinning Fool, McKillroy, Skywing,\n"));
 	aboutText.append(wxT("and countless others: Tips, motivation, bugfixes, gripes... THANKS!"));
 
-	wxBoxSizer *vsizer = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer *hsizer = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* hsizer = new wxBoxSizer(wxHORIZONTAL);
 
-	wxStaticBitmap *logo = new wxStaticBitmap(this, wxID_ANY, wxIcon(nwnx4_logo_xpm));
+	wxStaticBitmap* logo = new wxStaticBitmap(this, wxID_ANY, wxIcon(nwnx4_logo_xpm));
 	hsizer->Add(logo, 0, wxALL, 10);
 
-	wxStaticText *text = new wxStaticText(this, wxID_ANY, aboutText);
+	wxStaticText* text = new wxStaticText(this, wxID_ANY, aboutText);
 	hsizer->Add(text, 0, wxALL, 10);
 
 	vsizer->Add(hsizer);
-	vsizer->Add(new wxButton(this, wxID_OK, wxT("OK")), 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
-  
+	vsizer->Add(new wxButton(this, wxID_OK, wxT("OK")), 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 10);
+
 	SetAutoLayout(TRUE);
 	SetSizer(vsizer);
 
 	vsizer->Fit(this);
 	vsizer->SetSizeHints(this);
-}  
- 
+}
+
 BEGIN_EVENT_TABLE(AboutDialog, wxDialog)
-	EVT_BUTTON( wxID_OK, AboutDialog::OnOk )
+EVT_BUTTON(wxID_OK, AboutDialog::OnOk)
 END_EVENT_TABLE()
 
-void AboutDialog::OnOk(wxCommandEvent &event)
-{
-    event.Skip();
-}
+void AboutDialog::OnOk(wxCommandEvent& event) { event.Skip(); }

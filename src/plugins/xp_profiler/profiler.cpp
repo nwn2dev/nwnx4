@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX Profiler - Profiler plugin
-	Copyright (C) 2003 Ingmar Stieger (Papillon, papillon@blackdagger.com)
+    Copyright (C) 2003 Ingmar Stieger (Papillon, papillon@blackdagger.com)
     Copyright (C) 2007 virusman (virusman@virusman.ru)
 
     This program is free software; you can redistribute it and/or modify
@@ -28,28 +28,21 @@
 
 Profiler* plugin;
 
-DLLEXPORT Plugin* GetPluginPointerV2()
-{
-	return plugin;
-}
+DLLEXPORT Plugin* GetPluginPointerV2() { return plugin; }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-	{
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
 		plugin = new Profiler();
 
 		char szPath[MAX_PATH];
 		GetModuleFileNameA(hModule, szPath, MAX_PATH);
 		plugin->SetPluginFullPath(szPath);
-	}
-	else if (ul_reason_for_call == DLL_PROCESS_DETACH)
-	{
+	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
 		delete plugin;
 	}
-    return TRUE;
+	return TRUE;
 }
-
 
 /***************************************************************************
     Implementation of Functions Plugin
@@ -57,17 +50,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
 Profiler::Profiler()
 {
-	description =
-		"This plugin provides script profiling functionality.";
+	description = "This plugin provides script profiling functionality.";
 
 	subClass = "PROFILER";
-	version = "1.0.0";
+	version  = "1.0.0";
 }
 
-Profiler::~Profiler()
-{
-	logger->Info("* Plugin unloaded.");
-}
+Profiler::~Profiler() { logger->Info("* Plugin unloaded."); }
 
 bool Profiler::Init(char* nwnxhome)
 {
@@ -79,7 +68,6 @@ bool Profiler::Init(char* nwnxhome)
 	logfile.append(GetPluginFileName());
 	logfile.append(".txt");
 	logger = new LogNWNX(logfile);
-
 
 	logger->Info("NWNX Profiler Plugin V.1.0.0");
 	logger->Info("(c) 2003 Ingmar Stieger (papillon@blackdagger.com)");
@@ -93,10 +81,7 @@ bool Profiler::Init(char* nwnxhome)
 	return true;
 }
 
-void Profiler::GetFunctionClass(char* fClass)
-{
-	strcpy(fClass, "PROFILER");
-}
+void Profiler::GetFunctionClass(char* fClass) { strcpy(fClass, "PROFILER"); }
 
 void Profiler::LoadConfiguration(char* nwnxhome)
 {
@@ -113,15 +98,13 @@ void Profiler::LoadConfiguration(char* nwnxhome)
 	config->Read("scriptparts", &log_scriptparts);
 
 	logger->Info("* Log level: ");
-	switch (m_LogLevel)
-	{
-	case logStats:
-		logger->Info("Only overall statistics will be logged.");
-		break;
-	case logCallstack:
-		logger->Info("Script callstack will be logged.");
-		break;
+	switch (m_LogLevel) {
+		case logStats:
+			logger->Info("Only overall statistics will be logged.");
+			break;
+		case logCallstack:
+			logger->Info("Script callstack will be logged.");
+			break;
 	}
 	logger->Info("* scriptparts = %d", log_scriptparts);
-
 }

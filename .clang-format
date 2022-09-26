@@ -1,10 +1,13 @@
-BasedOnStyle: Mozilla
+BasedOnStyle: 'Webkit'
 AlignConsecutiveMacros: 'true'
 AlignConsecutiveAssignments: 'true'
 AlignEscapedNewlines: Left
+BinPackParameters: false
 ColumnLimit: '100'
 Cpp11BracedListStyle: 'true'
 FixNamespaceComments: 'true'
+IndentCaseLabels: true
+AlignAfterOpenBracket: 'Align'
 UseTab: ForIndentation
 IndentWidth: '4'
 TabWidth: '4'

@@ -10,6 +10,7 @@ NWNX4_Hook_lib = shared_library('NWNX4_Hook',
         '../plugins/legacy_plugin.cpp',
         '../misc/log.cpp',
     ],
+    nwnx_version,
     include_directories: include_dirs,
     dependencies: [
         cppcompiler.find_library('detours', dirs: lib_dirs),

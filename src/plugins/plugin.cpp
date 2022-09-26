@@ -20,13 +20,10 @@
 
 #include "plugin.h"
 #include <algorithm>
-#include <filesystem>
 #include <cassert>
+#include <filesystem>
 
-bool Plugin::Init(char* parameter)
-{
-	return true;
-}
+bool Plugin::Init(char* parameter) { return true; }
 
 std::string Plugin::ProcessQueryFunction(std::string_view function)
 {
@@ -46,26 +43,17 @@ void Plugin::GetFunctionClass(char* fClass)
 	fClass[0] = '\0';
 }
 
-const char* Plugin::GetPluginFileName()
-{
-	return pluginFileName.c_str();
-}
+const char* Plugin::GetPluginFileName() { return pluginFileName.c_str(); }
 
-const char* Plugin::GetPluginFullPath()
-{
-	return pluginFullPath.c_str();
-}
+const char* Plugin::GetPluginFullPath() { return pluginFullPath.c_str(); }
 
 void Plugin::SetPluginFullPath(std::string_view p)
 {
 	const auto fullPath = std::filesystem::path(p);
-	if (fullPath.has_stem())
-	{
+	if (fullPath.has_stem()) {
 		pluginFullPath = fullPath.string();
 		pluginFileName = fullPath.stem().string();
-	}
-	else
-	{
+	} else {
 		throw std::runtime_error("SetPluginFullPath: input path has no stem.");
 	}
 }
@@ -74,7 +62,7 @@ void Plugin::nwnxcpy(char* buffer, std::string_view response)
 {
 	assert(buffer);
 	constexpr auto maxSize = static_cast<size_t>(MAX_BUFFER - 1);
-	const auto r = response.substr(0, maxSize);
+	const auto r           = response.substr(0, maxSize);
 	std::ranges::copy(r, buffer);
 	buffer[std::size(r)] = '\0';
 }
@@ -83,5 +71,5 @@ void Plugin::nwnxcpy(char* buffer, const char* response, size_t len)
 {
 	assert(buffer);
 	assert(response);
-	nwnxcpy(buffer, { response, len });
+	nwnxcpy(buffer, {response, len});
 }

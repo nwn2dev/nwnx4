@@ -54,7 +54,7 @@ CPlugin::CPlugin(HINSTANCE hDLL, const CPlugin::InitInfo& initInfo)
 		// clang-format on
 	} else
 		throw std::exception(
-		  ("Unsupported CPlugin ABI version " + std::to_string(m_dll.abiVersion)).c_str());
+		    ("Unsupported CPlugin ABI version " + std::to_string(m_dll.abiVersion)).c_str());
 
 	// Check mandatory definitions
 	if (!m_dll.newPlugin)

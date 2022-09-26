@@ -21,20 +21,17 @@
 #include "udp.h"
 #include <cstring>
 
-CUDP::CUDP(const char *szAddress, int port)
+CUDP::CUDP(const char* szAddress, int port)
 {
 	// Load Winsock
-	WSAStartup(MAKEWORD(1,1), &wsda);
+	WSAStartup(MAKEWORD(1, 1), &wsda);
 
 	// Create a UDP socket
 	s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
 	// Error?
-	if(s == SOCKET_ERROR)
-	{
-		MessageBox(
-                nullptr,
-                L"Error while creating UDP socket.", L"NWNX2 Watchdog", NULL);
+	if (s == SOCKET_ERROR) {
+		MessageBox(nullptr, L"Error while creating UDP socket.", L"NWNX2 Watchdog", NULL);
 		return;
 	}
 
@@ -50,29 +47,23 @@ CUDP::CUDP(const char *szAddress, int port)
 
 CUDP::~CUDP()
 {
-    char buf;
-    int err = recv(s, &buf, 1, MSG_PEEK);
-    if (err != SOCKET_ERROR)
-    {
-        closesocket(s);
-        WSACleanup();
-    }
+	char buf;
+	int err = recv(s, &buf, 1, MSG_PEEK);
+	if (err != SOCKET_ERROR) {
+		closesocket(s);
+		WSACleanup();
+	}
 }
 
-void CUDP::setPort(int port)
-{
-	addr.sin_port = htons(port);
-}
+void CUDP::setPort(int port) { addr.sin_port = htons(port); }
 
-void CUDP::setAddress(const char *szAddress)
+void CUDP::setAddress(const char* szAddress)
 {
-	if(inet_pton(AF_INET, szAddress, (void*) addr.sin_addr.s_addr) != 1)
-	{
+	if (inet_pton(AF_INET, szAddress, (void*)addr.sin_addr.s_addr) != 1) {
 		// The address wasn't in numeric form, resolve it
 		host = nullptr;
-		host = gethostbyname(szAddress);	// Get the IP address of the server and store it in host
-		if(host == nullptr)
-		{
+		host = gethostbyname(szAddress); // Get the IP address of the server and store it in host
+		if (host == nullptr) {
 			MessageBox(nullptr, L"Unknown host.", L"NWNX2 Watchdog", NULL);
 			return;
 		}
@@ -82,7 +73,7 @@ void CUDP::setAddress(const char *szAddress)
 
 void CUDP::sendMessage(const char* message)
 {
-	sendto(s, message, (int)strlen(message), 0, (struct sockaddr *) &addr, sizeof(addr));
+	sendto(s, message, (int)strlen(message), 0, (struct sockaddr*)&addr, sizeof(addr));
 }
 
 int CUDP::getMessage(char* message, int len)

@@ -18,19 +18,17 @@
 
 ***************************************************************************/
 
-class AboutDialog: public wxDialog
-{
+class AboutDialog : public wxDialog {
 public:
-	AboutDialog(
-		wxWindow *parent, 
-		wxWindowID id,
-		const wxString &title,
-		const wxPoint& pos = wxDefaultPosition,
-		const wxSize& size = wxDefaultSize,
-		long style = wxDEFAULT_DIALOG_STYLE);
+	AboutDialog(wxWindow* parent,
+	            wxWindowID id,
+	            const wxString& title,
+	            const wxPoint& pos = wxDefaultPosition,
+	            const wxSize& size = wxDefaultSize,
+	            long style         = wxDEFAULT_DIALOG_STYLE);
 
 private:
-	void OnOk( wxCommandEvent &event );
+	void OnOk(wxCommandEvent& event);
 
 	DECLARE_EVENT_TABLE()
 };

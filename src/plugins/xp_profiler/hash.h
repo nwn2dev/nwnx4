@@ -1,5 +1,5 @@
 //**************************************
-//INCLUDE files for :Hash table functions
+// INCLUDE files for :Hash table functions
 //**************************************
 /* +++Date last modified: 05-Jul-1997 */
 #ifndef HASH__H
@@ -12,11 +12,10 @@
 ** if there was one.
 */
 
-typedef struct bucket
-{
-    char *key;
-    void *data;
-    struct bucket *next;
+typedef struct bucket {
+	char* key;
+	void* data;
+	struct bucket* next;
 } bucket;
 /*
 ** This is what you actually declare an instance of to create a table.
@@ -27,22 +26,20 @@ typedef struct bucket
 ** times as many nodes have been inserted as the table was created with.
 */
 
-typedef struct hash_table 
-{
-    size_t size;
-    bucket **table;
+typedef struct hash_table {
+	size_t size;
+	bucket** table;
 } hash_table;
 /*
 ** This is used to construct the table. If it doesn't succeed, it sets
 ** the table's size to 0, and the pointer to the table to NULL.
 */
-hash_table *construct_table(hash_table *table,size_t size);
+hash_table* construct_table(hash_table* table, size_t size);
 /*
 ** Hashes a string to produce an unsigned short, which should be
 ** sufficient for most purposes.
 */
-//unsigned int hash(char *string);
-
+// unsigned int hash(char *string);
 
 /*
 --------------------------------------------------------------------
@@ -54,34 +51,34 @@ Returns a 32-bit value.  Every bit of the key affects every bit of
 the return value.  Every 1-bit and 2-bit delta achieves avalanche.
 About 36+6len instructions.
 */
-typedef  unsigned long  int  ub4;   /* unsigned 4-byte quantities */
-typedef  unsigned       char ub1;
-ub4 hash(char *key, register ub4 initval);
+typedef unsigned long int ub4; /* unsigned 4-byte quantities */
+typedef unsigned char ub1;
+ub4 hash(char* key, register ub4 initval);
 
 /*
 ** Inserts a pointer to 'data' in the table, with a copy of 'key' as its
 ** key. Note that this makes a copy of the key, but NOT of the
 ** associated data.
 */
-void *insert(char *key,void *data,struct hash_table *table);
+void* insert(char* key, void* data, struct hash_table* table);
 /*
 ** Returns a pointer to the data associated with a key. If the key has
 ** not been inserted in the table, returns NULL.
 */
-void *lookup(char *key,struct hash_table *table);
+void* lookup(char* key, struct hash_table* table);
 /*
 ** Deletes an entry from the table. Returns a pointer to the data that
 ** was associated with the key so the calling code can dispose of it
 ** properly.
 */
-void *del(char *key,struct hash_table *table);
+void* del(char* key, struct hash_table* table);
 /*
 ** Goes through a hash table and calls the function passed to it
 ** for each node that has been inserted. The function is passed
 ** a pointer to the key, and a pointer to the data associated
 ** with it.
 */
-void enumerate(struct hash_table *table,void (*func)(char *,void *));
+void enumerate(struct hash_table* table, void (*func)(char*, void*));
 /*
 ** Frees a hash table. For each node that was inserted in the table,
 ** it calls the function whose address it was passed, with a pointer
@@ -93,5 +90,5 @@ void enumerate(struct hash_table *table,void (*func)(char *,void *));
 ** if not. ( If the parameter passed is NULL, it knows not to call
 ** any function with the data. )
 */
-void free_table(hash_table *table, void (*func)(void *));
+void free_table(hash_table* table, void (*func)(void*));
 #endif /* HASH__H */

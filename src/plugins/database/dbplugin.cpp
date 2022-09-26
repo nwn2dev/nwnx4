@@ -24,12 +24,11 @@
     Implementation of DBPlugin
 ***************************************************************************/
 
-
 DBPlugin::DBPlugin()
 {
-	header = "NWNX Base DB Plugin V.1.1";
-	subClass = "DBPlugin";
-	version = "1.1";
+	header      = "NWNX Base DB Plugin V.1.1";
+	subClass    = "DBPlugin";
+	version     = "1.1";
 	description = "Overwrite this constructor in your derived plugin class.";
 }
 
@@ -66,13 +65,10 @@ bool DBPlugin::SetupLogAndIniFile(char* nwnxhome)
 void DBPlugin::GetFunctionClass(char* fClass)
 {
 	std::string myClass;
-	if (config->Read("class", &myClass) )
-	{
+	if (config->Read("class", &myClass)) {
 		logger->Info("* Registering under function class %s", myClass.c_str());
 		strncpy_s(fClass, 128, myClass.c_str(), myClass.length());
-	}
-	else
-	{
+	} else {
 		strncpy(fClass, "SQL", 4);
 	}
 }
@@ -83,8 +79,7 @@ int DBPlugin::GetInt(char* sFunction, char* sParam1, int nParam2)
 
 	std::string function(sFunction);
 
-	if (function == "")
-	{
+	if (function == "") {
 		logger->Info("* Function not specified.");
 		return -1;
 	}
@@ -101,7 +96,6 @@ int DBPlugin::GetInt(char* sFunction, char* sParam1, int nParam2)
 		return GetLastInsertID();
 
 	return 0;
-
 }
 
 void DBPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue)
@@ -110,8 +104,7 @@ void DBPlugin::SetString(char* sFunction, char* sParam1, int nParam2, char* sVal
 
 	std::string function(sFunction);
 
-	if (function == "")
-	{
+	if (function == "") {
 		logger->Info("* Function not specified.");
 		return;
 	}
@@ -129,30 +122,23 @@ char* DBPlugin::GetString(char* sFunction, char* sParam1, int nParam2)
 	std::string function(sFunction);
 	// std::string param1(sParam1);
 
-	if (function == "")
-	{
+	if (function == "") {
 		logger->Info("* Function not specified.");
 		return NULL;
 	}
 
-	if (function == "GETDATA")
-	{
+	if (function == "GETDATA") {
 		GetData(nParam2, returnBuffer);
-	}
-	else if (function == "GET ESCAPE STRING")
+	} else if (function == "GET ESCAPE STRING")
 		GetEscapeString(sParam1, returnBuffer);
 	else if (function == "GET ERROR MESSAGE")
-		return (char *) GetErrorMessage();
-	else
-	{
+		return (char*)GetErrorMessage();
+	else {
 		// Process generic functions
 		std::string query = ProcessQueryFunction(function.c_str());
-		if (query != "")
-		{
+		if (query != "") {
 			sprintf_s(returnBuffer, MAX_BUFFER, "%s", query.c_str());
-		}
-		else
-		{
+		} else {
 			logger->Info("* Unknown function '%s' called.", function.c_str());
 			return NULL;
 		}
@@ -161,56 +147,24 @@ char* DBPlugin::GetString(char* sFunction, char* sParam1, int nParam2)
 	return returnBuffer;
 }
 
-bool DBPlugin::Execute(char* query)
-{
-	return FALSE;
-}
+bool DBPlugin::Execute(char* query) { return FALSE; }
 
-int DBPlugin::GetAffectedRows()
-{
-	return -1;
-}
+int DBPlugin::GetAffectedRows() { return -1; }
 
-int DBPlugin::GetLastInsertID()
-{
-	return 0;
-}
+int DBPlugin::GetLastInsertID() { return 0; }
 
-int DBPlugin::Fetch(char* buffer)
-{
-	return -1;
-}
+int DBPlugin::Fetch(char* buffer) { return -1; }
 
-int DBPlugin::GetData(int iCol, char* buffer)
-{
-	return -1;
-}
+int DBPlugin::GetData(int iCol, char* buffer) { return -1; }
 
-int DBPlugin::GetErrno()
-{
-	return 0;
-}
+int DBPlugin::GetErrno() { return 0; }
 
-const char *DBPlugin::GetErrorMessage()
-{
-	return NULL;
-}
+const char* DBPlugin::GetErrorMessage() { return NULL; }
 
-void DBPlugin::GetEscapeString(char* str, char* buffer)
-{
-}
+void DBPlugin::GetEscapeString(char* str, char* buffer) { }
 
-bool DBPlugin::WriteScorcoData(BYTE* pData, int Length)
-{
-	return 0;
-}
+bool DBPlugin::WriteScorcoData(BYTE* pData, int Length) { return 0; }
 
-BYTE* DBPlugin::ReadScorcoData(char *param, int *size)
-{
-	return NULL;
-}
+BYTE* DBPlugin::ReadScorcoData(char* param, int* size) { return NULL; }
 
-void DBPlugin::SetScorcoSQL(const char *request)
-{
-	scorcoSQL = request;
-}
+void DBPlugin::SetScorcoSQL(const char* request) { scorcoSQL = request; }
