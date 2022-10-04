@@ -25,6 +25,7 @@
 #ifndef INI_HPP
 #define INI_HPP
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -65,6 +66,21 @@ struct SimpleIniConfig {
 			} else if constexpr (std::is_same_v<T, char*>) {
 				*dest = valueStr;
 			} else {
+				// Allow true/false values for booleans
+				if constexpr (std::is_same_v<T, bool>) {
+					std::string lower(valueStr);
+					std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+					if (lower == "true") {
+						*dest = true;
+						return true;
+					}
+					if (lower == "false") {
+						*dest = false;
+						return true;
+					}
+				}
+
+				// Use stringstream default conversions
 				std::stringstream ss(valueStr);
 				T value;
 				ss >> value;

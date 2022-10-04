@@ -37,15 +37,15 @@ LogLevel ParseLogLevel(const std::string& level)
 	std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 	if (lower == "none")
 		return LogLevel::none;
-	if (lower == "err" || lower == "error")
+	else if (lower == "err" || lower == "error")
 		return LogLevel::error;
-	if (lower == "warn" || lower == "warning")
+	else if (lower == "warn" || lower == "warning")
 		return LogLevel::warning;
-	if (lower == "info" || lower == "information")
+	else if (lower == "info" || lower == "information")
 		return LogLevel::info;
-	if (lower == "dbg" || lower == "debug")
+	else if (lower == "dbg" || lower == "debug")
 		return LogLevel::debug;
-	if (lower == "trc" || lower == "trace")
+	else if (lower == "trc" || lower == "trace")
 		return LogLevel::trace;
 	return LogLevel::info;
 }
@@ -55,12 +55,13 @@ LogNWNX::LogNWNX(std::string filePath, LogLevel level)
 {
 	m_level = level;
 
-	if (m_level == LogLevel::none)
-		return;
-
-	m_ofStream.open(filePath, std::ofstream::out | std::ofstream::app);
-	if (!m_ofStream) {
-		std::cerr << "Canot open log file: " << filePath << std::endl;
+	if (m_level != LogLevel::none) {
+		// Open / create log file
+		m_ofPath = filePath;
+		m_ofStream.open(m_ofPath, std::ofstream::out | std::ofstream::app);
+		if (!m_ofStream) {
+			std::cerr << "Cannot open log file: " << m_ofPath << std::endl;
+		}
 	}
 }
 
@@ -70,11 +71,17 @@ void LogNWNX::Log(LogLevel level, const char* format, va_list a)
 		return;
 
 	auto t = time(nullptr);
-	char nowStr[22]; // 2021-04-24 13:37:05:
-	strftime(nowStr, 22, "%Y-%m-%d %H:%M:%S: ", localtime(&t));
+	char nowStr[26]; // 2022-10-09T19:48:01+0200
+	strftime(nowStr, 26, "%FT%T%z", localtime(&t));
+
+	// RFC 3339 compat fix
+	for (size_t i = 25; i > 22; i--)
+		nowStr[i] = nowStr[i - 1];
+	nowStr[22] = ':';
 
 	std::string fmt;
 	fmt += nowStr;
+	fmt += ": ";
 	switch (level) {
 		case LogLevel::error:
 			fmt += "ERROR: ";
@@ -99,9 +106,7 @@ void LogNWNX::Log(LogLevel level, const char* format, va_list a)
 	va_list args;
 	va_copy(args, a);
 	size_t len = std::vsnprintf(nullptr, 0, fmt.c_str(), args);
-	va_end(args);
 	std::vector<char> vec(len + 1);
-	va_copy(args, a);
 	std::vsnprintf(&vec[0], len + 1, fmt.c_str(), args);
 	va_end(args);
 	LogStr(&vec[0]);
@@ -110,10 +115,42 @@ void LogNWNX::Log(LogLevel level, const char* format, va_list a)
 void LogNWNX::LogStr(const char* message)
 {
 	if (m_ofStream.is_open()) {
+		if (m_maxFileSize > 0 && m_ofStream.tellp() > m_maxFileSize) {
+			RotateFile();
+		}
+
 		m_ofStream << message << std::endl;
-		m_ofStream.flush();
+		if (!m_buffered)
+			m_ofStream.flush();
 	} else {
 		std::cout << message << std::endl;
-		std::cout.flush();
+		if (!m_buffered)
+			std::cout.flush();
+	}
+}
+
+void LogNWNX::RotateFile()
+{
+	m_ofStream.close();
+
+	// Count number of rotated files
+	size_t freeSlot = 1;
+	while (std::filesystem::exists(m_ofPath.string() + "." + std::to_string(freeSlot))) {
+		freeSlot++;
+	}
+
+	// Move log.1 -> log.2
+	for (; freeSlot >= 2; freeSlot--) {
+		std::filesystem::rename(m_ofPath.string() + "." + std::to_string(freeSlot - 1),
+		                        m_ofPath.string() + "." + std::to_string(freeSlot));
+	}
+
+	// Move log -> log.1
+	std::filesystem::rename(m_ofPath, m_ofPath.string() + ".1");
+
+	// Reopen new log file
+	m_ofStream.open(m_ofPath, std::ofstream::out | std::ofstream::app);
+	if (!m_ofStream) {
+		std::cerr << "Cannot open log file: " << m_ofPath << std::endl;
 	}
 }
