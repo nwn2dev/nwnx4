@@ -45,7 +45,7 @@ RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
 # Add NWN2 stage folder to image
 COPY --chown=nwnx4:nwnx4 docker/nwnx4/nwn2-stage /opt/nwn2-stage
 
-# Associated NWN2/NWNX4 volumes bindings
+# Associated NWN2/NWNX4 volume bindings
 VOLUME ["/srv/nwnx4-user", "/srv/nwn2", "/srv/nwn2-home", "/srv/nwn2-logs"]
 
 # Expose UDP port 5121 for port access to NWN2 server
