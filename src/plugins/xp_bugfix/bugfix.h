@@ -248,7 +248,6 @@ private:
 
 	bool EnableRecvfromHook();
 
-	LogNWNX*    logger;
 	ULONG         lastlog;
 	HMODULE       nwn2mm;
 	LARGE_INTEGER perffreq;

@@ -63,7 +63,7 @@ long GameObjUpdateBurstSize = 102400; // 100K
 CHAR NWNXHome[ MAX_PATH + 1 ];
 bool CanonicalizeAccountNames = true;
 StringMap AccountNameMap;
-LogNWNX* _logger;
+std::unique_ptr<LogNWNX> logger;
 
 #if defined (_M_IX86)
 
@@ -560,14 +560,13 @@ bool BugFix::Init(char* nwnxhome)
 	logfile.append("\\");
 	logfile.append(GetPluginFileName());
 	logfile.append(".txt");
-	logger = new LogNWNX(logfile);
-	_logger = logger;
+	logger = make_unique<LogNWNX>(logfile);
 	logger->Info(header.c_str());
 
 
 	if (!Check())
 	{
-		logger->Info(  "* Wrong nwn2server version, patches not active."  );
+		logger->Err(  "* Wrong nwn2server version, patches not active."  );
 		return true;
 	}
 
@@ -578,7 +577,7 @@ bool BugFix::Init(char* nwnxhome)
 		NWN2Heap_Deallocate = (NWN2Heap_Deallocate_Proc)GetProcAddress( nwn2mm, "?Deallocate@NWN2_Heap@@SAXPAX@Z" );
 
 	if (!NWN2Heap_Deallocate)
-		logger->Info(  "* WARNING: Failed to locate NWN2_Heap::Deallocate."  );
+		logger->Warn(  "* WARNING: Failed to locate NWN2_Heap::Deallocate."  );
 
 	int i = 0;
 	while(patches[i].Apply()) {
@@ -593,9 +592,16 @@ bool BugFix::Init(char* nwnxhome)
 	inifile.append(GetPluginFileName());
 	inifile.append(".ini");
 
-	logger->Info("* Reading inifile %s", inifile.c_str());
+	logger->Debug("* Reading inifile %s", inifile.c_str());
 
 	SimpleIniConfig config(inifile);
+	logger->Configure(&config);
+
+	config.Read( "VerboseLogging", &verboseLogging, false );
+	if (verboseLogging && logger->Level() <= LogLevel::info)
+	{
+		logger->SetLogLevel(LogLevel::debug);
+	}
 
 	nocompress = false;
 
@@ -646,7 +652,6 @@ bool BugFix::Init(char* nwnxhome)
 	config.Read( "ReplaceNetLayer", &DoReplaceNetLayer, true );
 	config.Read( "EnableTls", &DoEnableTls, true );
 	config.Read( "UseGetTickCount", &useGetTickCount, false );
-	config.Read( "VerboseLogging", &verboseLogging, false );
 	config.Read( "RewriteClientUdpPort", &rewriteClientUdpPort, true );
 	config.Read( "DisableCharacterCreation", &DisableCharacterCreation, false );
 	config.Read( "WindowExtensions", &DoWindowExtensions, true );
@@ -692,11 +697,6 @@ bool BugFix::Init(char* nwnxhome)
 		logger->Info("* Using GetTickCount as server time source (instead of QueryPerformanceCounter).");
 	}
 
-	if (verboseLogging)
-	{
-		logger->Info("* Enabled verbose logging.");
-	}
-
 	if (rewriteClientUdpPort)
 	{
 		logger->Info("* Rewriting client UDP port number in packets.");
@@ -718,17 +718,17 @@ bool BugFix::Init(char* nwnxhome)
 
 		if (ReplaceNetLayer())
 		{
-			logger->Info("* CNetLayerWindow replaced.");
-			logger->Info("* GameObjUpdate burst size: %lu bytes (stock server default would be 400 bytes).", GameObjUpdateBurstSize);
+			logger->Debug("* CNetLayerWindow replaced.");
+			logger->Debug("* GameObjUpdate burst size: %lu bytes (stock server default would be 400 bytes).", GameObjUpdateBurstSize);
 		}
 		else
 		{
-			logger->Info("* Failed to replace CNetLayerWindow.  Is AuroraServerNetLayer.dll present in the directory with nwn2server.exe?");
+			logger->Err("* Failed to replace CNetLayerWindow.  Is AuroraServerNetLayer.dll present in the directory with nwn2server.exe?");
 		}
 
 		if (DoEnableTls)
 		{
-			logger->Info("* Attempting to enable TLS.");
+			logger->Debug("* Attempting to enable TLS.");
 
 			if (EnableTls())
 			{
@@ -741,7 +741,7 @@ bool BugFix::Init(char* nwnxhome)
 			}
 			else
 			{
-				logger->Info("* Failed to enable TLS.  Ensure that AuroraServerNetLayer.dll in the NWN2 installation directory is up to date and that .NET Framework v4.8 or newer is installed.");
+				logger->Err("* Failed to enable TLS.  Ensure that AuroraServerNetLayer.dll in the NWN2 installation directory is up to date and that .NET Framework v4.8 or newer is installed.");
 			}
 		}
 	}
@@ -797,7 +797,7 @@ bool BugFix::Init(char* nwnxhome)
 			(size_t)TraceCount,
 			TraceLogFileName.wc_str(wxConvLibc).data()))
 		{
-			logger->Info("* Failed to initialize stack tracing for '%s' (%lu traces).",
+			logger->Err("* Failed to initialize stack tracing for '%s' (%lu traces).",
 				TraceLogFileName.c_str(), TraceCount);
 
 			delete tracer;
@@ -1236,7 +1236,7 @@ void __stdcall BugFix::SafeInitPositionList(NWN2::somestruc *struc)
 		{
 			plugin->lastlog = now;
 
-			_logger->Info(
+			logger->Warn(
 				"* SafeInitPositionList: Fixed broken list links (%p, loop detected at @ %p).%s",
 				struc,
 				prev,
@@ -1254,7 +1254,7 @@ void __stdcall BugFix::LogNullDerefCrash0()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash0: Avoided null deference crash #0 (expired frame data?)."  );
+		logger->Warn(  "LogNullDerefCrash0: Avoided null deference crash #0 (expired frame data?)."  );
 	}
 }
 
@@ -1266,7 +1266,7 @@ void __stdcall BugFix::LogNullDerefCrash1()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash1: Avoided null deference crash #1 (party inviter invalid)."  );
+		logger->Warn(  "LogNullDerefCrash1: Avoided null deference crash #1 (party inviter invalid)."  );
 	}
 }
 
@@ -1278,7 +1278,7 @@ void __stdcall BugFix::LogNullDerefCrash2()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash2: Avoided null deference crash #2 (no collider data - respawn while polymorphed race?)."  );
+		logger->Warn(  "LogNullDerefCrash2: Avoided null deference crash #2 (no collider data - respawn while polymorphed race?)."  );
 	}
 }
 
@@ -1290,7 +1290,7 @@ void __stdcall BugFix::LogNullDerefCrash3()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash3: Avoided null deference crash #3 (DM client toggle plot object)."  );
+		logger->Warn(  "LogNullDerefCrash3: Avoided null deference crash #3 (DM client toggle plot object)."  );
 	}
 }
 
@@ -1302,7 +1302,7 @@ void __stdcall BugFix::LogNullDerefCrash4()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash4: Avoided null deference crash #4 (failed to insert player into game object array)."  );
+		logger->Warn(  "LogNullDerefCrash4: Avoided null deference crash #4 (failed to insert player into game object array)."  );
 	}
 /*mov     edx, [eax]
 mov     ecx, eax
@@ -1318,7 +1318,7 @@ void __stdcall BugFix::LogCrash5()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogCrash5: Avoided deference crash #5 (unpacketize expired frame data?)."  );
+		logger->Warn(  "LogCrash5: Avoided deference crash #5 (unpacketize expired frame data?)."  );
 	}
 /*mov     edx, [eax]
 mov     ecx, eax
@@ -1334,7 +1334,7 @@ void __stdcall BugFix::LogNullDerefCrash6()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash6: Avoided null deference crash #6 (Inventory.UnequipItem while player not zoned in)."  );
+		logger->Warn(  "LogNullDerefCrash6: Avoided null deference crash #6 (Inventory.UnequipItem while player not zoned in)."  );
 	}
 }
 
@@ -1346,7 +1346,7 @@ void __stdcall BugFix::LogNullDerefCrash7()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash7: Avoided null deference crash #7 (ActionExchangeItem script function called on wrong object type)."  );
+		logger->Warn(  "LogNullDerefCrash7: Avoided null deference crash #7 (ActionExchangeItem script function called on wrong object type)."  );
 	}
 }
 
@@ -1358,7 +1358,7 @@ void __stdcall BugFix::LogNullDerefCrash8()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash8: Avoided null deference crash #8 (NULL CItemRepository in item acquisition)."  );
+		logger->Warn(  "LogNullDerefCrash8: Avoided null deference crash #8 (NULL CItemRepository in item acquisition)."  );
 	}
 }
 
@@ -1370,7 +1370,7 @@ void __stdcall BugFix::LogUncompress0Fix()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogUncompress0Fix: Avoided crash due to invalid compressed data."  );
+		logger->Warn(  "LogUncompress0Fix: Avoided crash due to invalid compressed data."  );
 	}
 }
 
@@ -1382,7 +1382,7 @@ void __stdcall BugFix::LogUncompress1Fix()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogUncompress1Fix: Avoided crash due to invalid compressed data."  );
+		logger->Warn(  "LogUncompress1Fix: Avoided crash due to invalid compressed data."  );
 	}
 }
 
@@ -1394,7 +1394,7 @@ void __stdcall BugFix::LogNullDerefCrash9()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash9: Avoided null deference crash #9 (Nonexistant object in item repository)."  );
+		logger->Warn(  "LogNullDerefCrash9: Avoided null deference crash #9 (Nonexistant object in item repository)."  );
 	}
 }
 
@@ -1406,7 +1406,7 @@ void __stdcall BugFix::LogNullDerefCrash10()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash10: Avoided null dereference crash #10 (Bogus feats during level-up processing)."  );
+		logger->Warn(  "LogNullDerefCrash10: Avoided null dereference crash #10 (Bogus feats during level-up processing)."  );
 	}
 }
 
@@ -1418,7 +1418,7 @@ void __stdcall BugFix::LogNullDerefCrash11()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash11: Avoided null dereference crash #11 (Player with no automap module parting)."  );
+		logger->Warn(  "LogNullDerefCrash11: Avoided null dereference crash #11 (Player with no automap module parting)."  );
 	}
 }
 
@@ -1430,7 +1430,7 @@ void __stdcall BugFix::LogNullDerefCrash12()
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "LogNullDerefCrash12: Avoided null dereference crash #12 (Level up with no player LUO)."  );
+		logger->Warn(  "LogNullDerefCrash12: Avoided null dereference crash #12 (Level up with no player LUO)."  );
 	}
 }
 
@@ -3617,7 +3617,7 @@ Retpoint0:
 
 void __stdcall BugFix::HandleAreaTransitionBMP(int LoadScreenId, struct CExoString *LoadScreenName, void *MessageObject)
 {
-	_logger->Info(  "HandleAreaTransitionBMP: Setting load screen id %d" , LoadScreenId );
+	logger->Debug(  "HandleAreaTransitionBMP: Setting load screen id %d" , LoadScreenId );
 
 	WriteWORD((unsigned short) LoadScreenId, MessageObject);
 
@@ -3672,7 +3672,7 @@ void __fastcall BugFix::AddGameObject(__in NWN::OBJECTID ObjectId, __in NWN::CGa
 	{
 		GameObjectNodes[MaskObjId] = NewNode;
 #if BUGFIX_LOG_GAMEOBJACCESS
-		logger->Info("AddGameObject(%08x, %p) @ Toplevel", ObjectId, Object);
+		logger->Trace("AddGameObject(%08x, %p) @ Toplevel", ObjectId, Object);
 #endif
 		return;
 	}
@@ -3683,7 +3683,7 @@ void __fastcall BugFix::AddGameObject(__in NWN::OBJECTID ObjectId, __in NWN::CGa
 	SearchNode->m_nextNode = NewNode;
 
 #if BUGFIX_LOG_GAMEOBJACCESS
-	logger->Info("AddGameObject(%08x, %p) @ Subnode %p", ObjectId, Object, SearchNode);
+	logger->Trace("AddGameObject(%08x, %p) @ Subnode %p", ObjectId, Object, SearchNode);
 #endif
 }
 
@@ -3724,7 +3724,7 @@ void __fastcall BugFix::AddGameObjectAtPos(__in NWN::CGameObjectArray * GameObjA
 	{
 		GameObjectNodes[MaskObjId] = NewNode;
 #if BUGFIX_LOG_GAMEOBJACCESS
-		logger->Info("AddGameObjectAtPos(%08x, %p) @ Toplevel", ObjectId, Object);
+		logger->Trace("AddGameObjectAtPos(%08x, %p) @ Toplevel", ObjectId, Object);
 #endif
 		return;
 	}
@@ -3735,7 +3735,7 @@ void __fastcall BugFix::AddGameObjectAtPos(__in NWN::CGameObjectArray * GameObjA
 	SearchNode->m_nextNode = NewNode;
 
 #if BUGFIX_LOG_GAMEOBJACCESS
-	logger->Info("AddGameObjectAtPos(%08x, %p) @ Subnode %p", ObjectId, Object, SearchNode);
+	logger->Trace("AddGameObjectAtPos(%08x, %p) @ Subnode %p", ObjectId, Object, SearchNode);
 #endif
 }
 
@@ -3746,15 +3746,14 @@ void __fastcall BugFix::RemoveGameObject(__in NWN::OBJECTID ObjectId)
 	NWN::CGameObjectArrayNode * SearchNode;
 	NWN::CGameObjectArrayNode * * PrevNodeNext;
 #if BUGFIX_LOG_GAMEOBJACCESS
-	logger->Info("RemoveGameObject(%08x)", ObjectId);
+	logger->Trace("RemoveGameObject(%08x)", ObjectId);
 #endif
 
 	PrevNodeNext = &GameObjectNodes[MaskObjId];
 
 	if ((SearchNode = *PrevNodeNext) == NULL)
 	{
-		if (plugin->verboseLogging)
-			_logger->Info(  "RemoveGameObject: Removing unknown game object %08X (toplevel node unmatched)" , ObjectId );
+		logger->Debug(  "RemoveGameObject: Removing unknown game object %08X (toplevel node unmatched)" , ObjectId );
 		return;
 	}
 
@@ -3762,8 +3761,7 @@ void __fastcall BugFix::RemoveGameObject(__in NWN::OBJECTID ObjectId)
 	{
 		if (SearchNode->m_nextNode == NULL)
 		{
-			if (plugin->verboseLogging)
-				_logger->Info(  "RemoveGameObject: Removing unknown game object %08X (overflow nodelist unmatched" , ObjectId );
+			logger->Debug(  "RemoveGameObject: Removing unknown game object %08X (overflow nodelist unmatched" , ObjectId );
 			return;
 		}
 
@@ -4493,7 +4491,7 @@ void BugFix::CheckAreaObjectLists(__in NWN::CNWSArea * Area)
 
 	if (Area->BugFix_AreaObjectList.m_nUsedSize != Area->GetObjects( ).m_nUsedSize)
 	{
-		_logger->Info(  "CheckAreaObjectLists: Area object lists in area %p (%08X) are out of sync (wrong sizes)" , (void *) Area, Area->GetObjectId( ) );
+		logger->Err(  "CheckAreaObjectLists: Area object lists in area %p (%08X) are out of sync (wrong sizes)" , (void *) Area, Area->GetObjectId( ) );
 		PrintObjectLists( Area );
 		__debugbreak();
 	}
@@ -4502,14 +4500,14 @@ void BugFix::CheckAreaObjectLists(__in NWN::CNWSArea * Area)
 	{
 		if (Area->BugFix_AreaObjectList.m_Array[ i ].ObjectId != Area->BugFix_AreaObjectList.m_Array[ i ].Object->GetObjectId( ))
 		{
-			_logger->Info(  "CheckAreaObjectLists: Area object IDs (cache, id in object) in area %p (%08X) are out of sync (index %d)" , (void *) Area, Area->GetObjectId( ), i );
+			logger->Err(  "CheckAreaObjectLists: Area object IDs (cache, id in object) in area %p (%08X) are out of sync (index %d)" , (void *) Area, Area->GetObjectId( ), i );
 			PrintObjectLists( Area );
 			__debugbreak();
 		}
 
 		if (Area->BugFix_AreaObjectList.m_Array[ i ].ObjectId != Area->GetObjects( ).m_Array[ i ])
 		{
-			_logger->Info(  "CheckAreaObjectLists: Area object lists in area %p (%08X) are out of sync (index %d)" , (void *) Area, Area->GetObjectId( ), i );
+			logger->Err(  "CheckAreaObjectLists: Area object lists in area %p (%08X) are out of sync (index %d)" , (void *) Area, Area->GetObjectId( ), i );
 			PrintObjectLists( Area );
 			__debugbreak();
 		}
@@ -4560,7 +4558,7 @@ void __fastcall BugFix::AddObjectToArea(__in NWN::CNWSArea * Area, __in NWN::CGa
 
 	if (Area->BugFix_AreaObjectList.m_nUsedSize - 1 != Area->GetObjects( ).m_nUsedSize)
 	{
-		_logger->Info(  "AddObjectToArea: Area object lists in area %p (%08X) are out of sync" , (void *) Area, Area->GetObjectId( ) );
+		logger->Err(  "AddObjectToArea: Area object lists in area %p (%08X) are out of sync" , (void *) Area, Area->GetObjectId( ) );
 		__debugbreak();
 	}
 }
@@ -4592,12 +4590,12 @@ void __fastcall BugFix::RemoveObjectFromArea(__in NWN::CNWSArea * Area, __in NWN
 		}
 	}
 
-	_logger->Info(  "RemoveObjectFromArea: Removing unknown game object %08X from area %p (%08X)" , ObjectId, (void *) Area, Area->GetObjectId( ) );
+	logger->Debug(  "RemoveObjectFromArea: Removing unknown game object %08X from area %p (%08X)" , ObjectId, (void *) Area, Area->GetObjectId( ) );
 	return;
 
 	if (Area->BugFix_AreaObjectList.m_nUsedSize + 1 != Area->GetObjects( ).m_nUsedSize)
 	{
-		_logger->Info(  "RemoveObjectFromArea: Area object lists in area %p (%08X) are out of sync" , (void *) Area, Area->GetObjectId( ) );
+		logger->Err(  "RemoveObjectFromArea: Area object lists in area %p (%08X) are out of sync" , (void *) Area, Area->GetObjectId( ) );
 		__debugbreak();
 	}
 }
@@ -4687,13 +4685,13 @@ void __fastcall BugFix::UpdatePositionInObjectsArray_SwapUp(__in NWN::CNWSArea *
 
 	if (Index >= Pointers.m_nUsedSize)
 	{
-		_logger->Info(  "UpdatePositionInObjectsArray_SwapUp: Index %d exceeds BugFix_AreaObjectList.m_nUsedSize %d (Objects.m_nUsedSize == %d)" , Index, Pointers.m_nUsedSize, Objects.m_nUsedSize );
+		logger->Err(  "UpdatePositionInObjectsArray_SwapUp: Index %d exceeds BugFix_AreaObjectList.m_nUsedSize %d (Objects.m_nUsedSize == %d)" , Index, Pointers.m_nUsedSize, Objects.m_nUsedSize );
 		return;
 	}
 
 	if (Objects.m_nUsedSize != Pointers.m_nUsedSize)
 	{
-		_logger->Info(  "UpdatePositionInObjectsArray_SwapUp: BugFix_AreaObjectList.m_nUsedSize %d != Objects.m_nUsedSize %d" , Index, Pointers.m_nUsedSize, Objects.m_nUsedSize );
+		logger->Err(  "UpdatePositionInObjectsArray_SwapUp: BugFix_AreaObjectList.m_nUsedSize %d != Objects.m_nUsedSize %d" , Index, Pointers.m_nUsedSize, Objects.m_nUsedSize );
 	}
 
 	SwapObjectId = Objects.m_Array[ Index + 1 ];
@@ -4714,13 +4712,13 @@ void __fastcall BugFix::UpdatePositionInObjectsArray_SwapDown(__in NWN::CNWSArea
 
 	if (Index >= Pointers.m_nUsedSize)
 	{
-		_logger->Info(  "UpdatePositionInObjectsArray_SwapDown: Index %d exceeds BugFix_AreaObjectList.m_nUsedSize %d (Objects.m_nUsedSize == %d)" , Index, Pointers.m_nUsedSize, Objects.m_nUsedSize );
+		logger->Err(  "UpdatePositionInObjectsArray_SwapDown: Index %d exceeds BugFix_AreaObjectList.m_nUsedSize %d (Objects.m_nUsedSize == %d)" , Index, Pointers.m_nUsedSize, Objects.m_nUsedSize );
 		return;
 	}
 
 	if (Objects.m_nUsedSize != Pointers.m_nUsedSize)
 	{
-		_logger->Info(  "UpdatePositionInObjectsArray_SwapUp: BugFix_AreaObjectList.m_nUsedSize %d != Objects.m_nUsedSize %d" , Index, Pointers.m_nUsedSize, Objects.m_nUsedSize );
+		logger->Err(  "UpdatePositionInObjectsArray_SwapUp: BugFix_AreaObjectList.m_nUsedSize %d != Objects.m_nUsedSize %d" , Index, Pointers.m_nUsedSize, Objects.m_nUsedSize );
 	}
 
 	SwapObjectId = Objects.m_Array[ Index - 1 ];
@@ -4751,7 +4749,7 @@ void BugFix::CheckLUOTable(__in NWN::CNWSPlayer * Player)
 	{
 		if (LUOTable[ i ].LUO->GetPlayer( ) != Player)
 		{
-			_logger->Info(  "CheckLUOTable: LUO %p at index %d has wrong player %p (should be %p)" , LUOTable[ i ].LUO, i, (void *) LUOTable[ i ].LUO->GetPlayer( ), (void *) Player );
+			logger->Err(  "CheckLUOTable: LUO %p at index %d has wrong player %p (should be %p)" , LUOTable[ i ].LUO, i, (void *) LUOTable[ i ].LUO->GetPlayer( ), (void *) Player );
 			__debugbreak();
 		}
 
@@ -4763,7 +4761,7 @@ void BugFix::CheckLUOTable(__in NWN::CNWSPlayer * Player)
 
 		if (LUOTable[ i ].ObjectId <= ObjectId)
 		{
-			_logger->Info(  "CheckLUOTable: Incorrect sorting in LUO table at index %d for player %p" , i, (void *) Player );
+			logger->Err(  "CheckLUOTable: Incorrect sorting in LUO table at index %d for player %p" , i, (void *) Player );
 			__debugbreak();
 		}
 
@@ -4872,7 +4870,7 @@ void __fastcall BugFix::OnAddLUO(__in NWN::CNWSPlayer * Player, __in NWN::CLastU
 	{
 		if (LUOEntry != NULL)
 		{
-			_logger->Info(  "OnAddLUO: Created LUO %p for object %08x for player %p but that LUO %p already exists!" , (void *) LUO, ObjectId, (void *) Player, (void *) LUOEntry->LUO );
+			logger->Err(  "OnAddLUO: Created LUO %p for object %08x for player %p but that LUO %p already exists!" , (void *) LUO, ObjectId, (void *) Player, (void *) LUOEntry->LUO );
 			__debugbreak();
 			return;
 		}
@@ -4933,7 +4931,7 @@ void __fastcall BugFix::OnDeleteLUO(__in NWN::CLastUpdateObject * LUO)
 		{
 			if (Middle == 0)
 			{
-				_logger->Info(  "OnDeleteLUO: LUO %p (%08x) for player %p doesn't exist in LUO table!" , (void *) LUO, ObjectId, (void *) Player );
+				logger->Err(  "OnDeleteLUO: LUO %p (%08x) for player %p doesn't exist in LUO table!" , (void *) LUO, ObjectId, (void *) Player );
 				__debugbreak();
 				return;
 			}
@@ -4952,7 +4950,7 @@ void __fastcall BugFix::OnDeleteLUO(__in NWN::CLastUpdateObject * LUO)
 
 	if (High < Low)
 	{
-		_logger->Info(  "OnDeleteLUO: LUO %p (%08x) for player %p doesn't exist in LUO table!" , (void *) LUO, ObjectId, (void *) Player );
+		logger->Err(  "OnDeleteLUO: LUO %p (%08x) for player %p doesn't exist in LUO table!" , (void *) LUO, ObjectId, (void *) Player );
 		__debugbreak();
 		return;
 	}
@@ -5067,7 +5065,7 @@ BOOL __stdcall BugFix::CheckAreaSurfaceMeshFaceIndex(__in ULONG Width, __in ULON
 	{
 		plugin->lastlog = now;
 
-		_logger->Info(  "CheckAreaSurfaceMeshFaceIndex: Avoided NWN2_AreaSurfaceMesh.m_TileGrid overrun in FindFace/IsValid."  );
+		logger->Warn(  "CheckAreaSurfaceMeshFaceIndex: Avoided NWN2_AreaSurfaceMesh.m_TileGrid overrun in FindFace/IsValid."  );
 	}
 
 	return FALSE;
@@ -5095,7 +5093,7 @@ BOOL __fastcall BugFix::ShouldSkipOtherAreaLUODeleteCheck(__in NWN::CGameObject 
 
 	if (AreaObject->AsArea( ) == NULL)
 	{
-		_logger->Info("ShouldSkipOtherAreaLUODeleteCheck: %08x (%p) is not an area!", AreaId, (void *) AreaObject );
+		logger->Err("ShouldSkipOtherAreaLUODeleteCheck: %08x (%p) is not an area!", AreaId, (void *) AreaObject );
 		__debugbreak();
 		return FALSE;
 	}
@@ -5131,14 +5129,14 @@ void BugFix::PrintObjectInfo(__in const char * Header, __in NWN::CGameObject * O
 	NWN::CNWSObject * NWSObject;
 	if (Object == NULL)
 	{
-		_logger->Info(  "%s: ObjectId=%08X Object=%p" , Header, ObjectId, (void *) Object );
+		logger->Debug(  "%s: ObjectId=%08X Object=%p" , Header, ObjectId, (void *) Object );
 		return;
 	}
 
 	NWSObject = Object->AsNWSObject( );
 	if (Object == NULL)
 	{
-		_logger->Info(  "%s: ObjectId=%08X Object=%p ObjectType=%02X" , Header, ObjectId, (void *) Object, Object->GetObjectType( ) );
+		logger->Debug(  "%s: ObjectId=%08X Object=%p ObjectType=%02X" , Header, ObjectId, (void *) Object, Object->GetObjectType( ) );
 		return;
 	}
 
@@ -5154,14 +5152,14 @@ void BugFix::PrintObjectInfo(__in const char * Header, __in NWN::CGameObject * O
 		LastName = NULL;
 	}
 
-	_logger->Info(  "%s: ObjectId=%08X Object=%p ObjectType=%02X FirstName=%s LastName=%s" , Header, ObjectId, (void *) Object, Object->GetObjectType( ), (FirstName != NULL ? FirstName->m_sString : ""), (LastName != NULL ? LastName->m_sString : "") );
+	logger->Debug(  "%s: ObjectId=%08X Object=%p ObjectType=%02X FirstName=%s LastName=%s" , Header, ObjectId, (void *) Object, Object->GetObjectType( ), (FirstName != NULL ? FirstName->m_sString : ""), (LastName != NULL ? LastName->m_sString : "") );
 }
 
 void BugFix::PrintObjectLists(__in NWN::CNWSArea * Area)
 {
 	char Header[1024];
 
-	_logger->Info(  "Printing area object list for Area %08x (%p)" , Area->GetObjectId( ), (void *) Area );
+	logger->Debug(  "Printing area object list for Area %08x (%p)" , Area->GetObjectId( ), (void *) Area );
 
 	for (int i = 0; i < Area->BugFix_AreaObjectList.m_nUsedSize; i += 1)
 	{
@@ -5191,7 +5189,7 @@ void BugFix::LogServerDebugInfo()
 	OutStr.m_nBufferLength = 0;
 	OutStr.m_sString = NULL;
 
-	_logger->Info(  "LogServerDebugInfo: Logging server debug info via console commands..."  );
+	logger->Debug(  "LogServerDebugInfo: Logging server debug info via console commands..."  );
 
 	Cmd = (ConsoleCmdProc) (OFFS_ServerConsoleCommandMgr_Handle_LogAreaObjects);
 	Cmd( OutStr );
@@ -5211,7 +5209,7 @@ void BugFix::LogServerDebugInfo()
 		OutStr.m_sString = NULL;
 	}
 
-	_logger->Info(  "LogServerDebugInfo: Done."  );
+	logger->Debug(  "LogServerDebugInfo: Done."  );
 }
 
 BOOL CALLBACK BugFix::FindServerGuiWindowEnumProc(__in HWND hwnd, __in LPARAM lParam)
@@ -5471,7 +5469,7 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 	{
 		if (NetLayerHandleBNCS( (char *) buf, len, sin, *fromlen ) == -1)
 		{
-			_logger->Info("* Dropped BNCS from %s:%lu due to already active connection.", inet_ntoa(sin->sin_addr), ntohs(sin->sin_port));
+			logger->Warn("* Dropped BNCS from %s:%lu due to already active connection.", inet_ntoa(sin->sin_addr), ntohs(sin->sin_port));
 			return -1;
 		}
 	}
@@ -5479,7 +5477,7 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 	{
 		if (NetLayerHandleBNVS( (char *) buf, len, sin, *fromlen ) == -1)
 		{
-			_logger->Info("* Dropped BNVS from %s:%lu due to already active connection.", inet_ntoa(sin->sin_addr), ntohs(sin->sin_port));
+			logger->Warn("* Dropped BNVS from %s:%lu due to already active connection.", inet_ntoa(sin->sin_addr), ntohs(sin->sin_port));
 			return -1;
 		}
 	}
@@ -5519,8 +5517,7 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 		else
 			return rlen;
 
-		if (plugin->verboseLogging)
-			_logger->Info("* Patched client data port in %.4s packet.", buf);
+		logger->Debug("* Patched client data port in %.4s packet.", buf);
 	}
 
 	if (!memcmp(buf, "BNCS", 4))
@@ -5532,7 +5529,7 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 
 		if (Remaining < OffsetToName)
 		{
-			_logger->Info("* Malformed BNCS message dropped (too short)");
+			logger->Warn("* Malformed BNCS message dropped (too short)");
 
 			return -1;
 		}
@@ -5542,7 +5539,7 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 
 		if (Remaining < 1)
 		{
-			_logger->Info("* Malformed BNCS message dropped (too short (1))");
+			logger->Warn("* Malformed BNCS message dropped (too short (1))");
 
 			return -1;
 		}
@@ -5550,7 +5547,7 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 		UCHAR AccountNameLength = Payload[0];
 		if ((AccountNameLength == 0) || (AccountNameLength > 40))
 		{
-			_logger->Info("* Malformed BNCS message dropped (zero account name length or account name too long)");
+			logger->Warn("* Malformed BNCS message dropped (zero account name length or account name too long)");
 
 			return -1;
 		}
@@ -5560,18 +5557,13 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 
 		if (Remaining < (ULONG)(AccountNameLength) + 1)
 		{
-			_logger->Info("* Malformed BNCS message dropped (too short (1))");
+			logger->Warn("* Malformed BNCS message dropped (too short (1))");
 
 			return -1;
 		}
 
 		PCHAR AccountName = (PCHAR)Payload;
-
-		if (plugin->verboseLogging)
-		{
-			std::string AccountNamePrint(AccountName, AccountNameLength);
-			_logger->Info("* Handling BNCS for player account name %s", AccountNamePrint.c_str());
-		}
+		logger->Debug("* Handling BNCS for player account name %.*s", AccountNameLength, AccountName);
 
 		bool TrailingSpaces = false;
 		bool TrailingDots = false;
@@ -5590,9 +5582,7 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 				 (AccountName[i] == '~') ||
 				 (AccountName[i] == '|'))
 			{
-				std::string AccountNamePrint(AccountName, AccountNameLength);
-
-				_logger->Info("* Malformed BNCS message dropped (malformed account name %s", AccountNamePrint.c_str());
+				logger->Warn("* Malformed BNCS message dropped (malformed account name %.*s)", AccountNameLength, AccountName);
 
 				return -1;
 			}
@@ -5618,9 +5608,7 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 
 		if (TrailingSpaces || AccountName[0] == ' ' || TrailingDots)
 		{
-			std::string AccountNamePrint(AccountName, AccountNameLength);
-
-			_logger->Info("* Malformed BNCS message dropped (malformed account name with trailing or leading spaces %s", AccountNamePrint.c_str());
+			logger->Warn("* Malformed BNCS message dropped (malformed account name with trailing or leading spaces %.*s", AccountNameLength, AccountName);
 
 			return -1;
 		}
@@ -5653,11 +5641,11 @@ int __stdcall BugFix::recvfromHook(__in SOCKET s, __out char *buf, __in int len,
 				
 				if (it != AccountNameMap.end( ))
 				{
-					std::string AccountNameProvided(AccountName, AccountNameLength);
+					std::string_view AccountNameProvided(AccountName, AccountNameLength);
 
 					if (it->second != AccountNameProvided)
 					{
-						_logger->Info("* Canonicalized case for BNCS for account name %s", AccountNameProvided.c_str());
+						logger->Warn("* Canonicalized case for BNCS for account name %.*s", AccountNameLength, AccountName);
 
 						memcpy(
 							AccountName,
@@ -5705,7 +5693,7 @@ int __stdcall BugFix::sendtoMstHook(__in SOCKET s, __in const char *buf, __in in
 
 		if (he == NULL)
 		{
-			_logger->Info("* BugFix::sendtoMstHook: Failed to resolve " MASTER_SERVER_HOSTNAME);
+			logger->Err("* BugFix::sendtoMstHook: Failed to resolve " MASTER_SERVER_HOSTNAME);
 		}
 		else
 		{
@@ -5713,7 +5701,7 @@ int __stdcall BugFix::sendtoMstHook(__in SOCKET s, __in const char *buf, __in in
 			LastMstResolveTick = GetTickCount();
 			sin.sin_addr.s_addr = *(unsigned long *)he->h_addr;
 
-			_logger->Info("* BugFix::sendtoMstHook: Master server hostname resolved.");
+			logger->Debug("* BugFix::sendtoMstHook: Master server hostname resolved.");
 		}
 	}
 
@@ -5788,7 +5776,7 @@ bool BugFix::EnableRecvfromHook()
 
 		if (!OrigAddresses[ i ])
 		{
-			logger->Info(
+			logger->Err(
 				 "! Failed to resolve an import: %s" ,
 				Symbols[ i ]
 				);
@@ -5812,7 +5800,7 @@ bool BugFix::EnableRecvfromHook()
 	{
 		if (!HookStatus[ i ])
 		{
-			logger->Info(
+			logger->Err(
 				 "! Failed to hook an import: %s" ,
 				Symbols[ i ]
 				);
