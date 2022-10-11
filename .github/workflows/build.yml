@@ -83,7 +83,7 @@ jobs:
 
       - name: Download additional plugins from contrib repos
         shell: bash
-        run: .github/workflows/download-contrib-plugins.sh ../nwnx4
+        run: .github/workflows/download-contrib-plugins.sh nwnx4
 
       # Download / restore nwn-lib-d tools
       - name: Restore cached nwn-lib-d-tools
