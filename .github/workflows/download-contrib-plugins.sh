@@ -42,6 +42,7 @@ if [ ! -f "$DEST/plugins/xp_ServerExts.dll" ]; then
 	unzip -nj /tmp/AuroraServerExts.zip xp_ServerExts.dll AuroraServerExts.pdb -d "$DEST/plugins/"
 	unzip -nj /tmp/AuroraServerExts.zip AuroraServerExts.ini -d "$DEST/config.example/"
 	unzip -nj /tmp/AuroraServerExtsSrc.zip ServerExts.nss -d "$DEST/nwscript/"
+	mv --no-clobber "$DEST/nwscript/ServerExts.nss" "$DEST/plugins/nwnx_ServerExts.nss"
 	rm /tmp/AuroraServerExts.zip /tmp/AuroraServerExtsSrc.zip
 fi
 
