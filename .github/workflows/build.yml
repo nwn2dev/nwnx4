@@ -34,13 +34,23 @@ jobs:
       - name: Install Python Dependencies
         run: pip install meson ninja
 
-      - name: ↳ Setup VCPKG
+      - name: Install VCPKG dependencies
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
         uses: lukka/run-vcpkg@v10
         env:
           VCPKG_DEFAULT_TRIPLET: x86-windows-static-md
+          VCPKG_INSTALLED_DIR: ${{ github.workspace }}/vcpkg_installed
+          VCPKG_DISABLE_METRICS: 1
         with:
           runVcpkgInstall: true
+
+      - name: Check vcpkg
+        shell: bash
+        run: |
+          echo "========================="
+          ls -l .
+          echo "========================="
+          ls -l vcpkg_installed/x86-windows-static-md/lib
 
       # Prepare build files
       - name: Meson Configure
