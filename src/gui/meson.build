@@ -4,10 +4,9 @@ if get_option('buildtype') == 'release'
     wx_dep = [
         cppcompiler.find_library('jpeg', dirs: lib_dirs),
         cppcompiler.find_library('libpng16', dirs: lib_dirs),
-        cppcompiler.find_library('wxbase31u', dirs: lib_dirs),
-        cppcompiler.find_library('wxbase31u_net', dirs: lib_dirs),
-        cppcompiler.find_library('wxmsw31u_core', dirs: lib_dirs),
-        cppcompiler.find_library('wxregexu', dirs: lib_dirs),
+        cppcompiler.find_library('wxbase32u', dirs: lib_dirs),
+        cppcompiler.find_library('wxbase32u_net', dirs: lib_dirs),
+        cppcompiler.find_library('wxmsw32u_core', dirs: lib_dirs),
         cppcompiler.find_library('zlib', dirs: lib_dirs),
     ]
 else
@@ -15,10 +14,9 @@ else
     wx_dep = [
         cppcompiler.find_library('jpeg', dirs: lib_dirs),
         cppcompiler.find_library('libpng16d', dirs: lib_dirs),
-        cppcompiler.find_library('wxbase31ud', dirs: lib_dirs),
-        cppcompiler.find_library('wxbase31ud_net', dirs: lib_dirs),
-        cppcompiler.find_library('wxmsw31ud_core', dirs: lib_dirs),
-        cppcompiler.find_library('wxregexud', dirs: lib_dirs),
+        cppcompiler.find_library('wxbase32ud', dirs: lib_dirs),
+        cppcompiler.find_library('wxbase32ud_net', dirs: lib_dirs),
+        cppcompiler.find_library('wxmsw32ud_core', dirs: lib_dirs),
         cppcompiler.find_library('zlibd', dirs: lib_dirs),
     ]
 endif
