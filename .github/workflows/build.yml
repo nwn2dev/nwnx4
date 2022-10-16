@@ -14,9 +14,9 @@ jobs:
     env:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Required for git describe
           submodules: recursive
 
       # Setup MSVC
@@ -28,7 +28,7 @@ jobs:
 
       # Install python & meson
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
       - name: Install Python Dependencies
@@ -36,7 +36,7 @@ jobs:
 
       - name: Restore cached VCPKG dependencies
         id: vcpkg_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: vcpkg_installed/
           key: "vcpkg.json-${{ hashFiles('vcpkg.json') }}"
@@ -89,7 +89,7 @@ jobs:
       # Download / restore nwn-lib-d tools
       - name: Restore cached nwn-lib-d-tools
         id: nwnlibd_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: C:/nwn-lib-d-tools/
           key: "nwn-lib-d-tools-${{env.nwnlibd_version}}"
@@ -109,7 +109,7 @@ jobs:
           /c/nwn-lib-d-tools/nwn-erf create -o nwnx4/nwscript/nwnx.erf nwnx4/nwscript/
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
@@ -118,9 +118,7 @@ jobs:
     name: clang-format check
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v3
 
       - name: Install clang-format
         run: |
@@ -164,7 +162,7 @@ jobs:
 
       - name: Install cached nwn-lib-d-tools
         id: nwnlibd_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: C:/nwn-lib-d-tools/
           key: "nwn-lib-d-tools-${{env.nwnlibd_version}}"
@@ -182,10 +180,10 @@ jobs:
         # Note: vcredist2010 is required for xp_ini (msvcr100.dll)
 
       # Download the repo for installing test module files
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Download nwnx4 release zip
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: nwnx4-${{ github.sha }}
           path: C:/nwnx4/
@@ -274,7 +272,7 @@ jobs:
 
       - name: "Upload nwn2server logs"
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: |
             C:/nwn2temp/NWN2/LOGS.0/*.txt
@@ -290,7 +288,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: nwnx4-${{ github.sha }}
           path: nwnx4/
