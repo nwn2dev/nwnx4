@@ -55,6 +55,10 @@ if [ ! -f "$DEST/plugins/xp_AuroraServerNWScript.dll" ]; then
 	mv --no-clobber "$DEST/plugins/Readme.txt" "$DEST/plugins/xp_AuroraServerNWScript.readme.txt"
 	unzip -nj /tmp/AuroraServerNWScript.zip AuroraServerNWScript.ini -d "$DEST/config.example/"
 	unzip -nj /tmp/AuroraServerNWScript.zip OptionalScripts/\*.nss -d "$DEST/nwscript/"
-	unzip -nj /tmp/AuroraServerNWScript.zip NWNScriptJITIntrinsics.dll NWNScriptJIT.pdb NWNScriptJIT.dll -d "$DEST/nwn2server-dll/"
+	unzip -nj /tmp/AuroraServerNWScript.zip NWNScriptJIT.{dll,pdb} -d "$DEST/nwn2server-dll/"
+
+	# Note: currently those DLLs cannot be loaded from nwn2server-dll/. See https://github.com/nwn2dev/nwnx4/issues/35
+	mkdir -p "$DEST/copy-to-nwn2-install-dir/"
+	unzip -nj /tmp/AuroraServerNWScript.zip NWNScriptJITIntrinsics.dll -d "$DEST/copy-to-nwn2-install-dir/"
 	rm /tmp/AuroraServerNWScript.zip
 fi
