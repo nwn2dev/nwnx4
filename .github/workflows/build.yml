@@ -34,7 +34,14 @@ jobs:
       - name: Install Python Dependencies
         run: pip install meson ninja
 
-      - name: Install VCPKG dependencies
+      - name: Restore cached VCPKG dependencies
+        id: vcpkg_cache
+        uses: actions/cache@v3
+        with:
+          path: vcpkg_installed/
+          key: "vcpkg.json-${{ hashFiles('vcpkg.json') }}"
+
+      - name: ↳ Install VCPKG dependencies
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
         uses: lukka/run-vcpkg@v10
         env:
@@ -43,14 +50,7 @@ jobs:
           VCPKG_DISABLE_METRICS: 1
         with:
           runVcpkgInstall: true
-
-      - name: Check vcpkg
-        shell: bash
-        run: |
-          echo "========================="
-          ls -l .
-          echo "========================="
-          ls -l vcpkg_installed/x86-windows-static-md/lib
+          doNotCache: true
 
       # Prepare build files
       - name: Meson Configure
