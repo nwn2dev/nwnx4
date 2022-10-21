@@ -136,6 +136,7 @@ jobs:
     strategy:
       matrix:
         sql: ["xp_mysql", "xp_sqlite"]
+      fail-fast: false
 
     steps:
       # ------------- Install dependencies
@@ -171,8 +172,13 @@ jobs:
 
       - name: "Install choco packages"
         run: |
-          choco install directx vcredist2010
+          choco install directx vcredist2010 procdump
         # Note: vcredist2010 is required for xp_ini (msvcr100.dll)
+
+      - name: "Enable crash dumps"
+        run: |
+          mkdir -p "C:\CrashDumps"
+          procdump.exe -i "C:\CrashDumps" -ma -k
 
       # Download the repo for installing test module files
       - uses: actions/checkout@v3
@@ -229,6 +235,9 @@ jobs:
         run: |
           set -o pipefail
 
+          # Start procdump and let it trigger on nwn2server crash
+          procdump -ma -e -w nwn2server.exe "/c/CrashDumps" > /dev/null &
+
           cd /c/nwnx4_user/
           echo "> $(date --rfc-3339=seconds --utc) Start NWNX4"
 
@@ -272,7 +281,15 @@ jobs:
           path: |
             C:/nwn2temp/NWN2/LOGS.0/*.txt
             C:/nwnx4_user/*.txt
-          name: "test-logs-${{matrix.sql}}"
+          name: "test-${{matrix.sql}}-logs"
+
+      - name: "Upload nwn2server crash dump if any"
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          path: C:/CrashDumps/*
+          name: "test-${{matrix.sql}}-crash-dumps"
+          if-no-files-found: ignore
 
   # --------------------------------------------------
 
@@ -297,10 +314,10 @@ jobs:
         id: rel_info
         run: |
           TAG=$(echo '${{ github.ref }}' | grep -oE '\bv[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' || true)
-          echo "::set-output name=tag::$TAG"
+          echo "tag=$TAG" >> $GITHUB_STATE
 
           [[ "$TAG" =~ -rc[0-9]+$ ]] && PRERELEASE=true || PRERELEASE=false
-          echo "::set-output name=prerelease::$PRERELEASE"
+          echo "prerelease=$PRERELEASE" >> $GITHUB_STATE
 
           if [[ "$TAG" != "" ]]; then
             echo "Deploying $TAG (prerelease=$PRERELEASE)"
