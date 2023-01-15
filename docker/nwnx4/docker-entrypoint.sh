@@ -17,4 +17,4 @@ for file in $(ls /srv/nwn2); do
 done
 
 Xvfb $DISPLAY -screen 0 1024x768x16 &
-exec "$@"
+wine reg import /opt/nwn2.reg && exec "$@"

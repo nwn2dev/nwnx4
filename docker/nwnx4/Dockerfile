@@ -22,19 +22,20 @@ COPY $NWNX4_DIST_DIR /opt/nwnx4/
 COPY docker/nwnx4/nwn2.reg /opt/
 
 # Configure Wine/Xvfb
-ENV WINEARCH=win32
-ENV WINEPREFIX=/root/.wine32
+ENV WINEPREFIX="$HOME/.wine32"
+ENV WINEARCH="win32"
 ENV WINEDLLOVERRIDES="mshtml=;devenum,dxdiagn,granny2=n"
 ENV WINEDEBUG="fixme-all"
+ENV WINE_NO_AUDIO=1
+ENV AUDIODRIVER="none"
 ENV DISPLAY=":0"
 
 RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
-    && mkdir -p "$HOME/.wine/drive_c/users/root/Temp/NWN2/LOGS.0" \
-    && ln -s /srv/nwn2-logs "$HOME/.wine/drive_c/users/root/Temp/NWN2/LOGS.0" \
+    && mkdir -p "$WINEPREFIX/drive_c/users/root/Temp/NWN2/LOGS.0" \
+    && ln -s /srv/nwn2-logs "$WINEPREFIX/drive_c/users/root/Temp/NWN2/LOGS.0" \
     \
     && wineboot --init \
-    && winetricks -q dotnet48 sound=disabled \
-    && wine reg import /opt/nwn2.reg \
+    && winetricks -q dotnet48 \
     \
     && rm -rf /tmp/wine*
 
