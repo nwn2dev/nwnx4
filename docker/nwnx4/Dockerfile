@@ -33,7 +33,7 @@ RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
     && ln -s /srv/nwn2-logs "$HOME/.wine/drive_c/users/root/Temp/NWN2/LOGS.0" \
     \
     && wineboot --init \
-    && winetricks -q vcrun2005 vcrun2015 dotnet48 sound=disabled \
+    && winetricks -q dotnet48 sound=disabled \
     && wine reg import /opt/nwn2.reg \
     \
     && rm -rf /tmp/wine*
