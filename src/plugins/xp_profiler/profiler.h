@@ -1,7 +1,7 @@
 /***************************************************************************
-	NWNX Profiler - Profiler plugin
-	Copyright (C) 2003 Ingmar Stieger (Papillon, papillon@blackdagger.com)
-	Copyright (C) 2007 virusman (virusman@virusman.ru)
+    NWNX Profiler - Profiler plugin
+    Copyright (C) 2003 Ingmar Stieger (Papillon, papillon@blackdagger.com)
+    Copyright (C) 2007 virusman (virusman@virusman.ru)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,31 +23,31 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
-#include "windows.h"
-#include "../plugin.h"
-#include "../../misc/log.h"
 #include "../../misc/ini.h"
+#include "../../misc/log.h"
+#include "../plugin.h"
+#include "windows.h"
 
-class Profiler : public Plugin
-{
+class Profiler : public Plugin {
 public:
 	Profiler();
 	~Profiler();
 
 	bool Init(char* nwnxhome);
-	const char* DoRequest(char *gameObject, char* request, char* parameters);
+	const char* DoRequest(char* gameObject, char* request, char* parameters);
 	void GetFunctionClass(char* fClass);
-	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue){}
-	void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue){}
-	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue){}
+	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) { }
+	void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) { }
+	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue) { }
 
 	void LoadConfiguration(char* nwnxhome);
 
-	enum ELogLevel {logNothing, logStats, logCallstack};
-	int	m_LogLevel;
+	enum ELogLevel { logNothing, logStats, logCallstack };
+	int m_LogLevel;
 	int log_scriptparts;
 
 	LogNWNX* logger;
+
 private:
 	SimpleIniConfig* config;
 };

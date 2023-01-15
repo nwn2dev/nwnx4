@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX Funcs - Various functions plugin
-    Copyright (C) 2010 Andrew Brockert (Zebranky, andrew@mercuric.net) 
+    Copyright (C) 2010 Andrew Brockert (Zebranky, andrew@mercuric.net)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,32 +28,27 @@ Funcs* plugin;
 
 typedef unsigned long objid_t;
 typedef unsigned long dword;
-void ** pCAppManager = (void **)0x0086442C;
-void * (__fastcall *CServerExoApp__GetCreatureByGameObjectID)(void *, void *, objid_t) = (void * (__fastcall *)(void *, void *, objid_t))0x0054A1B0;
-unsigned short (__fastcall *CNWSCreature__GetSoundSet)(void *) = (unsigned short (__fastcall *)(void *))0x005504A0;
+void** pCAppManager = (void**)0x0086442C;
+void*(__fastcall* CServerExoApp__GetCreatureByGameObjectID)(void*, void*, objid_t)
+    = (void*(__fastcall*)(void*, void*, objid_t))0x0054A1B0;
+unsigned short(__fastcall* CNWSCreature__GetSoundSet)(void*)
+    = (unsigned short(__fastcall*)(void*))0x005504A0;
 
-DLLEXPORT Plugin* GetPluginPointerV2()
-{
-	return plugin;
-}
+DLLEXPORT Plugin* GetPluginPointerV2() { return plugin; }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-	{
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
 		plugin = new Funcs();
 
 		char szPath[MAX_PATH];
 		GetModuleFileNameA(hModule, szPath, MAX_PATH);
 		plugin->SetPluginFullPath(szPath);
-	}
-	else if (ul_reason_for_call == DLL_PROCESS_DETACH)
-	{
+	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
 		delete plugin;
 	}
-    return TRUE;
+	return TRUE;
 }
-
 
 /***************************************************************************
     Implementation of Funcs Plugin
@@ -61,22 +56,17 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
 Funcs::Funcs()
 {
-	header =
-		"NWNX Funcs Plugin V.0.0.1\n" \
-		"(c) 2010 Andrew Brockert (Zebranky)\n" \
-		"visit us at http://www.nwnx.org\n";
+	header = "NWNX Funcs Plugin V.0.0.1\n"
+	         "(c) 2010 Andrew Brockert (Zebranky)\n"
+	         "visit us at http://www.nwnx.org\n";
 
-	description =
-		"This plugin provides functions to poke at NWN2 internals.";
+	description = "This plugin provides functions to poke at NWN2 internals.";
 
 	subClass = "FUNCS";
-	version = "0.0.1";
+	version  = "0.0.1";
 }
 
-Funcs::~Funcs()
-{
-	logger->Info("* Plugin unloaded.");
-}
+Funcs::~Funcs() { logger->Info("* Plugin unloaded."); }
 
 bool Funcs::Init(char* nwnxhome)
 {
@@ -94,10 +84,7 @@ bool Funcs::Init(char* nwnxhome)
 	return true;
 }
 
-void Funcs::GetFunctionClass(char* fClass)
-{
-	strncpy_s(fClass, 128, "FUNCS", 5);
-}
+void Funcs::GetFunctionClass(char* fClass) { strncpy_s(fClass, 128, "FUNCS", 5); }
 
 int Funcs::GetInt(char* sFunction, char* sParam1, int nParam2)
 {
@@ -106,27 +93,19 @@ int Funcs::GetInt(char* sFunction, char* sParam1, int nParam2)
 	std::string wxRequest(sFunction);
 	std::string function(sFunction);
 
-	if (function == "")
-	{
+	if (function == "") {
 		logger->Info("* Function not specified.");
 		return NULL;
-	}
-	else if(function == "GETSOUNDSET")
-	{
+	} else if (function == "GETSOUNDSET") {
 		objid_t creature_oid = nParam2;
-		void *cre = CServerExoApp__GetCreatureByGameObjectID(*pCAppManager, NULL, creature_oid);
-		if(cre != NULL)
-		{
+		void* cre = CServerExoApp__GetCreatureByGameObjectID(*pCAppManager, NULL, creature_oid);
+		if (cre != NULL) {
 			return CNWSCreature__GetSoundSet(cre);
-		}
-		else
-		{
+		} else {
 			return 0;
 		}
-	}
-	else // unknown function
+	} else // unknown function
 	{
 		return 0;
 	}
 }
-

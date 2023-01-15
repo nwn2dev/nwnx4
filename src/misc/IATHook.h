@@ -21,13 +21,12 @@
 #ifndef _MISC_IATHOOK_H
 #define _MISC_IATHOOK_H
 
-bool
-RedirectImageImports(
-	__in HMODULE Module,
-	__in PVOID *Imports,
-	__in PVOID *DesiredAddresses,
-	__out_opt PULONG PatchCounts,
-	__in SIZE_T Count
-	);
+#include <windows.h>
+
+bool RedirectImageImports(__in HMODULE Module,
+                          __in PVOID* Imports,
+                          __in PVOID* DesiredAddresses,
+                          __out_opt PULONG PatchCounts,
+                          __in SIZE_T Count);
 
 #endif

@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX Mysql - Database plugin for MySQL
-    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com) 
+    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #if !defined(MYSQL_H_INCLUDED)
 #define MYSQL_H_INCLUDED
 
-#define DLLEXPORT extern "C" __declspec(dllexport)
+#define DLLEXPORT            extern "C" __declspec(dllexport)
 #define CR_SERVER_GONE_ERROR 2006
 
 typedef unsigned long ulong;
@@ -28,8 +28,7 @@ typedef unsigned long ulong;
 #include "../database/dbplugin.h"
 #include <mysql/mysql.h>
 
-class MySQL : public DBPlugin
-{
+class MySQL : public DBPlugin {
 public:
 	MySQL();
 	~MySQL() override;
@@ -37,7 +36,7 @@ public:
 	bool Init(char* nwnxhome);
 
 	bool WriteScorcoData(BYTE* pData, int Length) override;
-	BYTE* ReadScorcoData(char *param, int *size) override;
+	BYTE* ReadScorcoData(char* param, int* size) override;
 
 private:
 	bool Connect();
@@ -50,14 +49,14 @@ private:
 	void GetEscapeString(char* str, char* buffer) override;
 	MYSQL_RES* AdvanceToNextValidResultset();
 	int GetErrno() override;
-	const char *GetErrorMessage() override;
+	const char* GetErrorMessage() override;
 	int GetLastInsertID() override;
 
 	MYSQL mysql;
 	MYSQL* connection;
-	MYSQL_RES *result;
+	MYSQL_RES* result;
 	MYSQL_ROW row;
-	
+
 	unsigned int num_fields;
 
 	std::string server;
@@ -66,7 +65,6 @@ private:
 	std::string schema;
 	std::string charset;
 	int port;
-
 };
 
 #endif

@@ -20,28 +20,27 @@
 
 #include "../controller/controller.h"
 
-#define ACTION_NONE 0
-#define ACTION_START 10000
-#define ACTION_STOP 10001
+#define ACTION_NONE    0
+#define ACTION_START   10000
+#define ACTION_STOP    10001
 #define ACTION_RESTART 10002
-#define ACTION_KILL 10003
+#define ACTION_KILL    10003
 
 DECLARE_EVENT_TYPE(wxEVT_SERVER_STARTED, -1)
 DECLARE_EVENT_TYPE(wxEVT_SERVER_STOPPED, -1)
 DECLARE_EVENT_TYPE(wxEVT_SERVER_KILLED, -1)
 
-class NWNXWorker: public wxThread
-{
-  public:
+class NWNXWorker : public wxThread {
+public:
 	NWNXWorker(NWNXController* controller, wxFrame* mainFrame);
 	~NWNXWorker();
-	virtual void *Entry();
+	virtual void* Entry();
 	void startServer();
 	void stopServer();
 	void restartServer();
 	void killServer();
 
-  private:
+private:
 	void resetAction();
 
 	NWNXController* m_controller;

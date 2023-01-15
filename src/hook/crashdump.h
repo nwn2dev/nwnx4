@@ -22,36 +22,33 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define CRASHDUMP_H_INCLUDED
 
 #define STRSAFE_NO_DEPRECATE
-#include <windows.h>
 #include <strsafe.h>
+#include <windows.h>
 
 /*
-* Types.
-*/
+ * Types.
+ */
 
-typedef struct _CRASH_DUMP_SECTION
-{
-	HANDLE              CrashReportEvent;
-	HANDLE              CrashAckEvent;
-	EXCEPTION_POINTERS  ExceptionPointers;
+typedef struct _CRASH_DUMP_SECTION {
+	HANDLE CrashReportEvent;
+	HANDLE CrashAckEvent;
+	EXCEPTION_POINTERS ExceptionPointers;
 	PEXCEPTION_POINTERS ClientExceptionPointers;
-	ULONG               ThreadId;
-} CRASH_DUMP_SECTION, * PCRASH_DUMP_SECTION;
+	ULONG ThreadId;
+} CRASH_DUMP_SECTION, *PCRASH_DUMP_SECTION;
 
 /*
-* Forwards.
-*/
+ * Forwards.
+ */
 
-bool
-RegisterCrashDumpHandler(
-						 );
+bool RegisterCrashDumpHandler();
 
 /*
-* Globals.
-*/
+ * Globals.
+ */
 
-extern HMODULE             g_Module;
-extern volatile LONG       g_InCrash;
+extern HMODULE g_Module;
+extern volatile LONG g_InCrash;
 extern PCRASH_DUMP_SECTION g_CrashDumpSectionView;
 
 #endif

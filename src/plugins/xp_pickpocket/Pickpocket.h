@@ -11,20 +11,18 @@
 #include <windows.h>
 #endif
 
-#include "../plugin.h"
-#include "../../misc/log.h"
 #include "../../misc/ini.h"
+#include "../../misc/log.h"
+#include "../plugin.h"
 
-
-class CPickpocket final : public Plugin
-{
+class CPickpocket final : public Plugin {
 public:
 	static constexpr char FunctionClass[] = "PICK";
 
 public:
 	CPickpocket();
 	~CPickpocket();
-	
+
 	bool Init(char* nwnxhome) override;
 	int GetInt(char* sFunction, char* sParam1, int nParam2) override;
 	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) override;

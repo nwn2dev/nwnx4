@@ -5,11 +5,9 @@
 #include <string>
 #include <windows.h>
 
-class CPlugin
-{
-  public:
-	struct InitInfo
-	{
+class CPlugin {
+public:
+	struct InitInfo {
 		const char* dll_path;
 		const char* nwnx_user_path;
 		const char* nwn2_install_path;
@@ -63,11 +61,8 @@ class CPlugin
 			m_dll.setFloat(m_instancePtr, sFunction, sParam1, nParam2, fValue);
 		}
 	}
-	inline void GetString(const char* sFunction,
-	                      const char* sParam1,
-	                      int nParam2,
-	                      char* result,
-	                      size_t resultSize)
+	inline void GetString(
+	    const char* sFunction, const char* sParam1, int nParam2, char* result, size_t resultSize)
 	{
 		if (m_dll.getString) {
 			return m_dll.getString(m_instancePtr, sFunction, sParam1, nParam2, result, resultSize);
@@ -99,7 +94,7 @@ class CPlugin
 		}
 	}
 
-  private:
+private:
 	void* m_instancePtr = nullptr;
 
 	// clang-format off
@@ -118,8 +113,7 @@ class CPlugin
 	typedef void        (__cdecl GetGFFFn)      (void* cplugin, const char* sVarName, uint8_t* result, size_t resultSize);
 	typedef void        (__cdecl SetGFFFn)      (void* cplugin, const char* sVarName, const uint8_t* gffData, size_t gffDataSize);
 	// clang-format on
-	struct
-	{
+	struct {
 		uint32_t abiVersion;
 		std::function<NewPluginFn> newPlugin;
 		std::function<DeletePluginFn> deletePlugin;

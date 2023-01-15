@@ -22,28 +22,27 @@
 #define LEGACY_PLUGIN_H_INCLUDED
 
 #define NOMINMAX
-#include <windows.h>
 #include <string>
 #include <string_view>
+#include <windows.h>
 
-#define MAX_BUFFER 64*1024
+#define MAX_BUFFER 64 * 1024
 
-class LegacyPlugin
-{
+class LegacyPlugin {
 public:
-	LegacyPlugin() = default;
+	LegacyPlugin()          = default;
 	virtual ~LegacyPlugin() = default;
 
-	LegacyPlugin(const LegacyPlugin&) = delete;
+	LegacyPlugin(const LegacyPlugin&)            = delete;
 	LegacyPlugin& operator=(const LegacyPlugin&) = delete;
-	LegacyPlugin(LegacyPlugin&&) = delete;
-	LegacyPlugin& operator=(LegacyPlugin&&) = delete;
+	LegacyPlugin(LegacyPlugin&&)                 = delete;
+	LegacyPlugin& operator=(LegacyPlugin&&)      = delete;
 
 	// Called when a plugin DLL gets loaded.
 	virtual bool Init(char*);
 
 	// Called when a request is made from NWScript
-	virtual const char* DoRequest(char *gameObject, char* request, char* parameters) = 0;
+	virtual const char* DoRequest(char* gameObject, char* request, char* parameters) = 0;
 
 	// Process query functions like GET_VERSION, ...
 	void ProcessQueryFunction(std::string_view function, char* buffer);

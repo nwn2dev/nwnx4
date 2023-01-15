@@ -18,57 +18,48 @@
 
 ***************************************************************************/
 
-#include <windows.h>
 #include "IATHook.h"
+#include <windows.h>
 
-bool
-RedirectImageImports(
-	__in HMODULE Module,
-	__in PVOID *Imports,
-	__in PVOID *DesiredAddresses,
-	__out_opt PULONG PatchCounts,
-	__in SIZE_T Count
-	)
+bool RedirectImageImports(__in HMODULE Module,
+                          __in PVOID* Imports,
+                          __in PVOID* DesiredAddresses,
+                          __out_opt PULONG PatchCounts,
+                          __in SIZE_T Count)
 {
-	PIMAGE_DATA_DIRECTORY    ImportDirectory;
+	PIMAGE_DATA_DIRECTORY ImportDirectory;
 	PIMAGE_IMPORT_DESCRIPTOR ImportDescriptor;
-	PIMAGE_DOS_HEADER        DosHeader;
-	PIMAGE_NT_HEADERS        NtHeaders;
-	ULONG_PTR                ModuleBase;
+	PIMAGE_DOS_HEADER DosHeader;
+	PIMAGE_NT_HEADERS NtHeaders;
+	ULONG_PTR ModuleBase;
 	PIMAGE_IMPORT_DESCRIPTOR LastImport;
-	PVOID                   *CurrentImport;
-	SIZE_T                   i;
-	bool                     Success;
+	PVOID* CurrentImport;
+	SIZE_T i;
+	bool Success;
 
 	Success    = false;
-	ModuleBase = reinterpret_cast< ULONG_PTR >( Module );
-	DosHeader  = reinterpret_cast< PIMAGE_DOS_HEADER >( ModuleBase );
-	NtHeaders  = reinterpret_cast< PIMAGE_NT_HEADERS >( ModuleBase + DosHeader->e_lfanew );
+	ModuleBase = reinterpret_cast<ULONG_PTR>(Module);
+	DosHeader  = reinterpret_cast<PIMAGE_DOS_HEADER>(ModuleBase);
+	NtHeaders  = reinterpret_cast<PIMAGE_NT_HEADERS>(ModuleBase + DosHeader->e_lfanew);
 
-	ImportDirectory = &NtHeaders->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_IMPORT ];
+	ImportDirectory = &NtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 
-	if (PatchCounts)
-	{
-		for (i = 0;
-			 i < Count;
-			 i += 1)
-		{
-			PatchCounts[ i ] = 0;
+	if (PatchCounts) {
+		for (i = 0; i < Count; i += 1) {
+			PatchCounts[i] = 0;
 		}
 	}
 
-	for (;;)
-	{
+	for (;;) {
 		//
 		// Ensure that we've actually got an import directory.
 		//
 
-		if (ImportDirectory->Size < sizeof( IMAGE_IMPORT_DESCRIPTOR ))
-		{
-//			DebugPrint(
-//				"ImportDirectorySize %lu is too small.\n",
-//				ImportDirectory->Size
-//				);
+		if (ImportDirectory->Size < sizeof(IMAGE_IMPORT_DESCRIPTOR)) {
+			//			DebugPrint(
+			//				"ImportDirectorySize %lu is too small.\n",
+			//				ImportDirectory->Size
+			//				);
 			break;
 		}
 
@@ -77,39 +68,33 @@ RedirectImageImports(
 		// the array.
 		//
 
-		LastImport = reinterpret_cast< PIMAGE_IMPORT_DESCRIPTOR >(
-			ModuleBase + ImportDirectory->VirtualAddress + ImportDirectory->Size
-			);
+		LastImport = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>(
+		    ModuleBase + ImportDirectory->VirtualAddress + ImportDirectory->Size);
 
-//		DebugPrint(
-//			"Last import descriptor @ %p\n", LastImport
-//			);
+		//		DebugPrint(
+		//			"Last import descriptor @ %p\n", LastImport
+		//			);
 
 		//
 		// Iterate over each import descriptor so that we can enumerate all
 		// imports associated with that descriptor.
 		//
 
-		for (ImportDescriptor = reinterpret_cast< PIMAGE_IMPORT_DESCRIPTOR >(
-		       ModuleBase + ImportDirectory->VirtualAddress
-		       );
-		     ImportDescriptor != LastImport;
-		     ImportDescriptor += 1)
-		{
-//			DebugPrint(
-//				"Inspecting import descriptor @ %p\n",
-//				ImportDescriptor 
-//				);
+		for (ImportDescriptor = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>(
+		         ModuleBase + ImportDirectory->VirtualAddress);
+		     ImportDescriptor != LastImport; ImportDescriptor += 1) {
+			//			DebugPrint(
+			//				"Inspecting import descriptor @ %p\n",
+			//				ImportDescriptor
+			//				);
 
 			//
 			// An empty import descriptor terminates the array, so we shall
 			// stop if we encounter one.
 			//
 
-			if ((!ImportDescriptor->Name) ||
-				(!ImportDescriptor->FirstThunk))
-			{
-//				DebugPrint( "Reached null import descriptor.\n" );
+			if ((!ImportDescriptor->Name) || (!ImportDescriptor->FirstThunk)) {
+				//				DebugPrint( "Reached null import descriptor.\n" );
 				break;
 			}
 
@@ -120,30 +105,24 @@ RedirectImageImports(
 			// in fact actually import it.
 			//
 
-			for ( CurrentImport = reinterpret_cast< PVOID * >(
-			        ModuleBase + ImportDescriptor->FirstThunk
-			        );
-			     *CurrentImport;
-			      CurrentImport += 1)
-			{
+			for (CurrentImport
+			     = reinterpret_cast<PVOID*>(ModuleBase + ImportDescriptor->FirstThunk);
+			     *CurrentImport; CurrentImport += 1) {
 				DWORD OldProtection;
 
-//				DebugPrint(
-//					"Inspecting import thunk %p [@%p]...\n",
-//					*CurrentImport,
-//					CurrentImport
-//					);
+				//				DebugPrint(
+				//					"Inspecting import thunk %p [@%p]...\n",
+				//					*CurrentImport,
+				//					CurrentImport
+				//					);
 
 				//
 				// If we're not at a desired import, then we'll continue on to
 				// the next snapped import thunk.
 				//
 
-				for (i = 0;
-				     i < Count;
-				     i += 1)
-				{
-					if (*CurrentImport == Imports[ i ])
+				for (i = 0; i < Count; i += 1) {
+					if (*CurrentImport == Imports[i])
 						break;
 				}
 
@@ -158,29 +137,22 @@ RedirectImageImports(
 				// duration of the patch.
 				//
 
-				if (!VirtualProtect(
-					CurrentImport,
-					sizeof( *CurrentImport ),
-					PAGE_EXECUTE_READWRITE,
-					&OldProtection))
+				if (!VirtualProtect(CurrentImport, sizeof(*CurrentImport), PAGE_EXECUTE_READWRITE,
+				                    &OldProtection))
 					break;
 
 				//
 				// Rewrite the snapped import thunk address.
 				//
 
-				*CurrentImport = DesiredAddresses[ i ];
+				*CurrentImport = DesiredAddresses[i];
 
 				//
 				// Restore old memory protection.
 				//
 
-				VirtualProtect(
-					CurrentImport,
-					sizeof( *CurrentImport ),
-					OldProtection,
-					&OldProtection
-					);
+				VirtualProtect(CurrentImport, sizeof(*CurrentImport), OldProtection,
+				               &OldProtection);
 
 				//
 				// If the caller is keeping track of what we're actually
@@ -188,7 +160,7 @@ RedirectImageImports(
 				//
 
 				if (PatchCounts)
-					PatchCounts[ i ] += 1;
+					PatchCounts[i] += 1;
 
 				//
 				// Set the general success flag if we've got at least one

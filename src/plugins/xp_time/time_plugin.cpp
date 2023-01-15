@@ -27,28 +27,21 @@
 Timer* plugin;
 LogNWNX* logger;
 
-DLLEXPORT Plugin* GetPluginPointerV2()
-{
-	return plugin;
-}
+DLLEXPORT Plugin* GetPluginPointerV2() { return plugin; }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-	{
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
 		plugin = new Timer();
 
 		char szPath[MAX_PATH];
 		GetModuleFileNameA(hModule, szPath, MAX_PATH);
 		plugin->SetPluginFullPath(szPath);
-	}
-	else if (ul_reason_for_call == DLL_PROCESS_DETACH)
-	{
+	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
 		delete plugin;
 	}
-    return TRUE;
+	return TRUE;
 }
-
 
 /***************************************************************************
     Implementation of Timer Plugin
@@ -56,19 +49,15 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
 Timer::Timer()
 {
-	description = 
-		"This plugin provides highly accurate timers.";
+	description = "This plugin provides highly accurate timers.";
 
 	subClass = "TIME";
-	version = "0.0.2";
+	version  = "0.0.2";
 
 	QueryPerformanceFrequency(&liFrequency);
 }
 
-Timer::~Timer()
-{
-	logger->Info("* Plugin unloaded.");
-}
+Timer::~Timer() { logger->Info("* Plugin unloaded."); }
 
 bool Timer::Init(char* nwnxhome)
 {
@@ -89,10 +78,7 @@ bool Timer::Init(char* nwnxhome)
 	return true;
 }
 
-void Timer::GetFunctionClass(char* fClass)
-{
-	strncpy(fClass, "TIME", 5);
-}
+void Timer::GetFunctionClass(char* fClass) { strncpy(fClass, "TIME", 5); }
 
 void Timer::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue)
 {
@@ -101,27 +87,23 @@ void Timer::SetString(char* sFunction, char* sParam1, int nParam2, char* sValue)
 	std::string function(sFunction);
 	std::string timerName(sParam1);
 
-	if (function == "")
-	{
+	if (function == "") {
 		logger->Info("* Function not specified.");
 		return;
 	}
 
-	if (timerName == "")
-	{
+	if (timerName == "") {
 		logger->Info("* Timer name not specified.");
 		return;
 	}
 
-	if (function == "START")
-	{
+	if (function == "START") {
 		logger->Info("o Starting timer %s", timerName.c_str());
 		StartTimer(timerName);
-	}
-	else if (function == "STOP")
-	{
+	} else if (function == "STOP") {
 		LONGLONG result = StopTimer(timerName);
-		logger->Info("o Stopping timer %s: %I64i µs / %.3f msec / %.3f sec\n", timerName.c_str(), result, (float) result / 1000, (float) result / 1000 / 1000);
+		logger->Info("o Stopping timer %s: %I64i µs / %.3f msec / %.3f sec\n", timerName.c_str(),
+		             result, (float)result / 1000, (float)result / 1000 / 1000);
 	}
 }
 
@@ -132,39 +114,31 @@ char* Timer::GetString(char* sFunction, char* sParam1, int nParam2)
 	std::string function(sFunction);
 	std::string timerName(sParam1);
 
-	if (function == "")
-	{
+	if (function == "") {
 		logger->Info("* Function not specified.");
 		return NULL;
 	}
 
-	if (timerName == "")
-	{
+	if (timerName == "") {
 		logger->Info("* Timer name not specified.");
 	}
 
-	if (function == "QUERY")
-	{
+	if (function == "QUERY") {
 		LONGLONG result = PeekTimer(timerName);
-		logger->Info("o Elapsed timer %s: %I64i µs / %.3f msec / %.3f sec\n", timerName.c_str(), result, (float) result / 1000, (float) result / 1000 / 1000);
+		logger->Info("o Elapsed timer %s: %I64i µs / %.3f msec / %.3f sec\n", timerName.c_str(),
+		             result, (float)result / 1000, (float)result / 1000 / 1000);
 		sprintf_s(returnBuffer, MAX_BUFFER, "%I64i", result);
-	}
-	else if (function == "STOP")
-	{
+	} else if (function == "STOP") {
 		LONGLONG result = StopTimer(timerName);
-		logger->Info("o Stopping timer %s: %I64i µs / %.3f msec / %.3f sec\n", timerName.c_str(), result, (float) result / 1000, (float) result / 1000 / 1000);
+		logger->Info("o Stopping timer %s: %I64i µs / %.3f msec / %.3f sec\n", timerName.c_str(),
+		             result, (float)result / 1000, (float)result / 1000 / 1000);
 		sprintf_s(returnBuffer, MAX_BUFFER, "%I64i", result);
-	}
-	else
-	{
+	} else {
 		// Process generic functions
 		std::string query = ProcessQueryFunction(function.c_str());
-		if (query != "")
-		{
+		if (query != "") {
 			sprintf_s(returnBuffer, MAX_BUFFER, "%s", query.c_str());
-		}
-		else
-		{
+		} else {
 			logger->Info("* Unknown function '%s' called.", function.c_str());
 			return NULL;
 		}

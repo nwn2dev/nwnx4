@@ -7,4 +7,4 @@
 
 #include "nwnx.h"
 
-#endif //MAIN_MAIN_H
+#endif // MAIN_MAIN_H

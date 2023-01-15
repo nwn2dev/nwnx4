@@ -14,9 +14,9 @@ jobs:
     env:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Required for git describe
           submodules: recursive
 
       # Setup MSVC
@@ -28,7 +28,7 @@ jobs:
 
       # Install python & meson
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
       - name: Install Python Dependencies
@@ -36,26 +36,21 @@ jobs:
 
       - name: Restore cached VCPKG dependencies
         id: vcpkg_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: vcpkg_installed/
           key: "vcpkg.json-${{ hashFiles('vcpkg.json') }}"
 
-      - name: ↳ Setup VCPKG
+      - name: ↳ Install VCPKG dependencies
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
-        uses: lukka/run-vcpkg@v7
+        uses: lukka/run-vcpkg@v10
+        env:
+          VCPKG_DEFAULT_TRIPLET: x86-windows-static-md
+          VCPKG_INSTALLED_DIR: ${{ github.workspace }}/vcpkg_installed
+          VCPKG_DISABLE_METRICS: 1
         with:
-          setupOnly: true
+          runVcpkgInstall: true
           doNotCache: true
-          vcpkgArguments: "--triplet=x86-windows-static-md --disable-metrics --clean-after-build"
-
-      # Build vcpkg dependencies
-      - name: ↳ Build & install VCPKG dependencies
-        if: steps.vcpkg_cache.outputs.cache-hit != 'true'
-        timeout-minutes: 120
-        shell: bash
-        run: |
-          vcpkg/vcpkg.exe install --triplet=x86-windows-static-md --disable-metrics --clean-after-build
 
       # Prepare build files
       - name: Meson Configure
@@ -89,7 +84,7 @@ jobs:
       # Download / restore nwn-lib-d tools
       - name: Restore cached nwn-lib-d-tools
         id: nwnlibd_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: C:/nwn-lib-d-tools/
           key: "nwn-lib-d-tools-${{env.nwnlibd_version}}"
@@ -109,10 +104,27 @@ jobs:
           /c/nwn-lib-d-tools/nwn-erf create -o nwnx4/nwscript/nwnx.erf nwnx4/nwscript/
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
+
+  clang-format:
+    name: clang-format check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install clang-format
+        run: |
+          sudo apt install clang-format-14
+          clang-format --version
+
+      - name: Check files format
+        run: |
+          git ls-files \*.h \*.cpp \*.c \
+            | grep -vE '^src/plugins/xp_sqlite/lib/|^src/plugins/xp_bugfix/|^src/NWN2Lib/' \
+            | xargs -d\\n clang-format --dry-run --Werror
 
   # --------------------------------------------------
 
@@ -124,6 +136,7 @@ jobs:
     strategy:
       matrix:
         sql: ["xp_mysql", "xp_sqlite"]
+      fail-fast: false
 
     steps:
       # ------------- Install dependencies
@@ -145,7 +158,7 @@ jobs:
 
       - name: Install cached nwn-lib-d-tools
         id: nwnlibd_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: C:/nwn-lib-d-tools/
           key: "nwn-lib-d-tools-${{env.nwnlibd_version}}"
@@ -159,14 +172,19 @@ jobs:
 
       - name: "Install choco packages"
         run: |
-          choco install directx vcredist2010
+          choco install directx vcredist2010 procdump
         # Note: vcredist2010 is required for xp_ini (msvcr100.dll)
 
+      - name: "Enable crash dumps"
+        run: |
+          mkdir -p "C:\CrashDumps"
+          procdump.exe -i "C:\CrashDumps" -ma -k
+
       # Download the repo for installing test module files
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Download nwnx4 release zip
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: nwnx4-${{ github.sha }}
           path: C:/nwnx4/
@@ -217,6 +235,9 @@ jobs:
         run: |
           set -o pipefail
 
+          # Start procdump and let it trigger on nwn2server crash
+          procdump -ma -e -w nwn2server.exe "/c/CrashDumps" > /dev/null &
+
           cd /c/nwnx4_user/
           echo "> $(date --rfc-3339=seconds --utc) Start NWNX4"
 
@@ -255,12 +276,20 @@ jobs:
 
       - name: "Upload nwn2server logs"
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: |
             C:/nwn2temp/NWN2/LOGS.0/*.txt
             C:/nwnx4_user/*.txt
-          name: "test-logs-${{matrix.sql}}"
+          name: "test-${{matrix.sql}}-logs"
+
+      - name: "Upload nwn2server crash dump if any"
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          path: C:/CrashDumps/*
+          name: "test-${{matrix.sql}}-crash-dumps"
+          if-no-files-found: ignore
 
   # --------------------------------------------------
 
@@ -271,7 +300,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: nwnx4-${{ github.sha }}
           path: nwnx4/
@@ -285,10 +314,10 @@ jobs:
         id: rel_info
         run: |
           TAG=$(echo '${{ github.ref }}' | grep -oE '\bv[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' || true)
-          echo "::set-output name=tag::$TAG"
+          echo "tag=$TAG" >> $GITHUB_STATE
 
           [[ "$TAG" =~ -rc[0-9]+$ ]] && PRERELEASE=true || PRERELEASE=false
-          echo "::set-output name=prerelease::$PRERELEASE"
+          echo "prerelease=$PRERELEASE" >> $GITHUB_STATE
 
           if [[ "$TAG" != "" ]]; then
             echo "Deploying $TAG (prerelease=$PRERELEASE)"

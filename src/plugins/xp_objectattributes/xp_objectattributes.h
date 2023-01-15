@@ -25,15 +25,14 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
+#include "../../NWN2Lib/NWN2.h"
+#include "../../misc/log.h"
+#include "../plugin.h"
+#include <specstrings.h>
 #include <windows.h>
 #include <windowsx.h>
-#include <specstrings.h>
-#include "../plugin.h"
-#include "../../misc/log.h"
-#include "../../NWN2Lib/NWN2.h"
 
-class ObjectAttributesPlugin : public Plugin
-{
+class ObjectAttributesPlugin : public Plugin {
 public:
 	ObjectAttributesPlugin();
 	~ObjectAttributesPlugin();
@@ -48,10 +47,7 @@ public:
 	char* GetString(char* sFunction, char* sParam1, int nParam2);
 	void GetFunctionClass(char* fClass);
 
-
-
 private:
-
 	//
 	// Define XPObjectAttributes implementation logic for the NWNX4 version
 	// the of XPObjectAttributes NWNX API.
@@ -59,121 +55,84 @@ private:
 	// N.B.  This code is shared with the NWNXHost.cpp.
 	//
 
-	void
-	OnXPObjectAttributesSetString(
-		__in const char * Plugin,
-		__in const char * Function,
-		__in const char * Param1,
-		__in int Param2,
-		__in const char * Value
-		);
+	void OnXPObjectAttributesSetString(__in const char* Plugin,
+	                                   __in const char* Function,
+	                                   __in const char* Param1,
+	                                   __in int Param2,
+	                                   __in const char* Value);
 
 	//
 	// Set the head variation for a creature.
 	//
 
-	void
-	XPObjectAttributesSetHeadVariation(
-		__in CreatureObject * Creature,
-		__in unsigned long Variation
-		);
+	void XPObjectAttributesSetHeadVariation(__in CreatureObject* Creature,
+	                                        __in unsigned long Variation);
 
 	//
 	// Set the hair variation for a creature.
 	//
 
-	void
-	XPObjectAttributesSetHairVariation(
-		__in CreatureObject * Creature,
-		__in unsigned long Variation
-		);
+	void XPObjectAttributesSetHairVariation(__in CreatureObject* Creature,
+	                                        __in unsigned long Variation);
 
 	//
 	// Set the tail variation for a creature.
 	//
 
-	void
-	XPObjectAttributesSetTailVariation(
-		__in CreatureObject * Creature,
-		__in unsigned long Variation
-		);
+	void XPObjectAttributesSetTailVariation(__in CreatureObject* Creature,
+	                                        __in unsigned long Variation);
 
 	//
 	// Set the wing variation for a creature.
 	//
 
-	void
-	XPObjectAttributesSetWingVariation(
-		__in CreatureObject * Creature,
-		__in unsigned long Variation
-		);
+	void XPObjectAttributesSetWingVariation(__in CreatureObject* Creature,
+	                                        __in unsigned long Variation);
 
 	//
 	// Set the facial hair variation for a creature.
 	//
 
-	void
-	XPObjectAttributesSetFacialHairVariation(
-		__in CreatureObject * Creature,
-		__in unsigned long Variation
-		);
+	void XPObjectAttributesSetFacialHairVariation(__in CreatureObject* Creature,
+	                                              __in unsigned long Variation);
 
 	//
 	// Set the body tint for a creature.
 	//
 
-	void
-	XPObjectAttributesSetBodyTint(
-		__in CreatureObject * Creature,
-		__in const NWN::NWN2_TintSet * TintSet
-		);
+	void XPObjectAttributesSetBodyTint(__in CreatureObject* Creature,
+	                                   __in const NWN::NWN2_TintSet* TintSet);
 
 	//
 	// Set the head tint for a creature.
 	//
 
-	void
-	XPObjectAttributesSetHeadTint(
-		__in CreatureObject * Creature,
-		__in const NWN::NWN2_TintSet * TintSet
-		);
+	void XPObjectAttributesSetHeadTint(__in CreatureObject* Creature,
+	                                   __in const NWN::NWN2_TintSet* TintSet);
 
 	//
 	// Set the hair tint for a creature.
 	//
 
-	void
-	XPObjectAttributesSetHairTint(
-		__in CreatureObject * Creature,
-		__in const NWN::NWN2_TintSet * TintSet
-		);
+	void XPObjectAttributesSetHairTint(__in CreatureObject* Creature,
+	                                   __in const NWN::NWN2_TintSet* TintSet);
 
 	//
 	// Set the racial type for a creature.
 	//
 
-	void
-	XPObjectAttributesSetRace(
-		__in CreatureObject * Creature,
-		__in unsigned short Race
-		);
+	void XPObjectAttributesSetRace(__in CreatureObject* Creature, __in unsigned short Race);
 
 	//
 	// Parse a string tint set into the raw tintset data structure.
 	//
 
-	bool
-	XPObjectAttributesParseTintSetString(
-		__in const char * StringTintSet,
-		__out NWN::NWN2_TintSet * TintSet
-		);
+	bool XPObjectAttributesParseTintSetString(__in const char* StringTintSet,
+	                                          __out NWN::NWN2_TintSet* TintSet);
 
 	GameObjectManager m_ObjectManager;
 
-
 	LogNWNX* logger;
-
-
 };
 
 #endif

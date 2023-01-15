@@ -11,9 +11,8 @@
 // Set plugin ABI version. Current latest version is 1
 const uint32_t nwnxcplugin_abi_version = 1;
 
-class Plugin
-{
-  public:
+class Plugin {
+public:
 	Plugin(const std::filesystem::path& logFile)
 	{
 		this->logFile.open(logFile);
@@ -33,8 +32,7 @@ class Plugin
 	std::unordered_map<std::string, std::queue<GffData>> storedGFFs;
 };
 
-void*
-NWNXCPlugin_New(NWNXCPlugin_InitInfo info)
+void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info)
 {
 	auto logFilePath = std::filesystem::path(info.nwnx_user_path) / "xp_cplugin_example.txt";
 	auto plugin      = new Plugin(logFilePath);
@@ -50,28 +48,18 @@ NWNXCPlugin_New(NWNXCPlugin_InitInfo info)
 	return plugin;
 }
 
-void
-NWNXCPlugin_Delete(void* cplugin)
+void NWNXCPlugin_Delete(void* cplugin)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 	plugin->logFile << "Plugin cleaned" << std::endl;
 	delete plugin;
 }
 
-const char*
-NWNXCPlugin_GetID(void* cplugin)
-{
-	return "CPluginExample";
-}
+const char* NWNXCPlugin_GetID(void* cplugin) { return "CPluginExample"; }
 
-const char*
-NWNXCPlugin_GetVersion()
-{
-	return "1.0.0 (" __DATE__ " " __TIME__ ")";
-}
+const char* NWNXCPlugin_GetVersion() { return "1.0.0 (" __DATE__ " " __TIME__ ")"; }
 
-const char*
-NWNXCPlugin_GetInfo()
+const char* NWNXCPlugin_GetInfo()
 {
 	return "NWNX4 CPlugin Example - A C++ plugin showcasing C plugin ABI";
 }
@@ -80,7 +68,7 @@ int32_t
 NWNXCPlugin_GetInt(void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
-	std::string function{sFunction};
+	std::string function {sFunction};
 
 	plugin->logFile << "NWNXCPlugin_GetInt(\"" << function << "\", \"" << sParam1 << "\", "
 	                << nParam2 << ")" << std::endl;
@@ -99,15 +87,11 @@ NWNXCPlugin_GetInt(void* cplugin, const char* sFunction, const char* sParam1, in
 	}
 }
 
-void
-NWNXCPlugin_SetInt(void* cplugin,
-                   const char* sFunction,
-                   const char* sParam1,
-                   int32_t nParam2,
-                   int32_t nValue)
+void NWNXCPlugin_SetInt(
+    void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, int32_t nValue)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
-	std::string function{sFunction};
+	std::string function {sFunction};
 
 	plugin->logFile << "NWNXCPlugin_SetInt(\"" << sFunction << "\", \"" << sParam1 << "\", "
 	                << nParam2 << ", " << nValue << ")" << std::endl;
@@ -121,8 +105,10 @@ NWNXCPlugin_SetInt(void* cplugin,
 	}
 }
 
-float
-NWNXCPlugin_GetFloat(void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2)
+float NWNXCPlugin_GetFloat(void* cplugin,
+                           const char* sFunction,
+                           const char* sParam1,
+                           int32_t nParam2)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 
@@ -133,12 +119,8 @@ NWNXCPlugin_GetFloat(void* cplugin, const char* sFunction, const char* sParam1, 
 	return plugin->storedFloat;
 }
 
-void
-NWNXCPlugin_SetFloat(void* cplugin,
-                     const char* sFunction,
-                     const char* sParam1,
-                     int32_t nParam2,
-                     float fValue)
+void NWNXCPlugin_SetFloat(
+    void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, float fValue)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 
@@ -149,13 +131,12 @@ NWNXCPlugin_SetFloat(void* cplugin,
 	plugin->storedFloat = fValue;
 }
 
-void
-NWNXCPlugin_GetString(void* cplugin,
-                      const char* sFunction,
-                      const char* sParam1,
-                      int32_t nParam2,
-                      char* result,
-                      size_t resultSize)
+void NWNXCPlugin_GetString(void* cplugin,
+                           const char* sFunction,
+                           const char* sParam1,
+                           int32_t nParam2,
+                           char* result,
+                           size_t resultSize)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 
@@ -167,12 +148,8 @@ NWNXCPlugin_GetString(void* cplugin,
 	strncpy_s(result, resultSize, plugin->storedString.c_str(), plugin->storedString.size());
 }
 
-void
-NWNXCPlugin_SetString(void* cplugin,
-                      const char* sFunction,
-                      const char* sParam1,
-                      int32_t nParam2,
-                      const char* sValue)
+void NWNXCPlugin_SetString(
+    void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, const char* sValue)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 
@@ -184,8 +161,7 @@ NWNXCPlugin_SetString(void* cplugin,
 	plugin->logFile << "  Set to \"" << plugin->storedString << "\"" << std::endl;
 }
 
-size_t
-NWNXCPlugin_GetGFFSize(void* cplugin, const char* sVarName)
+size_t NWNXCPlugin_GetGFFSize(void* cplugin, const char* sVarName)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 
@@ -199,8 +175,7 @@ NWNXCPlugin_GetGFFSize(void* cplugin, const char* sVarName)
 	return 0;
 }
 
-void
-NWNXCPlugin_GetGFF(void* cplugin, const char* sVarName, uint8_t* result, size_t resultSize)
+void NWNXCPlugin_GetGFF(void* cplugin, const char* sVarName, uint8_t* result, size_t resultSize)
 {
 	assert(result != nullptr);
 	assert(resultSize > 0);
@@ -228,8 +203,10 @@ NWNXCPlugin_GetGFF(void* cplugin, const char* sVarName, uint8_t* result, size_t 
 	                << queueIt->second.size() << " GFFs with this key" << std::endl;
 }
 
-void
-NWNXCPlugin_SetGFF(void* cplugin, const char* sVarName, const uint8_t* gffData, size_t gffDataSize)
+void NWNXCPlugin_SetGFF(void* cplugin,
+                        const char* sVarName,
+                        const uint8_t* gffData,
+                        size_t gffDataSize)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 

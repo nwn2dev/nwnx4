@@ -18,17 +18,17 @@
 
 ***************************************************************************/
 
-#include "controller.h"
 #include "../misc/log.h"
+#include "controller.h"
 
-VOID WINAPI NWNXServiceCtrlHandler (DWORD opcode); 
-DWORD NWNXServiceInitialization(DWORD argc, LPTSTR *argv, DWORD *specificError); 
+VOID WINAPI NWNXServiceCtrlHandler(DWORD opcode);
+DWORD NWNXServiceInitialization(DWORD argc, LPTSTR* argv, DWORD* specificError);
 
 SC_HANDLE getSCManager();
 BOOL installservice(int serviceNo);
 BOOL uninstallservice(int serviceNo);
-void WINAPI NWNXServiceStart (DWORD argc, LPTSTR *argv);
-DWORD NWNXServiceInitialization(DWORD argc, LPTSTR *argv, DWORD *specificError);
+void WINAPI NWNXServiceStart(DWORD argc, LPTSTR* argv);
+DWORD NWNXServiceInitialization(DWORD argc, LPTSTR* argv, DWORD* specificError);
 VOID WINAPI NWNXServiceCtrlHandler(DWORD Opcode);
 BOOL StartNWNXService(int serviceNo);
 DWORD StopNWNXService(int serviceNo);

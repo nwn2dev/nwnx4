@@ -1,6 +1,6 @@
 /***************************************************************************
     NWNX Time - Timer functions plugin
-    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com) 
+    Copyright (C) 2007 Ingmar Stieger (Papillon, papillon@blackdagger.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,13 +22,12 @@
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
-#include "windows.h"
-#include "../plugin.h"
 #include "../../misc/log.h"
+#include "../plugin.h"
+#include "windows.h"
 #include <unordered_map>
 
-class Timer : public Plugin
-{
+class Timer : public Plugin {
 public:
 	Timer();
 	~Timer();
@@ -47,7 +46,7 @@ private:
 	LogNWNX* logger;
 	LARGE_INTEGER liFrequency;
 
-	typedef std::unordered_map<std::string,  LARGE_INTEGER> TimerHashMap;
+	typedef std::unordered_map<std::string, LARGE_INTEGER> TimerHashMap;
 	TimerHashMap timers;
 
 	void StartTimer(std::string name);

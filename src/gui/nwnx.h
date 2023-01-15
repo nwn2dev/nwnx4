@@ -21,26 +21,23 @@
 #ifndef NWNX_H
 #define NWNX_H
 
-
-enum
-{ GUI_EXIT	= wxID_HIGHEST + 1,
-  GUI_OPEN,
-  GUI_CONNECTIONS,
-  GUI_ABOUT,
+enum {
+	GUI_EXIT = wxID_HIGHEST + 1,
+	GUI_OPEN,
+	GUI_CONNECTIONS,
+	GUI_ABOUT,
 };
 
 #define LABELSIZE 100
 
-class NWNXGUI : public wxApp
-{
-  public:
+class NWNXGUI : public wxApp {
+public:
 	virtual bool OnInit();
 
-  private:
+private:
 	wxLocale m_locale;
 };
 
 DECLARE_APP(NWNXGUI)
 
 #endif
-

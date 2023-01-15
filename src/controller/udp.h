@@ -21,27 +21,25 @@
 #if !defined(udp_h)
 #define udp_h
 
-#include <winsock.h>
 #include <WS2tcpip.h>
+#include <winsock.h>
 #define UDP_WAIT 1000
 
-class CUDP
-{
+class CUDP {
 public:
-	CUDP(const char *szAddress, int iPort);
+	CUDP(const char* szAddress, int iPort);
 	~CUDP();
 	void sendMessage(const char* message);
 	int getMessage(char* message, int len);
 
 	void setPort(int port);
-	void setAddress(const char *szAddress);
+	void setAddress(const char* szAddress);
 
 protected:
-
-	WSADATA wsda;			// Structure to store info returned from WSAStartup
-	struct hostent *host;	// Used to store information retreived about the server
-	SOCKET s;				// UDP socket handle
-	SOCKADDR_IN addr;		// The host's address
+	WSADATA wsda; // Structure to store info returned from WSAStartup
+	struct hostent* host; // Used to store information retreived about the server
+	SOCKET s; // UDP socket handle
+	SOCKADDR_IN addr; // The host's address
 };
 
 #endif

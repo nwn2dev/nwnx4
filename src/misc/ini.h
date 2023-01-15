@@ -19,79 +19,91 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
-  *
-  */
+ *
+ */
 
 #ifndef INI_HPP
 #define INI_HPP
 
-#include <string>
-#include <iostream>
+#include <algorithm>
 #include <fstream>
-#include <sstream>
+#include <iostream>
 #include <regex>
+#include <sstream>
+#include <string>
 #include <unordered_map>
 
-
-
 struct SimpleIniConfig {
-    SimpleIniConfig(std::string filePath) {
-        std::string data;
-        {
-            std::ostringstream sstr;
-            sstr << std::ifstream(filePath).rdbuf();
-            data = sstr.str();
-        }
+	SimpleIniConfig(std::string filePath)
+	{
+		std::string data;
+		{
+			std::ostringstream sstr;
+			sstr << std::ifstream(filePath).rdbuf();
+			data = sstr.str();
+		}
 
-        auto rgx = std::regex("^(?!\\s*[#;])\\s*([^=]+?)\\s*=\\s*(.*)\\s*$");
+		auto rgx = std::regex("^(?!\\s*[#;])\\s*([^=]+?)\\s*=\\s*(.*)\\s*$");
 
-        std::smatch match;
-        while(std::regex_search(data, match, rgx)){
-            auto key = match[1].str();
-            auto value = match[2].str();
-            values[key] = value;
-            data = match.suffix().str();
-        }
-    }
+		std::smatch match;
+		while (std::regex_search(data, match, rgx)) {
+			auto key    = match[1].str();
+			auto value  = match[2].str();
+			values[key] = value;
+			data        = match.suffix().str();
+		}
+	}
 
-    template<typename T>
-    bool Read(const std::string key, T* dest, T defaultValue) const {
+	template <typename T> bool Read(const std::string key, T* dest, const T& defaultValue) const
+	{
 
-        auto v = values.find(key);
-        if (v != values.end()) {
-            auto& valueStr = v->second;
+		auto v = values.find(key);
+		if (v != values.end()) {
+			auto& valueStr = v->second;
 
-            if constexpr (std::is_same_v<T, std::string>) {
-                *dest = valueStr;
-            }
-            else if constexpr (std::is_same_v<T, char*>) {
-                *dest = valueStr;
-            }
-            else {
-                std::stringstream ss(valueStr);
-                T value;
-                ss >> value;
-                if (ss.fail()) {
-                    return false;
-                }
-                *dest = value;
-                return true;
-            }
-            return true;
-        }
+			if constexpr (std::is_same_v<T, std::string>) {
+				*dest = valueStr;
+			} else if constexpr (std::is_same_v<T, char*>) {
+				*dest = valueStr;
+			} else {
+				// Allow true/false values for booleans
+				if constexpr (std::is_same_v<T, bool>) {
+					std::string lower(valueStr);
+					std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+					if (lower == "true") {
+						*dest = true;
+						return true;
+					}
+					if (lower == "false") {
+						*dest = false;
+						return true;
+					}
+				}
 
-        *dest = defaultValue;
-        return false;
-    }
+				// Use stringstream default conversions
+				std::stringstream ss(valueStr);
+				T value;
+				ss >> value;
+				if (ss.fail()) {
+					return false;
+				}
+				*dest = value;
+				return true;
+			}
+			return true;
+		}
 
-    template<typename T>
-    bool Read(const std::string key, T* dest) const {
-        return Read(key, dest, *dest);
-    }
+		*dest = defaultValue;
+		return false;
+	}
+
+	template <typename T> bool Read(const std::string key, T* dest) const
+	{
+		return Read(key, dest, T {*dest});
+	}
 
 private:
-    std::unordered_map<std::string, std::string> values;
+	std::unordered_map<std::string, std::string> values;
 };
 
 #endif // INI_HPP
-
