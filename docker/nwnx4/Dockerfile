@@ -28,13 +28,12 @@ ENV WINEDLLOVERRIDES="mshtml=;devenum,dxdiagn,granny2=n"
 ENV WINEDEBUG="fixme-all"
 ENV DISPLAY=":0"
 
-# TODO: .NET 4.8 is needed for xp_bugfix, but replaces my audio settings
 RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
     && mkdir -p "$HOME/.wine/drive_c/users/root/Temp/NWN2/LOGS.0" \
     && ln -s /srv/nwn2-logs "$HOME/.wine/drive_c/users/root/Temp/NWN2/LOGS.0" \
     \
     && wineboot --init \
-    && winetricks -q dotnet48 \
+    && winetricks -q vcrun2005 vcrun2015 dotnet48 sound=disabled \
     && wine reg import /opt/nwn2.reg \
     \
     && rm -rf /tmp/wine*
