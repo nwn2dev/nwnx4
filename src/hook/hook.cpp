@@ -836,7 +836,7 @@ void loadPlugins()
 
 		auto pluginPathStr = pluginPath.string();
 		auto pluginName = pluginPath.stem().string();
-		logger->Debug("Loading plugin %s (%s)", pluginName.c_str(), pluginPathStr.c_str());
+		logger->Info("* Loading plugin %s (%s)", pluginName.c_str(), pluginPathStr.c_str());
 
 		// Load DLL file
 		HINSTANCE hDLL = LoadLibraryA(pluginPathStr.c_str());

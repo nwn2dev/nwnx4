@@ -33,6 +33,7 @@ RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
     \
     && wineboot --init \
     && wine reg import /opt/nwn2.reg \
+    \
     && rm -rf /tmp/wine*
 
 COPY docker/nwnx4/nwn2-stage /opt/nwn2-stage
