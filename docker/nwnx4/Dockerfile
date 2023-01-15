@@ -1,7 +1,9 @@
 FROM debian:bullseye
 
-# Location to NWNX4 distribution
+# Copy the NWNX4 release into the image
 ARG NWNX4_DIST_DIR=dist/
+
+COPY $NWNX4_DIST_DIR /opt/nwnx4/
 
 # Install requirements
 RUN dpkg --add-architecture i386 \
@@ -15,13 +17,7 @@ RUN dpkg --add-architecture i386 \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the NWNX4 release into the image
-COPY $NWNX4_DIST_DIR /opt/nwnx4/
-
-# Add the key registry for NWN2 setup
-COPY docker/nwnx4/nwn2.reg /opt/
-
-# Configure Wine/Xvfb
+# Setup Wine/Xvfb
 ENV WINEPREFIX="$HOME/.wine32"
 ENV WINEARCH="win32"
 ENV WINEDLLOVERRIDES="mshtml=;devenum,dxdiagn,granny2=n"
@@ -39,15 +35,17 @@ RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
     \
     && rm -rf /tmp/wine*
 
-COPY docker/nwnx4/nwn2-stage /opt/nwn2-stage
-
-# Volume bindings
 VOLUME ["/srv/nwn2-logs"]
+
+COPY docker/nwnx4/nwn2.reg /opt/
+
+# Setup NWN2 stage
+COPY docker/nwnx4/nwn2-stage /opt/nwn2-stage
 
 # Expose UDP port 5121 for port access to NWN2 server
 EXPOSE 5121/udp
 
-# Setup entry command
+# Setup entrypoint and command
 WORKDIR /srv/nwnx4-user
 COPY docker/nwnx4/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
