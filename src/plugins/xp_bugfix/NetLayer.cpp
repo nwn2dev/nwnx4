@@ -1604,8 +1604,12 @@ OnNetLayerWindowReceive(
 	{
 		if (PlayerState[PlayerId].InGameWorld == false)
 		{
-			DebugPrint("Player %lu sent input before entering game world, dropped.\n", PlayerId);
-			return true;
+			//In this state, allow only run gui script
+			if (!(MajorFunction == CMD::Input && MinorFunction == 0x30))
+			{
+				DebugPrint("Player %lu sent input before entering game world, dropped.\n", PlayerId);
+				return true;
+			}
 		}
 
 		if (MajorFunction == CMD::Input)
