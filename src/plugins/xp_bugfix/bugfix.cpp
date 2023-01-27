@@ -33,7 +33,7 @@
 #include <cassert>
 #include <map>
 
-#define BUGFIX_VERSION "1.0.73"
+#define BUGFIX_VERSION "1.0.74"
 #define __NWN2_VERSION_STR(X) #X
 #define _NWN2_VERSION_STR(X) __NWN2_VERSION_STR(X)
 #define NWN2_VERSION _NWN2_VERSION_STR(NWN2SERVER_VERSION)
@@ -42,6 +42,7 @@
 
 extern bool ReplaceNetLayer();
 extern bool EnableTls();
+extern void SetDebugInfoPermission(unsigned char permission);
 
 extern bool TlsActive;
 extern bool WindowExtensions;
@@ -544,6 +545,7 @@ bool BugFix::Init(char* nwnxhome)
 	bool DisableCharacterCreation;
 	bool DoEnableTls;
 	bool DoWindowExtensions;
+	unsigned char DebugInformationPermission = 0x6;
 	long InitialAreaAABBCount;
 	float FacingPrecision;
 	long InitialAttachmentPointCount;
@@ -659,6 +661,10 @@ bool BugFix::Init(char* nwnxhome)
 	config.Read( "InitialAreaAABBCount", &InitialAreaAABBCount, 100L );
 	config.Read( "InitialAttachmentPointCount", &InitialAttachmentPointCount, 1L );
 
+	config.Read( "DebugInformationPermission", &DebugInformationPermission, DebugInformationPermission);
+	
+	SetDebugInfoPermission(DebugInformationPermission);
+	
 	FacingPrecision = atof(FacingPrecisionStr.c_str());
 
 	{
