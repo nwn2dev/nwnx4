@@ -40,13 +40,13 @@ extern CHAR NWNXHome[ MAX_PATH + 1 ];
 
 bool ReplaceNetLayer();
 bool EnableTls();
-void SetDebugInfoPermission(unsigned char pDebugPermission);
+void SetDebugInfoPermission(int pDebugPermission);
 
 CNetLayerInternal * NetLayerInternal;
 bool                TlsActive;
 bool                WindowExtensions;
 WCHAR               TlsCert[ MAX_PATH + 1 ];
-unsigned char	    DebugInfoPermission;		
+int	    			DebugInfoPermission;		
 
 
 HMODULE AuroraServerNetLayer;
@@ -799,7 +799,7 @@ bool EnableTls()
 	return true;
 }
 
-void SetDebugInfoPermission(unsigned char pDebugPermission)
+void SetDebugInfoPermission(int pDebugPermission)
 {
 	DebugInfoPermission = pDebugPermission;
 	if(DebugInfoPermission & 0x1) 
@@ -939,7 +939,7 @@ SendMessageToPlayer(
 				//
 				if (Data[1] == CMD::DebugInfo)
 				{
-					unsigned  char currentPrivileges = NetLayerInternal->Players[Player].m_bServerAdminPrivileges << 2;
+					int currentPrivileges = NetLayerInternal->Players[Player].m_bServerAdminPrivileges << 2;
 					currentPrivileges |= NetLayerInternal->Players[Player].m_bGameMasterPrivileges << 1;
 					currentPrivileges |= NetLayerInternal->Players[Player].m_bPlayerPrivileges;
 					

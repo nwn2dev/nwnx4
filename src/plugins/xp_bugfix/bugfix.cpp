@@ -42,7 +42,7 @@
 
 extern bool ReplaceNetLayer();
 extern bool EnableTls();
-extern void SetDebugInfoPermission(unsigned char permission);
+extern void SetDebugInfoPermission(int permission);
 
 extern bool TlsActive;
 extern bool WindowExtensions;
@@ -545,7 +545,7 @@ bool BugFix::Init(char* nwnxhome)
 	bool DisableCharacterCreation;
 	bool DoEnableTls;
 	bool DoWindowExtensions;
-	unsigned char DebugInformationPermission = 0x6;
+	int DebugInformationPermission = 0x6;
 	long InitialAreaAABBCount;
 	float FacingPrecision;
 	long InitialAttachmentPointCount;
