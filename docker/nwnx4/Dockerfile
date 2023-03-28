@@ -31,7 +31,7 @@ RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
     && ln -s /srv/nwn2-logs "$WINEPREFIX/drive_c/users/root/Temp/NWN2/LOGS.0" \
     \
     && wineboot --init \
-    && winetricks -q dotnet48 \
+    && winetricks -q dotnet472 \
     \
     && rm -rf /tmp/wine*
 
