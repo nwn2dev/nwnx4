@@ -1604,8 +1604,20 @@ OnNetLayerWindowReceive(
 	{
 		if (PlayerState[PlayerId].InGameWorld == false)
 		{
-			DebugPrint("Player %lu sent input before entering game world, dropped.\n", PlayerId);
-			return true;
+			//
+			// In this state, allow only run gui script.
+			//
+			// In this current state, the Input.RunScript function can only be utilized effectively in 
+			// conjunction with other server plugins, as the player is currently represented as OBJECT_INVALID. 
+			//
+			// With the right processing, however, this makes it possible to obtain input from the client before
+			// he enters the GameWorld.
+			//
+			if (!(MajorFunction == CMD::Input && MinorFunction == 0x30))
+			{
+				DebugPrint("Player %lu sent input before entering game world, dropped.\n", PlayerId);
+				return true;
+			}
 		}
 
 		if (MajorFunction == CMD::Input)
