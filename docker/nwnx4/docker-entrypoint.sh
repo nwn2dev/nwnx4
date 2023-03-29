@@ -16,6 +16,20 @@ for file in $(ls /srv/nwn2); do
   fi
 done
 
+# Clear all files in plugin folder; do this every startup
+rm -Rf /etc/nwnx4/plugins/*;
+
+# Copy a plugin if it exists in the /srv/nwnx4-user/plugins folders
+for file in $(ls /srv/nwnx4-user/plugins/*.dll); do
+  cp $file /etc/nwnx4/plugins/
+done
+
+for file in $(ls /opt/nwnx4/plugins/*.dll | xargs -n 1 basename); do
+  if [[ ! -e "/etc/nwnx4/plugins/$file" ]]; then
+    cp "/opt/nwnx4/plugins/$file" /etc/nwnx4/plugins/
+  fi
+done
+
 Xvfb $DISPLAY -screen 0 1024x768x16 &
 wine reg import /opt/nwn2.reg
 exec "$@"
