@@ -3,8 +3,6 @@ FROM debian:bullseye
 # Copy the NWNX4 release into the image
 ARG NWNX4_DIST_DIR=dist/
 
-COPY $NWNX4_DIST_DIR /opt/nwnx4/
-
 # Install requirements
 RUN dpkg --add-architecture i386 \
     && apt-get update \
@@ -41,6 +39,11 @@ COPY docker/nwnx4/nwn2.reg /opt/
 
 # Setup NWN2 stage
 COPY docker/nwnx4/nwn2-stage /opt/nwn2-stage
+
+ENV WINEDEBUG="+fixme-all,+loaddll"
+
+# Place the dist folder on the image
+COPY $NWNX4_DIST_DIR /opt/nwnx4/
 
 # Expose UDP port 5121 for port access to NWN2 server
 EXPOSE 5121/udp

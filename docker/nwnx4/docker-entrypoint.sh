@@ -16,11 +16,6 @@ for file in $(ls /srv/nwn2); do
   fi
 done
 
-# Setup all the /srv/nwn* folders and files as owned by root user
-#for file in $(find /srv/nwnx4-user \! -user root); do
-#  chown -f root $file
-#done
-
 Xvfb $DISPLAY -screen 0 1024x768x16 &
 wine reg import /opt/nwn2.reg
 exec "$@"
