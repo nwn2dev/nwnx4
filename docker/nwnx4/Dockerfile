@@ -40,8 +40,6 @@ COPY docker/nwnx4/nwn2.reg /opt/
 # Setup NWN2 stage
 COPY docker/nwnx4/nwn2-stage /opt/nwn2-stage
 
-ENV WINEDEBUG="+fixme-all,+loaddll"
-
 # Place the dist folder on the image
 COPY $NWNX4_DIST_DIR /opt/nwnx4/
 
