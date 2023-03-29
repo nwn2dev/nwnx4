@@ -18,7 +18,7 @@ RUN dpkg --add-architecture i386 \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup Wine/Xvfb
-ENV WINEPREFIX="$HOME/.wine32"
+ENV WINEPREFIX="/root/.wine32"
 ENV WINEARCH="win32"
 ENV WINEDLLOVERRIDES="mshtml=;devenum,dxdiagn,granny2=n"
 ENV WINEDEBUG="fixme-all"
@@ -31,7 +31,7 @@ RUN ln -s /srv/nwn2-home "$HOME/Neverwinter Nights 2" \
     && ln -s /srv/nwn2-logs "$WINEPREFIX/drive_c/users/root/Temp/NWN2/LOGS.0" \
     \
     && wineboot --init \
-    && winetricks -q dotnet472 \
+    && winetricks -q dotnet48 \
     \
     && rm -rf /tmp/wine*
 
