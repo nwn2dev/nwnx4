@@ -7,7 +7,14 @@ ARG NWNX4_USER_HOME="/home/nxnx4"
 # Install requirements
 RUN dpkg --add-architecture i386 \
     && apt-get update \
-    && apt-get install -y gosu wget cabextract wine32 xvfb \
+    && apt-get install -y gosu wget cabextract xvfb openssl \
+    && apt-get install -y gnupg2 software-properties-common \
+    \
+    && wget -qO- https://dl.winehq.org/wine-builds/winehq.key | apt-key add - \
+    && apt-add-repository https://dl.winehq.org/wine-builds/debian/ \
+    && apt-get update \
+    && apt-get install -y --install-recommends winehq-stable \
+    \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
     \
@@ -40,7 +47,7 @@ RUN ln -s /srv/nwn2-home "$NWNX4_USER_HOME/Neverwinter Nights 2" \
     && ln -s /srv/nwn2-logs "$WINEPREFIX/drive_c/users/nwnx4/Temp/NWN2/LOGS.0" \
     \
     && wineboot --init \
-    && winetricks -q dotnet48 \
+    && xvfb-run winetricks -q dotnet48 vcrun2005 vcrun2015 \
     \
     && rm -rf /tmp/wine*
 
