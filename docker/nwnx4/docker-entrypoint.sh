@@ -63,10 +63,10 @@ fi
 # All files in the /srv/nwnx4-user folder must be owned by the nwnx4 user
 chown -R nwnx4:nwnx4 /srv/nwnx4-user
 
-# .X11-unix must be created by root; intialize Xvfb
-mkdir -p /tmp/.X11-unix
-chmod 1777 /tmp/.X11-unix
-Xvfb $DISPLAY -screen 0 1024x768x16 &
+# Setup Xvfb; execute command
+gosu nwnx4 bash <<-EOF
+  Xvfb $DISPLAY -screen 0 1024x768x16 &
+  wine reg import /opt/nwn2.reg
+EOF
 
-gosu nwnx4 wine reg import /opt/nwn2.reg
 exec gosu nwnx4 "$@"
