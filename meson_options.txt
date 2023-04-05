@@ -1,3 +1,0 @@
-# Define the use_wine option
-option('use_wine', type: 'boolean', value: false,
-       description: 'Indicate in the build Wine will be used; Wine has some failing we must work around')

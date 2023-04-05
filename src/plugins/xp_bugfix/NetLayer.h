@@ -5,13 +5,8 @@
 #pragma once
 #endif
 
-#ifdef __USE_WINE__
-#include <iostream>
-#include <fstream>
-#include <string>
 #include <cryptopp/sha.h>
 #include <cryptopp/hex.h>
-#endif
 
 //
 // Begin snipped from NetLayerWindow.h

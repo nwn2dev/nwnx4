@@ -20,10 +20,6 @@ else
     add_project_arguments('/D_DEBUG', language: ['cpp', 'c'])
 endif
 
-if get_option('use_wine')
-    add_project_arguments('/D__USE_WINE__', language: ['cpp', 'c'])
-endif
-
 # Include & lib paths
 nwnx4_repo_path = meson.global_source_root()
 include_dirs = include_directories([
