@@ -1,3 +1,10 @@
+if get_option('use_wine')
+    wine_deps = [
+        cppcompiler.find_library('cryptopp', dirs: lib_dirs)
+    ]
+else
+    wine_deps = []
+endif
 
 shared_library('xp_bugfix',
     [
@@ -18,6 +25,7 @@ shared_library('xp_bugfix',
     dependencies: [
         cppcompiler.find_library('dbghelp'),
         cppcompiler.find_library('ws2_32'),
+        wine_deps
     ],
     install: true,
     install_dir: 'plugins',

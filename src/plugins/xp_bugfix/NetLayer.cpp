@@ -778,9 +778,30 @@ bool EnableTls()
 		NULL,
 		&Cert ) == FALSE)
 	{
+#ifdef __USE_WINE__
+		// Most Windows encryption algorithms are missing from Wine, so we must work around it
+		// Check if PFX file exists and is accessible; if created, we assume it was created through a custom script
+		std::ifstream file(std::string(Cert.CertificatePath) + ".pfx");
+		if (!file.is_open()) {
+			logger->Err("! EnableTls: Failed to create server certificate and store it in directory '%s'. Check that .NET Framework 4.7.2 or newer is enabled.  https://support.microsoft.com/en-us/help/4054530/microsoft-net-framework-4-7-2-offline-installer-for-windows",
+			            NWNXHome);
+
+			return false;
+		}
+
+		// Read file content into a string
+		std::string pfxFileContent((std::istreambuf_iterator<char>(file)),
+		                        std::istreambuf_iterator<char>());
+
+		// Calculate SHA-512 hash
+		CryptoPP::SHA512 hash;
+		hash.CalculateDigest(Cert.Sha512, reinterpret_cast<const byte*>(pfxFileContent.c_str()), pfxFileContent.length());
+#else
 		logger->Err("! EnableTls: Failed to create server certificate and store it in directory '%s'.  Check that .NET Framework 4.7.2 or newer is enabled.  https://support.microsoft.com/en-us/help/4054530/microsoft-net-framework-4-7-2-offline-installer-for-windows",
-			NWNXHome);
+		            NWNXHome);
+
 		return false;
+#endif
 	}
 
 	StringCbPrintfW(
