@@ -26,8 +26,8 @@ RUN dpkg --add-architecture i386 \
 # Setup nwnx4 user
 RUN useradd -u 1000 -d $NWNX4_USER_HOME --create-home -ms /bin/bash nwnx4
 
-# Give access to NWNx4 etc folder to nwnx4 user
-RUN mkdir -p /etc/nwnx4/plugins  \
+# Give access to NWNX4 etc folder to nwnx4 user
+RUN mkdir -p /etc/nwnx4/plugins \
     && chown nwnx4:nwnx4 -R /etc/nwnx4
 
 # Set to nwnx4 user; allows wine to be configured correctly
@@ -57,7 +57,7 @@ VOLUME ["/srv/nwn2-logs"]
 COPY --chown=nwnx4:nwnx4 docker/nwnx4/nwn2-stage /opt/nwn2-stage
 COPY --chown=nwnx4:nwnx4 docker/nwnx4/nwn2.reg /opt/
 
-# Setup NWNx4 distribution
+# Setup NWNX4 distribution
 COPY --chown=nwnx4:nwnx4 $NWNX4_DIST_DIR /opt/nwnx4/
 
 # Add temp. folder for X11
