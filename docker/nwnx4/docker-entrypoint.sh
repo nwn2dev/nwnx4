@@ -21,7 +21,7 @@ rm -Rf /etc/nwnx4/plugins/*;
 
 # Copy a plugin if it exists; prefer /srv/nwnx4-user plugins
 for file in $(ls /srv/nwnx4-user/plugins/*.dll | xargs -n 1 basename); do
-  cp "/opt/nwnx4/plugins/$file" /etc/nwnx4/plugins/ && chown nwnx4:nwnx4 "/etc/nwnx4/plugins/$file"
+  cp "/srv/nwnx4-user/plugins/$file" /etc/nwnx4/plugins/ && chown nwnx4:nwnx4 "/etc/nwnx4/plugins/$file"
 done
 
 # Copy a plugin if it exists; only add /opt/nwnx4 plugins if it doesn't exist in /srv/nwnx4-user
