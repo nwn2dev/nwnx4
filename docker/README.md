@@ -5,7 +5,9 @@ NWNX4 Docker is a way to deploy NWNX4 in a Docker Linux container.
 ## How-to
 
 There is a docker-compose.yml file available in this folder that helps to build and lift 
-your copy. You will need to buildthe distribution of the NWNX4 application first. 
+your copy. You will need to buildthe distribution of the NWNX4 application first.
+
+NOTE: Make sure the build directory is using --buildtype=release.
 
 1. Run `meson install --destdir=../dist` from your NWNX4 build directory in a VS 2019 
    x86 Dev. Command Prompt. If your destdir is within a dist folder at the root of the 
