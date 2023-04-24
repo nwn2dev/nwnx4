@@ -734,7 +734,7 @@ TlsCertificateHashToString(
 	return;
 }
 
-bool EnableTls()
+bool EnableTls(bool skipAuroraServerQueryCreateCertificate)
 {
 	AURORA_SERVER_QUERY_CREATE_CERTIFICATE Cert;
 	CHAR                                   HostKey[ 256 ];
@@ -771,15 +771,33 @@ bool EnableTls()
 		sizeof( Cert.Hostname ),
 		"CN=Neverwinter Nights" );
 
-	if (AuroraServerNetLayerQuery_(
+	// Most Windows encryption algorithms are missing from Wine, so we must work around it
+	if (skipAuroraServerQueryCreateCertificate) {
+		// Assume that you created the PFX file externally
+		std::string certificatePath = std::string(Cert.CertificatePath) + ".pfx";
+		std::ifstream file(certificatePath);
+		if (!file.is_open()) {
+			logger->Err("! EnableTls: Expected a PFX file to be stored at '%s'.  File must be available with read access", certificatePath);
+
+			return false;
+		}
+
+		// Read file content into a string
+		std::string pfxFileContent((std::istreambuf_iterator<char>(file)),
+		                           std::istreambuf_iterator<char>());
+
+		// Calculate SHA-512 hash
+		CryptoPP::SHA512 hash;
+		hash.CalculateDigest(Cert.Sha512, reinterpret_cast<const byte*>(pfxFileContent.c_str()), pfxFileContent.length());
+	} else if (AuroraServerNetLayerQuery_(
 		NULL,
 		AuroraServerQueryCreateCertificate,
 		sizeof( Cert ),
 		NULL,
-		&Cert ) == FALSE)
-	{
+		&Cert ) == FALSE) {
 		logger->Err("! EnableTls: Failed to create server certificate and store it in directory '%s'.  Check that .NET Framework 4.7.2 or newer is enabled.  https://support.microsoft.com/en-us/help/4054530/microsoft-net-framework-4-7-2-offline-installer-for-windows",
-			NWNXHome);
+		            NWNXHome);
+
 		return false;
 	}
 
