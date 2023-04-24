@@ -2,7 +2,7 @@ version: "3"
 services:
   nwnx4:
     container_name: nwnx4
-    image: nwnx4:latest
+    image: nwn2dev/nwnx4:latest
     build:
       context: ..
       dockerfile: ./docker/nwnx4/Dockerfile
