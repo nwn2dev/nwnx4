@@ -3,6 +3,7 @@
   "version-string": "0.1.0",
   "builtin-baseline": "1d5f3adf598a877c6870dc37b80b453f4c74d462",
   "dependencies": [
+    "cryptopp",
     "detours",
     "wxwidgets",
     "libmariadb"
