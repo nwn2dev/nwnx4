@@ -41,7 +41,8 @@
 #define BUGFIX_LOG_GAMEOBJACCESS 0
 
 extern bool ReplaceNetLayer();
-extern bool EnableTls();
+
+extern bool EnableTls(bool skipAuroraServerQueryCreateCertificate);
 extern void SetDebugInfoPermission(int permission);
 
 extern bool TlsActive;
@@ -63,6 +64,7 @@ bool nocompress = true;
 long GameObjUpdateBurstSize = 102400; // 100K
 CHAR NWNXHome[ MAX_PATH + 1 ];
 bool CanonicalizeAccountNames = true;
+bool SkipAuroraServerCreateCertificate = false;
 StringMap AccountNameMap;
 std::unique_ptr<LogNWNX> logger;
 
@@ -613,6 +615,8 @@ bool BugFix::Init(char* nwnxhome)
 
 	config.Read( "CanonicalizeAccountNames", &CanonicalizeAccountNames, CanonicalizeAccountNames );
 
+	config.Read("SkipAuroraServerCreateCertificate", &SkipAuroraServerCreateCertificate, SkipAuroraServerCreateCertificate);
+
 #ifdef XP_BUGFIX_AIUPDATE_THROTTLING
 	config.Read( "AIUpdateThrottle", &ThrottleValue, 0L );
 	aiUpdateThrottle = (ULONG) ThrottleValue;
@@ -736,7 +740,7 @@ bool BugFix::Init(char* nwnxhome)
 		{
 			logger->Debug("* Attempting to enable TLS.");
 
-			if (EnableTls())
+			if (EnableTls(SkipAuroraServerCreateCertificate))
 			{
 				logger->Info("* TLS enabled.");
 

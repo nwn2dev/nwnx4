@@ -24,6 +24,5 @@
 /src/plugins/*/Release/
 
 .idea/
-dev/
-meson-build-*/
 vcpkg_installed/
+dist/

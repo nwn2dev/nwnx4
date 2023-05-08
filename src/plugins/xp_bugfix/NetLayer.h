@@ -5,6 +5,9 @@
 #pragma once
 #endif
 
+#include <cryptopp/sha.h>
+#include <cryptopp/hex.h>
+
 //
 // Begin snipped from NetLayerWindow.h
 //
