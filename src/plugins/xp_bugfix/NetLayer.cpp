@@ -952,20 +952,6 @@ SendMessageToPlayer(
 			else if ((Data[1] == CMD::ClientSideMessage) &&
 				     (Data[2] == 0x0B)) // TextMessage
 			{
-				//
-				// Check filters on privileges to print DebugInformation or not
-				//
-				if (Data[1] == CMD::DebugInfo)
-				{
-					int currentPrivileges = NetLayerInternal->Players[Player].m_bServerAdminPrivileges << 2;
-					currentPrivileges |= NetLayerInternal->Players[Player].m_bGameMasterPrivileges << 1;
-					currentPrivileges |= NetLayerInternal->Players[Player].m_bPlayerPrivileges;
-					
-					if((DebugInfoPermission & currentPrivileges) == 0)
-					{
-						continue;
-					}
-				}
 				StatefulCompress = FALSE;
 			}
 
@@ -1695,7 +1681,22 @@ OnNetLayerWindowReceive(
 					}
 				}
 				break;
+			case 0x15: //DebugInformation
+				{
+					//
+					// Check filters on privileges to accept the cmd DebugInformation or not
+					//
+					int currentPrivileges = NetLayerInternal->Players[PlayerId].m_bServerAdminPrivileges << 2;
+					currentPrivileges |= NetLayerInternal->Players[PlayerId].m_bGameMasterPrivileges << 1;
+					currentPrivileges |= NetLayerInternal->Players[PlayerId].m_bPlayerPrivileges;
 
+					if((DebugInfoPermission & currentPrivileges) == 0)
+					{
+						DebugPrint("Player %lu ask for debugInfo with privilege : 0x%02X , dropped.\n", PlayerId, currentPrivileges);
+						return true;
+					}
+				}
+				break;
 			}
 		}
 	}
