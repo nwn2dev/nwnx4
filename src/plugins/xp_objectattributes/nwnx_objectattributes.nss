@@ -340,7 +340,7 @@ Environment:
 {
 	NWNXSetString(
 		"OBJECTATTRIBUTES",
-		"SetSetBodyTint",
+		"SetBodyTint",
 		"",
 		ObjectToInt( Creature ),
 		XPObjectAttributespFormatTintSetAsString( TintSet ));
