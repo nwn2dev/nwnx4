@@ -38,7 +38,7 @@ const UINT32 DEFAULT_GATEWAY_TIMEOUT = 8000; // Time to unsticky a dead default 
 
 typedef struct _CONNECTION_ENTRY {
 
-	bool operator<(__in const _CONNECTION_ENTRY & other)
+	bool operator<(__in const _CONNECTION_ENTRY & other) const
 	{
 		if (other.IPAddress == IPAddress)
 		{
@@ -50,7 +50,7 @@ typedef struct _CONNECTION_ENTRY {
 		}
 	}
 
-	bool operator==(__in const _CONNECTION_ENTRY & other)
+	bool operator==(__in const _CONNECTION_ENTRY & other) const
 	{
 		return IPAddress == other.IPAddress && Port == other.Port;
 	}

@@ -9,7 +9,7 @@ your copy. You will need to buildthe distribution of the NWNX4 application first
 
 NOTE: Make sure the build directory is using --buildtype=release.
 
-1. Run `meson install --destdir=../dist` from your NWNX4 build directory in a VS 2019 
+1. Run `meson install --destdir=../dist` from your NWNX4 build directory in a VS 2022 
    x86 Dev. Command Prompt. If your destdir is within a dist folder at the root of the 
    repository as in this instruction, you will not need to set the Docker argument 
    `NWNX4_DIST_DIR` during your `docker-compose build` step.
