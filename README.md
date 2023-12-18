@@ -17,7 +17,7 @@ The original source code can be found here: https://github.com/NWNX/nwnx4
 ### Requirements
 You must install:
 - [Visual C++ 2005 x86 Runtime](https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE) <!-- xp_bugfix -->
-- [Visual C++ 2015 x86 Runtime](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe) <!-- msvc 2019 -->
+- [Visual C++ 2015 x86 Runtime](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe) <!-- msvc 2022 -->
 - [.NET Framework 4.7.2](https://download.visualstudio.microsoft.com/download/pr/1f5af042-d0e4-4002-9c59-9ba66bcf15f6/124d2afe5c8f67dfa910da5f9e3db9c1/ndp472-kb4054531-web.exe) or above <!-- xp_bugfix -->
 
 ### Installation
@@ -91,8 +91,8 @@ Double-clicking `NWNX4_GUI.exe` will launch NWNX4 with merged folder.
 ## Requirements
 
 - [Meson](https://github.com/mesonbuild/meson/releases)
-- [Microsoft Visual Studio 2019
-  Community](https://visualstudio.microsoft.com/downloads/#visual-studio-community-2019)
+- [Microsoft Visual Studio 2022
+  Community](https://visualstudio.microsoft.com/downloads/#visual-studio-community-2022)
   or [MSBuild
   tools](https://visualstudio.microsoft.com/fr/downloads/?q=build+tools)
 
@@ -114,7 +114,7 @@ vcpkg\vcpkg.exe install --triplet=x86-windows-static-md --clean-after-build
 
 ### Build NWNX4
 
-From a x86 MSBuild prompt (i.e. `x86 Native Tools Command Prompt for VS 2019` if you installed Visual Studio 2019):
+From a x86 MSBuild prompt (i.e. `x86 Native Tools Command Prompt for VS 2022` if you installed Visual Studio 2022):
 ```powershell
 # Setup build files
 meson builddir
@@ -128,12 +128,12 @@ meson install --destdir=%cd%\..\nwnx4-dev
 ```
 
 
-## Developing with Visual Studio 2019
+## Developing with Visual Studio 2022
 
 Meson can generate solutions for Visual Studio. The following command will
 create a `NWNX4.sln` that you can open with Visual Studio:
 ```ps
-meson setup --backend=vs2019 vsbuild
+meson setup --backend=vs2022 vsbuild
 ```
 
 
