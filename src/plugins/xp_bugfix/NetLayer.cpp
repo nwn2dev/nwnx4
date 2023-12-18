@@ -40,11 +40,13 @@ extern CHAR NWNXHome[ MAX_PATH + 1 ];
 
 bool ReplaceNetLayer();
 bool EnableTls();
+void SetDebugInfoPermission(int pDebugPermission);
 
 CNetLayerInternal * NetLayerInternal;
 bool                TlsActive;
 bool                WindowExtensions;
 WCHAR               TlsCert[ MAX_PATH + 1 ];
+int	    			DebugInfoPermission;		
 
 
 HMODULE AuroraServerNetLayer;
@@ -813,6 +815,17 @@ bool EnableTls(bool skipAuroraServerQueryCreateCertificate)
 
 	logger->Info("* EnableTls: Enabled TLS with host key %s", HostKey);
 	return true;
+}
+
+void SetDebugInfoPermission(int pDebugPermission)
+{
+	DebugInfoPermission = pDebugPermission;
+	if(DebugInfoPermission & 0x1) 
+		logger->Info("* SetDebugInfoPermission: print Debug Information is Autorized for Players");
+	if(DebugInfoPermission & 0x2) 
+		logger->Info("* SetDebugInfoPermission: print Debug Information is Autorized for DMs");
+	if(DebugInfoPermission & 0x4) 
+		logger->Info("* SetDebugInfoPermission: print Debug Information is Autorized for Admin");
 }
 
 bool
@@ -1668,7 +1681,22 @@ OnNetLayerWindowReceive(
 					}
 				}
 				break;
+			case 0x15: //DebugInformation
+				{
+					//
+					// Check filters on privileges to accept the cmd DebugInformation or not
+					//
+					int currentPrivileges = NetLayerInternal->Players[PlayerId].m_bServerAdminPrivileges << 2;
+					currentPrivileges |= NetLayerInternal->Players[PlayerId].m_bGameMasterPrivileges << 1;
+					currentPrivileges |= NetLayerInternal->Players[PlayerId].m_bPlayerPrivileges;
 
+					if((DebugInfoPermission & currentPrivileges) == 0)
+					{
+						DebugPrint("Player %lu ask for debugInfo with privilege : 0x%02X , dropped.\n", PlayerId, currentPrivileges);
+						return true;
+					}
+				}
+				break;
 			}
 		}
 	}
