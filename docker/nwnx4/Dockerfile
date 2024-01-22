@@ -64,6 +64,9 @@ COPY --chown=nwnx4:nwnx4 $NWNX4_DIST_DIR /opt/nwnx4/
 RUN mkdir -p /tmp/.X11-unix \
     && chmod 1777 /tmp/.X11-unix
 
+# Fix to ALSA configuration
+COPY --chown=nwnx4:nwnx4 docker/nwnx4/.asoundrc $NWNX4_USER_HOME
+
 # Expose UDP port 5121 for port access to NWN2 server
 EXPOSE 5121/udp
 
