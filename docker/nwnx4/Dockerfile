@@ -73,7 +73,7 @@ USER root
 
 # Setup release
 RUN curl -LJO $RELEASE_URL \
-    && unzip nwnx4.zip -d /opt/nwnx4 \
+    && unzip nwnx4.zip -d /opt \
     && chown -R nwnx4:nwnx4 /opt/nwnx4
 
 WORKDIR /srv/nwnx4-user
