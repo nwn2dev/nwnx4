@@ -1,7 +1,6 @@
 FROM debian:bullseye
 
-# Copy the NWNX4 release into the image
-ARG NWNX4_DIST_DIR="dist/"
+ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
 ARG NWNX4_USER_HOME="/home/nxnx4"
 
 # Install requirements
@@ -17,6 +16,8 @@ RUN dpkg --add-architecture i386 \
     \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
+    \
+    && apt-get install -y curl unzip \
     \
     && apt-get clean \
     && apt-get autoclean \
@@ -57,9 +58,6 @@ VOLUME ["/srv/nwn2-logs"]
 COPY --chown=nwnx4:nwnx4 docker/nwnx4/nwn2-stage /opt/nwn2-stage
 COPY --chown=nwnx4:nwnx4 docker/nwnx4/nwn2.reg /opt/
 
-# Setup NWNX4 distribution
-COPY --chown=nwnx4:nwnx4 $NWNX4_DIST_DIR /opt/nwnx4/
-
 # Add temp. folder for X11
 RUN mkdir -p /tmp/.X11-unix \
     && chmod 1777 /tmp/.X11-unix
@@ -72,6 +70,12 @@ EXPOSE 5121/udp
 
 # Setup entrypoint and command
 USER root
+
+# Setup release
+RUN curl -LJO $RELEASE_URL \
+    && unzip nwnx4.zip -d /opt \
+    && chown -R nwnx4:nwnx4 /opt/nwnx4
+
 WORKDIR /srv/nwnx4-user
 COPY docker/nwnx4/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
