@@ -20,7 +20,7 @@ jobs:
         run: |
           # If triggered by workflow_dispatch, use the latest release
           if [ -n "${{ github.event.inputs.release_tag }}" ]; then
-            release_info=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest)
+            release_info=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/${{ github.event.inputs.release_tag }})
             export RELEASE_URL=$(echo $release_info | jq -r '.assets[0].browser_download_url')
             export TAG_NAME=$(echo $release_info | jq -r '.tag_name')
           else
