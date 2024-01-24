@@ -1,11 +1,11 @@
-name: Build and Deploy NWNX4 Docker Image
+name: NWNX4 Docker Image CI
 
 on:
   release:
     types: [released]
 
 jobs:
-  build-and-deploy:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
