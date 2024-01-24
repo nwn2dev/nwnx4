@@ -1,10 +1,6 @@
 name: NWNX4 Docker Image CI
 
 on:
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: 'Release tag to use'
   release:
     types: [released]
 
@@ -18,18 +14,8 @@ jobs:
 
       - name: Set Release URL and Tag as Environment Variables
         run: |
-          # If triggered by workflow_dispatch, use the tag specified
-          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
-            release_info=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tag/${{ github.event.inputs.release_tag }})
-            export RELEASE_URL=$(echo $release_info | jq -r '.assets[0].browser_download_url')
-            export TAG_NAME=$(echo $release_info | jq -r '.tag_name')
-          else
-            export RELEASE_URL=${{ github.event.release.assets[0].browser_download_url }}
-            export TAG_NAME=${{ github.event.release.tag_name }}
-          fi
-          
-          echo "RELEASE_URL=${RELEASE_URL}" >> $GITHUB_ENV
-          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+          echo "RELEASE_URL=${{ github.event.release.assets[0].browser_download_url }}" >> $GITHUB_ENV
+          echo "TAG_NAME=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
 
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -39,3 +25,5 @@ jobs:
           docker build -t nwn2dev/nwnx4 -f docker/nwnx4/Dockerfile --build-arg RELEASE_URL=${RELEASE_URL} .
           docker tag nwn2dev/nwnx4 nwn2dev/nwnx4:${TAG_NAME}
           docker push nwn2dev/nwnx4:${TAG_NAME}
+          docker tag nwn2dev/nwnx4 nwn2dev/nwnx4:latest
+          docker push nwn2dev/nwnx4:latest
