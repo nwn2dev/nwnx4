@@ -1,8 +1,5 @@
 FROM debian:bullseye
 
-ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
-ARG NWNX4_USER_HOME="/home/nxnx4"
-
 # Install requirements
 RUN dpkg --add-architecture i386 \
     && apt-get update \
@@ -23,6 +20,8 @@ RUN dpkg --add-architecture i386 \
     && apt-get autoclean \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
+
+ARG NWNX4_USER_HOME="/home/nwnx4"
 
 # Setup nwnx4 user
 RUN useradd -u 1000 -d $NWNX4_USER_HOME --create-home -ms /bin/bash nwnx4
@@ -70,6 +69,8 @@ EXPOSE 5121/udp
 
 # Setup entrypoint and command
 USER root
+
+ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
 
 # Setup release
 RUN curl -LJO $RELEASE_URL \
