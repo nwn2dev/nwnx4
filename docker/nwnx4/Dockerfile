@@ -1,7 +1,7 @@
 FROM debian:bullseye
 
 ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
-ARG NWNX4_USER_HOME="/home/nxnx4"
+ARG NWNX4_USER_HOME="/home/nwnx4"
 
 # Install requirements
 RUN dpkg --add-architecture i386 \
