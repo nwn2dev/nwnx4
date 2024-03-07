@@ -1,5 +1,6 @@
 
 #include <cassert>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -13,13 +14,15 @@ const uint32_t nwnxcplugin_abi_version = 1;
 
 class Plugin {
 public:
-	Plugin(const std::filesystem::path& logFile)
+	Plugin(const std::filesystem::path& logFile, const NWNXCPlugin_NWN2Hooks* hooks)
 	{
 		this->logFile.open(logFile);
 
 		// Disable buffering
 		// This is bad for performance but useful for testing
 		this->logFile.rdbuf()->pubsetbuf(0, 0);
+
+		this->hooks = *hooks;
 	}
 
 	std::ofstream logFile;
@@ -30,12 +33,16 @@ public:
 
 	typedef std::vector<uint8_t> GffData;
 	std::unordered_map<std::string, std::queue<GffData>> storedGFFs;
+
+	NWNXCPlugin_NWN2Hooks hooks;
 };
+
+Plugin* g_plugin;
 
 void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info)
 {
 	auto logFilePath = std::filesystem::path(info.nwnx_user_path) / "xp_cplugin_example.txt";
-	auto plugin      = new Plugin(logFilePath);
+	auto plugin      = new Plugin(logFilePath, info.nwn2_hooks);
 	plugin->logFile << "Plugin initialized" << std::endl;
 	plugin->logFile << "    dll_path: " << info.dll_path << std::endl;
 	plugin->logFile << "    nwnx_user_path: " << info.nwnx_user_path << std::endl;
@@ -45,6 +52,22 @@ void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info)
 	plugin->logFile << "    nwn2_module_path: "
 	                << (info.nwn2_module_path == nullptr ? "unknown" : info.nwn2_module_path)
 	                << std::endl;
+	plugin->logFile << "    nwn2_hooks: " << std::endl;
+	plugin->logFile << "        ExecuteScript: " << (void*)info.nwn2_hooks->ExecuteScript
+	                << std::endl;
+	plugin->logFile << "        ExecuteScriptEnhanced: "
+	                << (void*)info.nwn2_hooks->ExecuteScriptEnhanced << std::endl;
+	plugin->logFile << "        AddScriptParameterInt: "
+	                << (void*)info.nwn2_hooks->AddScriptParameterInt << std::endl;
+	plugin->logFile << "        AddScriptParameterString: "
+	                << (void*)info.nwn2_hooks->AddScriptParameterString << std::endl;
+	plugin->logFile << "        AddScriptParameterFloat: "
+	                << (void*)info.nwn2_hooks->AddScriptParameterFloat << std::endl;
+	plugin->logFile << "        AddScriptParameterObject: "
+	                << (void*)info.nwn2_hooks->AddScriptParameterObject << std::endl;
+	plugin->logFile << "        ClearScriptParams: " << info.nwn2_hooks->ClearScriptParams
+	                << std::endl;
+	g_plugin = plugin;
 	return plugin;
 }
 
@@ -80,6 +103,21 @@ NWNXCPlugin_GetInt(void* cplugin, const char* sFunction, const char* sParam1, in
 		plugin->counter++;
 		plugin->logFile << "  Increment and return counter value: " << plugin->counter << std::endl;
 		return plugin->counter;
+	} else if (function == "TEST_EXECUTESCRIPT") {
+		constexpr uint32_t OBJID_MODULE = 0;
+		plugin->hooks.ExecuteScript("gui_test_executescript", OBJID_MODULE);
+		return 12;
+	} else if (function == "TEST_EXECUTESCRIPTENH") {
+		constexpr uint32_t OBJID_MODULE = 0;
+		plugin->hooks.ClearScriptParams();
+		plugin->hooks.AddScriptParameterString(sParam1);
+		plugin->hooks.AddScriptParameterFloat(13.37f);
+		plugin->hooks.AddScriptParameterInt(-1234);
+		plugin->hooks.AddScriptParameterObject(0x01020304);
+		return plugin->hooks.ExecuteScriptEnhanced("gui_test_executescriptenh", OBJID_MODULE, true);
+	} else if (function == "TEST_EXECUTESCRIPTENHBAD") {
+		constexpr uint32_t OBJID_MODULE = 0;
+		return plugin->hooks.ExecuteScriptEnhanced("euqsgdihohcqsc", OBJID_MODULE, true);
 	} else {
 		plugin->logFile << "  ERROR: NWNXCPlugin_GetInt: unknown function \"" << function << "\""
 		                << std::endl;

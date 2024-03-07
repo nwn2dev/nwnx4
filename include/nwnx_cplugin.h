@@ -22,6 +22,28 @@ struct NWNXCPlugin_InitInfo {
 	const char* nwn2_module_path;
 	/// Path to the NWNX4 user directory, where nwnx4_controller.exe is located.
 	const char* nwnx_install_path;
+
+	const struct NWNXCPlugin_NWN2Hooks* nwn2_hooks;
+};
+
+typedef void(ExecuteScriptFn)(const char* sScript, uint32_t oTarget);
+typedef int32_t(ExecuteScriptEnhancedFn)(const char* sScriptName,
+                                         uint32_t oTarget,
+                                         bool bClearParams);
+typedef void(AddScriptParameterIntFn)(int32_t nParam);
+typedef void(AddScriptParameterStringFn)(const char* sParam);
+typedef void(AddScriptParameterFloatFn)(float fParam);
+typedef void(AddScriptParameterObjectFn)(uint32_t oParam);
+typedef void(ClearScriptParamsFn)();
+
+struct NWNXCPlugin_NWN2Hooks {
+	ExecuteScriptFn* ExecuteScript;
+	ExecuteScriptEnhancedFn* ExecuteScriptEnhanced;
+	AddScriptParameterIntFn* AddScriptParameterInt;
+	AddScriptParameterStringFn* AddScriptParameterString;
+	AddScriptParameterFloatFn* AddScriptParameterFloat;
+	AddScriptParameterObjectFn* AddScriptParameterObject;
+	ClearScriptParamsFn* ClearScriptParams;
 };
 
 //
