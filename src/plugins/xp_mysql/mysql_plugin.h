@@ -26,7 +26,9 @@
 typedef unsigned long ulong;
 
 #include "../database/dbplugin.h"
+#include <memory>
 #include <mysql/mysql.h>
+#include <optional>
 
 class MySQL : public DBPlugin {
 public:
@@ -52,6 +54,17 @@ private:
 	const char* GetErrorMessage() override;
 	int GetLastInsertID() override;
 
+	int PrepPrepareStatement(const char* query) override;
+	bool PrepBindString(int stmtID, int index, const char* value) override;
+	bool PrepBindInt(int stmtID, int index, int value) override;
+	bool PrepBindFloat(int stmtID, int index, float value) override;
+	bool PrepBindNull(int stmtID, int index) override;
+	bool PrepExecute(int stmtID) override;
+	bool PrepFetch(int stmtID) override;
+	char* PrepGetDataString(int stmtID, int index, char* buffer) override;
+	int PrepGetDataInt(int stmtID, int index) override;
+	float PrepGetDataFloat(int stmtID, int index) override;
+
 	MYSQL mysql;
 	MYSQL* connection;
 	MYSQL_RES* result;
@@ -65,6 +78,23 @@ private:
 	std::string schema;
 	std::string charset;
 	int port;
+
+	typedef struct {
+		MYSQL_STMT* stmt;
+		std::string query;
+		std::vector<MYSQL_BIND> params;
+		std::vector<size_t> paramsBufferRealSizes;
+		std::vector<MYSQL_BIND> results;
+		std::optional<std::vector<uint8_t>> resBuffer;
+	} PreparedStmtInfo;
+
+	// Note: mysql will keep pointers to params and results array
+	std::vector<std::unique_ptr<PreparedStmtInfo>> m_prepStmts;
+
+	bool CheckAndAllocBind(int& stmtID, int& index, size_t requiredBufferSize);
+
+	bool AllocateResBuffer(int stmtIndex);
+	void FreeResBuffer(int stmtIndex);
 };
 
 #endif

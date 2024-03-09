@@ -74,8 +74,6 @@ extern std::filesystem::path nwnxUserDir;
 extern std::filesystem::path nwnxInstallDir;
 extern SimpleIniConfig* config;
 
-extern char returnBuffer[MAX_BUFFER];
-
 int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2);
 void NWNXSetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2, int nValue);
 float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2);

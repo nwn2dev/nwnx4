@@ -38,9 +38,9 @@ public:
 	bool SetupLogAndIniFile(char* nwnxhome);
 
 	int GetInt(char* sFunction, char* sParam1, int nParam2);
-	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue) {};
-	float GetFloat(char* sFunction, char* sParam1, int nParam2) { return 0.0; }
-	void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue) {};
+	void SetInt(char* sFunction, char* sParam1, int nParam2, int nValue);
+	float GetFloat(char* sFunction, char* sParam1, int nParam2);
+	void SetFloat(char* sFunction, char* sParam1, int nParam2, float fValue);
 	void SetString(char* sFunction, char* sParam1, int nParam2, char* sValue);
 	char* GetString(char* sFunction, char* sParam1, int nParam2);
 	virtual bool WriteScorcoData(BYTE* pData, int Length);
@@ -62,6 +62,21 @@ protected:
 	virtual const char* GetErrorMessage();
 	virtual int GetLastInsertID();
 	void SetScorcoSQL(const char* request);
+
+	// Prepared statements
+	virtual int PrepPrepareStatement(const char* query);
+
+	virtual bool PrepBindString(int stmtID, int index, const char* value);
+	virtual bool PrepBindInt(int stmtID, int index, int value);
+	virtual bool PrepBindFloat(int stmtID, int index, float value);
+	virtual bool PrepBindNull(int stmtID, int index);
+
+	virtual bool PrepExecute(int stmtID);
+	virtual bool PrepFetch(int stmtID);
+
+	virtual char* PrepGetDataString(int stmtID, int iCol, char* buffer);
+	virtual int PrepGetDataInt(int stmtID, int iCol);
+	virtual float PrepGetDataFloat(int stmtID, int iCol);
 };
 
 #endif

@@ -35,14 +35,85 @@ void AssertEqI(int nA, int nB, string sFunction, int nLine, string sMessage=""){
 }
 void AssertEqF(float fA, float fB, float fPrecision, string sFunction, int nLine, string sMessage=""){
 	if(fabs(fA - fB) > fPrecision){
-		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed: " + FloatToString(fA, 0) + " != " + FloatToString(fA, 0) + " (precision: " + FloatToString(fPrecision, 0) + ")" + (sMessage != "" ? ": " + sMessage : ""));
+		WriteTimestampedLogEntry("ERROR:" + sFunction + ":" + IntToString(nLine) + ": Assert failed: " + FloatToString(fA, 0) + " != " + FloatToString(fB, 0) + " (precision: " + FloatToString(fPrecision, 0) + ")" + (sMessage != "" ? ": " + sMessage : ""));
 		SetLocalInt(GetModule(), "shutting_down", TRUE);
 	}
 }
 //===================================================================
 
 
+void xp_sql_bench(){
 
+	SQLExecDirect("DROP TABLE IF EXISTS `benchtable`");
+	SQLExecDirect(
+		  "CREATE TABLE IF NOT EXISTS `benchtable` ("
+	    + "  `key` VARCHAR(64) NOT NULL DEFAULT '~',"
+	    + "  `valuestr` VARCHAR(64),"
+	    + "  `valueint` INT,"
+	    + "  `valuefloat` FLOAT,"
+	    + "  PRIMARY KEY (`key`)"
+	    + ") ENGINE=MyISAM DEFAULT CHARSET=utf8"
+	);
+
+	int nLoops = 200;
+
+	int insertStmt = SQLPrepPrepareStatement("INSERT INTO `benchtable` (`key`,`valuestr`,`valueint`,`valuefloat`) VALUES (?,?,?,?)");
+	int selectStmt = SQLPrepPrepareStatement("SELECT `key`,`valuestr`,`valueint`,`valuefloat` FROM `benchtable`");
+
+	// ------------------------------------------
+	StartTimer(oModule, "nwnxtest_sqlbench");
+
+	int i;
+	for(i = 0 ; i < nLoops ; i++){
+		SQLPrepBindString(insertStmt, 1, "Key" + IntToString(i));
+		SQLPrepBindString(insertStmt, 2, "Value=" + IntToString(i));
+		SQLPrepBindInt(insertStmt, 3, i * i);
+		SQLPrepBindFloat(insertStmt, 4, sqrt(1f * i));
+		AssertEqI(SQLPrepExecute(insertStmt), TRUE, __FUNCTION__, __LINE__);
+	}
+
+	SQLPrepExecute(selectStmt);
+	for(i = 0 ; i < nLoops ; i++){
+		AssertEqI(SQLPrepFetch(selectStmt), 1, __FUNCTION__, __LINE__);
+
+		AssertEqS(SQLPrepGetString(selectStmt, 1), "Key" + IntToString(i), __FUNCTION__, __LINE__);
+		AssertEqS(SQLPrepGetString(selectStmt, 2), "Value=" + IntToString(i), __FUNCTION__, __LINE__);
+		AssertEqI(SQLPrepGetInt(selectStmt, 3), i * i, __FUNCTION__, __LINE__);
+		AssertEqF(SQLPrepGetFloat(selectStmt, 4), sqrt(1f * i), 0.001, __FUNCTION__, __LINE__);
+	}
+
+	WriteTimestampedLogEntry("[SQLBenchPrep] " + NWNXGetPluginSubClass("SQL") + ": " + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlbench")) / 1000.0, 0, 2) + "ms");
+
+	StopTimer(oModule, "nwnxtest_sqlbench");
+
+	// ------------------------------------------
+	StartTimer(oModule, "nwnxtest_sqlbench");
+
+	for(i = 0 ; i < nLoops ; i++){
+		AssertEqI(
+			SQLExecDirect("INSERT INTO `benchtable` (`key`,`valuestr`,`valueint`,`valuefloat`) VALUES ('"
+				+ SQLEncodeSpecialChars("Key" + IntToString(i)) + "','"
+				+ SQLEncodeSpecialChars("Value=" + IntToString(i)) + "',"
+				+ IntToString(i * i) + ","
+				+ FloatToString(sqrt(1f * i), 0) + ")"
+			),
+			TRUE, __FUNCTION__, __LINE__
+		);
+	}
+
+	SQLExecDirect("SELECT `key`,`valuestr`,`valueint`,`valuefloat` FROM `benchtable`");
+	for(i = 0 ; i < nLoops ; i++){
+		AssertEqI(SQLFetch(), 1, __FUNCTION__, __LINE__);
+
+		AssertEqS(SQLGetData(1), "Key" + IntToString(i), __FUNCTION__, __LINE__);
+		AssertEqS(SQLGetData(2), "Value=" + IntToString(i), __FUNCTION__, __LINE__);
+		AssertEqI(SQLGetDataInt(3), i * i, __FUNCTION__, __LINE__);
+		AssertEqF(SQLGetDataFloat(4), sqrt(1f * i), 0.001, __FUNCTION__, __LINE__);
+	}
+
+	WriteTimestampedLogEntry("[SQLBenchDirect] " + NWNXGetPluginSubClass("SQL") + ": " + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlbench")) / 1000.0, 0, 2) + "ms");
+	// ------------------------------------------
+}
 
 
 void xp_sql(){
@@ -83,6 +154,33 @@ void xp_sql(){
 	DestroyObject(oItem2);
 	DestroyObject(oRetrieved2);
 
+	// Fetch loop
+	int nCount = 0;
+	if(GetLocalInt(GetModule(), "NWNXSQL_USEPREP")){
+		int nSelectAllStmt = SQLPrepPrepareStatement("SELECT `player`, `expire` FROM pwdata WHERE player=?");
+		SQLPrepBindString(nSelectAllStmt, 1, "~");
+		SQLPrepExecute(nSelectAllStmt);
+		while(SQLPrepFetch(nSelectAllStmt)){
+			Assert(SQLPrepGetString(nSelectAllStmt, 1) == "~", __FUNCTION__, __LINE__);
+			nCount++;
+		}
+
+		// Prepared statement without parameters
+		int test = SQLPrepPrepareStatement("SELECT `name`, `val` FROM pwdata");
+		// SQLPrepExecute(test);
+		while(SQLPrepFetch(test)){
+			WriteTimestampedLogEntry("    name=" + SQLPrepGetString(test, 1) + " val=" + SQLPrepGetString(test, 2));
+		}
+	}
+	else{
+		SQLExecDirect("SELECT `player`, `expire` FROM pwdata WHERE player='~'");
+		while(SQLFetch()){
+			Assert(SQLGetData(1) == "~", __FUNCTION__, __LINE__);
+			nCount++;
+		}
+	}
+	Assert(nCount == 5, __FUNCTION__, __LINE__);
+
 	// Passthrough conventional campaign functions
 	SetCampaignString("nwnxtest_cam", "string", "Café");
 	AssertEqS(GetCampaignString("nwnxtest_cam", "string"), "Café", __FUNCTION__, __LINE__);
@@ -105,6 +203,11 @@ void xp_sql(){
 	DestroyObject(oRetrieved);
 
 	WriteTimestampedLogEntry("[PERF] " + NWNXGetPluginSubClass("SQL") + ": " + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlperf")) / 1000.0, 0, 2) + "ms");
+
+	if(NWNXGetPluginSubClass("SQL") == "MySQL"){
+		DelayCommand(2.0, xp_sql_bench());
+		DelayCommand(3.0, xp_sql_bench());
+	}
 }
 
 void xp_time(){
