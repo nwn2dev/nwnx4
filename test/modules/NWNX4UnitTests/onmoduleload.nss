@@ -199,6 +199,9 @@ void xp_example_cplugin(){
 	DeleteLocalString(GetModule(), "testexescript");
 
 	// CPlugin call
+	AssertEqI(NWNXGetInt("CPluginExample", "TEST_EXECUTESCRIPTBAD", "", 0), 13, __FUNCTION__, __LINE__);
+
+	// CPlugin call
 	AssertEqI(NWNXGetInt("CPluginExample", "TEST_EXECUTESCRIPTENH", "hellow orld", 0), 20, __FUNCTION__, __LINE__);
 	AssertEqS(GetLocalString(GetModule(), "testexescriptenh_string"), "hellow orld", __FUNCTION__, __LINE__);
 	AssertEqF(GetLocalFloat(GetModule(), "testexescriptenh_float"), 13.37, 0.001, __FUNCTION__, __LINE__);

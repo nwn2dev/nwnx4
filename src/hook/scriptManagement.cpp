@@ -40,7 +40,10 @@ static_assert(sizeof(NWN2ParamsList) == 8);
 static struct NWN2ParamsList* nwn2_scriptparams = (struct NWN2ParamsList*)(0x0086F15C);
 // static size_t scriptparams_count = 0;
 
-struct CVirtualMachine { };
+struct CVirtualMachine {
+	uint32_t _;
+	uint32_t execscript_ret_value;
+};
 static CVirtualMachine** nwn2_vm
     = std::bit_cast<struct CVirtualMachine**>(NWN2_OFFSET_CVIRTUALMACHINE);
 
@@ -57,7 +60,6 @@ static CVirtualMachine_ExecuteScript_t CVirtualMachine_ExecuteScript
 using CVirtualMachine_ExecuteScriptEnhanced_t
     = int32_t(__thiscall*)(CVirtualMachine* thisVM,
                            const NWN::CExoString& scriptName,
-                           // const NWN::CExoString& scriptName,
                            NWN::OBJECTID objectID,
                            void* ParamList,
                            uint32_t unknow1,
@@ -65,29 +67,34 @@ using CVirtualMachine_ExecuteScriptEnhanced_t
 static CVirtualMachine_ExecuteScriptEnhanced_t CVirtualMachine_ExecuteScriptEnhanced
     = std::bit_cast<CVirtualMachine_ExecuteScriptEnhanced_t>(NWN2_OFFSET_EXECUTESCRIPT_ENH);
 
-//
-using CVirtualMachine_InitParam_t = void(__thiscall*)(void* paramLst, uint32_t iNb);
-static CVirtualMachine_InitParam_t CVirtualMachine_InitParam
-    = std::bit_cast<CVirtualMachine_InitParam_t>(NWN2_OFFSET_InitParam);
+// //
+// using CVirtualMachine_InitParam_t = void(__thiscall*)(void* paramLst, uint32_t iNb);
+// static CVirtualMachine_InitParam_t CVirtualMachine_InitParam
+//     = std::bit_cast<CVirtualMachine_InitParam_t>(NWN2_OFFSET_InitParam);
 
-//
-using CVirtualMachine_CleanParam_t = void(__thiscall*)(void* paramLst);
-static CVirtualMachine_CleanParam_t CVirtualMachine_CleanParam
-    = std::bit_cast<CVirtualMachine_CleanParam_t>(NWN2_OFFSET_CleanParam);
+// //
+// using CVirtualMachine_CleanParam_t = void(__thiscall*)(void* paramLst);
+// static CVirtualMachine_CleanParam_t CVirtualMachine_CleanParam
+//     = std::bit_cast<CVirtualMachine_CleanParam_t>(NWN2_OFFSET_CleanParam);
 
 namespace NWScript {
 
-void ExecuteScript(const char* sScript, NWN::OBJECTID oTarget)
+void ExecuteScript(const char* sScript, NWN::OBJECTID oTarget, bool* outExecuted)
 {
 	logger->Trace("ExecuteScript %s, %lu", sScript, oTarget);
-	CVirtualMachine_ExecuteScript(
+	auto executed = CVirtualMachine_ExecuteScript(
 	    *nwn2_vm,
 	    NWN::CExoString {.m_sString = (char*)sScript, // un-const cast, safe as param is read only
 	                     .m_nBufferLength = strlen(sScript)},
 	    oTarget, 1, 1);
+	if (outExecuted != nullptr)
+		*outExecuted = executed;
 }
 
-int32_t ExecuteScriptEnhanced(const char* sScriptName, NWN::OBJECTID oTarget, bool bClearParams)
+int32_t ExecuteScriptEnhanced(const char* sScriptName,
+                              NWN::OBJECTID oTarget,
+                              bool bClearParams,
+                              bool* outExecuted)
 {
 	logger->Trace("ExecuteScriptEnhanced %s, %lu", sScriptName, oTarget);
 
@@ -103,9 +110,12 @@ int32_t ExecuteScriptEnhanced(const char* sScriptName, NWN::OBJECTID oTarget, bo
 	int retValue
 	    = CVirtualMachine_ExecuteScriptEnhanced(*nwn2_vm, script, oTarget, nwn2_scriptparams, 1, 1);
 
+	if (outExecuted != nullptr)
+		*outExecuted = retValue != 0;
+
 	// Is the script ok?
 	if (retValue != 0)
-		retValue = ((uint32_t*)*nwn2_vm)[1];
+		retValue = (*nwn2_vm)->execscript_ret_value;
 	else
 		retValue = -1;
 

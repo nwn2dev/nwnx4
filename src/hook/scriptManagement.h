@@ -10,8 +10,11 @@
 namespace NWScript {
 
 extern "C" {
-void ExecuteScript(const char* sScript, NWN::OBJECTID oTarget);
-int32_t ExecuteScriptEnhanced(const char* sScriptName, NWN::OBJECTID oTarget, bool bClearParams);
+void ExecuteScript(const char* sScript, NWN::OBJECTID oTarget, bool* outExecuted = NULL);
+int32_t ExecuteScriptEnhanced(const char* sScriptName,
+                              NWN::OBJECTID oTarget,
+                              bool bClearParams,
+                              bool* outExecuted = NULL);
 void AddScriptParameterInt(int32_t nParam);
 void AddScriptParameterString(const char* sParam);
 void AddScriptParameterFloat(float fParam);

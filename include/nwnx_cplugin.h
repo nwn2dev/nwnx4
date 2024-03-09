@@ -22,20 +22,41 @@ struct NWNXCPlugin_InitInfo {
 	const char* nwn2_module_path;
 	/// Path to the NWNX4 user directory, where nwnx4_controller.exe is located.
 	const char* nwnx_install_path;
-
+	/// Function pointers to interact with the nwn2server instance
 	const struct NWNXCPlugin_NWN2Hooks* nwn2_hooks;
 };
 
-typedef void(ExecuteScriptFn)(const char* sScript, uint32_t oTarget);
+/// Bound to NWScript ExecuteScript function
+/// @param outExecuted If not null, the bool will be set to true if the script
+///   has been successfully executed.
+typedef void(ExecuteScriptFn)(const char* sScript, uint32_t oTarget, bool* outExecuted);
+/// Bound to NWScript ExecuteScriptEnhanced function
+/// @param outExecuted If not null, the bool will be set to true if the script
+///   has been successfully executed. This is used to differenciate between a
+///   script returning the value -1 and a script not being executed.
 typedef int32_t(ExecuteScriptEnhancedFn)(const char* sScriptName,
                                          uint32_t oTarget,
-                                         bool bClearParams);
+                                         bool bClearParams,
+                                         bool* outExecuted);
+/// Bound to NWScript AddScriptParameterInt function. Bound values are not
+///  shared between the NWScript and CPlugin environments
 typedef void(AddScriptParameterIntFn)(int32_t nParam);
+/// Bound to NWScript AddScriptParameterString function. Bound values are not
+///   shared between the NWScript and CPlugin environments.
+/// @warning The string value is only borrowed and must live at least until
+///   ExecuteScriptEnhanced is called
 typedef void(AddScriptParameterStringFn)(const char* sParam);
+/// Bound to NWScript AddScriptParameterFloat function. Bound values are not
+///  shared between the NWScript and CPlugin environments
 typedef void(AddScriptParameterFloatFn)(float fParam);
+/// Bound to NWScript AddScriptParameterObject function. Bound values are not
+///  shared between the NWScript and CPlugin environments
 typedef void(AddScriptParameterObjectFn)(uint32_t oParam);
+/// Bound to NWScript ClearScriptParams function. Only clears the bound values
+///  from the CPlugin environment
 typedef void(ClearScriptParamsFn)();
 
+/// Function pointers to interact with the nwn2server instance
 struct NWNXCPlugin_NWN2Hooks {
 	ExecuteScriptFn* ExecuteScript;
 	ExecuteScriptEnhancedFn* ExecuteScriptEnhanced;
