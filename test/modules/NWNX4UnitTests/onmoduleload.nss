@@ -179,6 +179,48 @@ void xp_example_cplugin(){
 
 	Assert(!GetIsObjectValid(RetrieveCampaignObject("NWNX.CPluginExample", "A", GetLocation(oContainer), oContainer)), __FUNCTION__, __LINE__);
 	Assert(!GetIsObjectValid(RetrieveCampaignObject("NWNX.CPluginExample", "B", GetLocation(oContainer), oContainer)), __FUNCTION__, __LINE__);
+
+	// Test executescript hooks
+	// Standard NWScript call
+	AddScriptParameterString("test");
+	AddScriptParameterFloat(345.3);
+	AddScriptParameterInt(45237);
+	AddScriptParameterObject(GetFirstArea());
+	AssertEqI(ExecuteScriptEnhanced("qsdqsdqds", GetModule(), FALSE), -1, __FUNCTION__, __LINE__);
+	AssertEqI(ExecuteScriptEnhanced("gui_test_executescriptenh", GetModule(), FALSE), 10, __FUNCTION__, __LINE__);
+	AssertEqS(GetLocalString(GetModule(), "testexescriptenh_string"), "test", __FUNCTION__, __LINE__);
+	AssertEqF(GetLocalFloat(GetModule(), "testexescriptenh_float"), 345.3, 0.001, __FUNCTION__, __LINE__);
+	AssertEqI(GetLocalInt(GetModule(), "testexescriptenh_int"), 45237, __FUNCTION__, __LINE__);
+	AssertEqI(ObjectToInt(GetLocalObject(GetModule(), "testexescriptenh_object")), ObjectToInt(GetFirstArea()), __FUNCTION__, __LINE__);
+
+	// CPlugin call
+	AssertEqI(NWNXGetInt("CPluginExample", "TEST_EXECUTESCRIPT", "", 0), 12, __FUNCTION__, __LINE__);
+	AssertEqS(GetLocalString(GetModule(), "testexescript"), "executed", __FUNCTION__, __LINE__);
+	DeleteLocalString(GetModule(), "testexescript");
+
+	// CPlugin call
+	AssertEqI(NWNXGetInt("CPluginExample", "TEST_EXECUTESCRIPTBAD", "", 0), 13, __FUNCTION__, __LINE__);
+
+	// CPlugin call
+	AssertEqI(NWNXGetInt("CPluginExample", "TEST_EXECUTESCRIPTENH", "hellow orld", 0), 20, __FUNCTION__, __LINE__);
+	AssertEqS(GetLocalString(GetModule(), "testexescriptenh_string"), "hellow orld", __FUNCTION__, __LINE__);
+	AssertEqF(GetLocalFloat(GetModule(), "testexescriptenh_float"), 13.37, 0.001, __FUNCTION__, __LINE__);
+	AssertEqI(GetLocalInt(GetModule(), "testexescriptenh_int"), -1234, __FUNCTION__, __LINE__);
+	AssertEqI(ObjectToInt(GetLocalObject(GetModule(), "testexescriptenh_object")), 0x01020304, __FUNCTION__, __LINE__);
+
+	// 
+	AssertEqI(NWNXGetInt("CPluginExample", "TEST_EXECUTESCRIPTENH", "yolo 2", 0), 30, __FUNCTION__, __LINE__);
+	AssertEqS(GetLocalString(GetModule(), "testexescriptenh_string"), "yolo 2", __FUNCTION__, __LINE__);
+
+	// Try executing unknown script
+	AssertEqI(NWNXGetInt("CPluginExample", "TEST_EXECUTESCRIPTENHBAD", "", 0), -1, __FUNCTION__, __LINE__);
+
+	// Standard NWScript call, previous parameters should be kept
+	AssertEqI(ExecuteScriptEnhanced("gui_test_executescriptenh", GetModule(), FALSE), 40, __FUNCTION__, __LINE__);
+	AssertEqS(GetLocalString(GetModule(), "testexescriptenh_string"), "test", __FUNCTION__, __LINE__);
+	AssertEqF(GetLocalFloat(GetModule(), "testexescriptenh_float"), 345.3, 0.001, __FUNCTION__, __LINE__);
+	AssertEqI(GetLocalInt(GetModule(), "testexescriptenh_int"), 45237, __FUNCTION__, __LINE__);
+	AssertEqI(ObjectToInt(GetLocalObject(GetModule(), "testexescriptenh_object")), ObjectToInt(GetFirstArea()), __FUNCTION__, __LINE__);
 }
 
 void nwnx_general(){

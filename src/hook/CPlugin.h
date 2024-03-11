@@ -1,12 +1,31 @@
 #ifndef NWNX4_CPLUGIN_H
 #define NWNX4_CPLUGIN_H
 
+#include "scriptManagement.h"
 #include <functional>
 #include <string>
 #include <windows.h>
 
 class CPlugin {
 public:
+	struct NWN2Hooks {
+		using ExecuteScriptFn            = decltype(NWScript::ExecuteScript);
+		using ExecuteScriptEnhancedFn    = decltype(NWScript::ExecuteScriptEnhanced);
+		using AddScriptParameterIntFn    = decltype(NWScript::AddScriptParameterInt);
+		using AddScriptParameterStringFn = decltype(NWScript::AddScriptParameterString);
+		using AddScriptParameterFloatFn  = decltype(NWScript::AddScriptParameterFloat);
+		using AddScriptParameterObjectFn = decltype(NWScript::AddScriptParameterObject);
+		using ClearScriptParamsFn        = decltype(NWScript::ClearScriptParams);
+
+		ExecuteScriptFn* ExecuteScript                       = NWScript::ExecuteScript;
+		ExecuteScriptEnhancedFn* ExecuteScriptEnhanced       = NWScript::ExecuteScriptEnhanced;
+		AddScriptParameterIntFn* AddScriptParameterInt       = NWScript::AddScriptParameterInt;
+		AddScriptParameterStringFn* AddScriptParameterString = NWScript::AddScriptParameterString;
+		AddScriptParameterFloatFn* AddScriptParameterFloat   = NWScript::AddScriptParameterFloat;
+		AddScriptParameterObjectFn* AddScriptParameterObject = NWScript::AddScriptParameterObject;
+		ClearScriptParamsFn* ClearScriptParams               = NWScript::ClearScriptParams;
+	};
+
 	struct InitInfo {
 		const char* dll_path;
 		const char* nwnx_user_path;
@@ -14,6 +33,7 @@ public:
 		const char* nwn2_home_path;
 		const char* nwn2_module_path;
 		const char* nwnx_install_path;
+		const struct NWN2Hooks* nwn2_hooks;
 	};
 
 	CPlugin(HINSTANCE hDLL, const InitInfo& initInfo);

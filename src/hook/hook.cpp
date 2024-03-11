@@ -22,6 +22,7 @@
 #include "../misc/windows_utils.h"
 #include "../nwnx_version.h"
 #include "scorcohook.h"
+#include "scriptManagement.h"
 #include <Shlobj.h>
 #include <codecvt>
 #include <filesystem>
@@ -744,6 +745,9 @@ void loadPlugins()
 		    = (std::filesystem::path(nwn2HomeDir) / "modules" / serverArgs["moduledir"]).string();
 	const char* nwn2ModulePathCStr = nwn2ModulePath.size() > 0 ? nwn2ModulePath.c_str() : nullptr;
 
+	// Get NWN2 hooks
+	struct CPlugin::NWN2Hooks hooks;
+
 	// Start loading plugins
 	for (auto& pluginPath : pluginList) {
 		if (++pluginPath.begin() == pluginPath.end()) {
@@ -788,6 +792,7 @@ void loadPlugins()
 				    .nwn2_home_path    = nwn2HomeDir.c_str(),
 				    .nwn2_module_path  = nwn2ModulePathCStr,
 				    .nwnx_install_path = nwnxInstallDirStr.c_str(),
+				    .nwn2_hooks        = &hooks,
 				};
 
 				// Instantiate & initialize CPlugin
