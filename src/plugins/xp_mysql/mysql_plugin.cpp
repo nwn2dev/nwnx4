@@ -19,6 +19,7 @@
 
 #include "mysql_plugin.h"
 
+#include "../../nwnx_version.h"
 #include <cassert>
 #include <mysql/errmsg.h>
 
@@ -53,17 +54,17 @@ bool APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 MySQL::MySQL()
     : DBPlugin()
 {
-	header = "NWNX MySQL Plugin V.1.1.0-dev\n"
+	header = "NWNX MySQL Plugin " NWNX_VERSION_INFO "\n"
 	         "(c) 2007 by Ingmar Stieger (Papillon)\n"
 	         "(c) 2008 by virusman\n"
-	         "visit us at http://www.nwnx.org\n"
-	         "(built using mysql-5.0.27 source)\n";
+	         "Source: https://github.com/nwn2dev/nwnx4 \n"
+	         "MySQL Connector: " MARIADB_CLIENT_VERSION_STR;
 
 	description = "This plugin provides database storage. It uses "
 	              "MySQL 4 or 5 as database server.";
 
 	subClass = "MySQL";
-	version  = "1.1.0-dev";
+	version  = NWNX_VERSION_INFO;
 
 	result = NULL;
 	row    = NULL;
@@ -106,15 +107,19 @@ bool MySQL::Init(char* nwnxhome)
 
 bool MySQL::Connect()
 {
+	logger->Info("* Connecting to MySQL server...");
 	// initialize the mysql structure
-	if (!mysql_init(&mysql))
-		return FALSE;
+	if (!mysql_init(&mysql)) {
+		logger->Err("!   Failed to init MySQL");
+		return false;
+	}
 
 	// try to connect to the mysql server
 	connection = mysql_real_connect(&mysql, server.c_str(), user.c_str(), password.c_str(),
 	                                schema.c_str(), port, NULL, CLIENT_MULTI_STATEMENTS);
 	if (connection == NULL) {
 		mysql_close(&mysql);
+		logger->Err("!   Failed to connect to server: %s", mysql_error(&mysql));
 		return false;
 	}
 
@@ -126,6 +131,21 @@ bool MySQL::Connect()
 		}
 	}
 
+	// Recover prepared statements
+	for (size_t stmtID = 0; stmtID < m_prepStmts.size(); stmtID++) {
+		auto& prepStmt = m_prepStmts[stmtID];
+
+		auto stmt = mysql_stmt_init(&mysql);
+		if (mysql_stmt_prepare(stmt, prepStmt->query.c_str(), -1) != 0) {
+			logger->Err("[Stmt %d] Failed to prepare statement. Error %d: %s", stmtID,
+			            mysql_stmt_errno(stmt), mysql_stmt_error(stmt));
+			mysql_stmt_close(stmt); // ignore closing error, just deallocate
+		} else {
+			logger->Debug("[Stmt %d] re-prepared statement after disconnection", stmtID);
+			prepStmt->stmt = stmt;
+		}
+	}
+
 	return true;
 }
 
@@ -133,6 +153,9 @@ void MySQL::Disconnect()
 {
 	// close the connection
 	mysql_close(&mysql);
+	mysql_close(connection);
+	connection = NULL;
+	logger->Info("* Disconnected MySQL server");
 }
 
 bool MySQL::Reconnect()
@@ -140,7 +163,6 @@ bool MySQL::Reconnect()
 	logger->Info("* Reconnecting to MySQL server...");
 	Disconnect();
 	if (!Connect()) {
-		logger->Info("* Connection to MySQL server failed:\n  %s", mysql_error(&mysql));
 		return false;
 	} else {
 		logger->Info("* Connection to MySQL server succeeded.");
@@ -421,6 +443,13 @@ BYTE* MySQL::ReadScorcoData(char* param, int* size)
 
 int MySQL::PrepPrepareStatement(const char* query)
 {
+	if (!connection) {
+		if (!Reconnect()) {
+			logger->Err("PrepPrepareStatement: Not connected.");
+			return FALSE;
+		}
+	}
+
 	auto stmtID = m_prepStmts.size() + 1;
 	logger->Info("[Stmt %d] Prepare query: %s", stmtID, query);
 
@@ -641,6 +670,13 @@ bool MySQL::PrepExecute(int stmtID)
 	if (stmtID < 1 || stmtID > m_prepStmts.size()) {
 		logger->Err("[Stmt %d] PrepExecute: invalid statement ID", stmtID);
 		return false;
+	}
+
+	if (!connection) {
+		if (!Reconnect()) {
+			logger->Err("[Stmt %d] PrepExecute: Not connected.", stmtID);
+			return FALSE;
+		}
 	}
 
 	logger->Info("[Stmt %d] PrepExecute: execute stmt", stmtID);

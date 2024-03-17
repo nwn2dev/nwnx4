@@ -63,6 +63,9 @@ protected:
 	virtual int GetLastInsertID();
 	void SetScorcoSQL(const char* request);
 
+	virtual bool Connect();
+	virtual void Disconnect();
+
 	// Prepared statements
 	virtual int PrepPrepareStatement(const char* query);
 

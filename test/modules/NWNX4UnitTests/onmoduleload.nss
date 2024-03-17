@@ -72,6 +72,10 @@ void xp_sql_bench(){
 		AssertEqI(SQLPrepExecute(insertStmt), TRUE, __FUNCTION__, __LINE__);
 	}
 
+	WriteTimestampedLogEntry("[SQLBenchPrep]   " + NWNXGetPluginSubClass("SQL") + ": inserts=" + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlbench")) / (1.0 * nLoops), 0, 2) + "µs / iter");
+	StopTimer(oModule, "nwnxtest_sqlbench");
+	StartTimer(oModule, "nwnxtest_sqlbench");
+
 	SQLPrepExecute(selectStmt);
 	for(i = 0 ; i < nLoops ; i++){
 		AssertEqI(SQLPrepFetch(selectStmt), 1, __FUNCTION__, __LINE__);
@@ -82,7 +86,7 @@ void xp_sql_bench(){
 		AssertEqF(SQLPrepGetFloat(selectStmt, 4), sqrt(1f * i), 0.001, __FUNCTION__, __LINE__);
 	}
 
-	WriteTimestampedLogEntry("[SQLBenchPrep] " + NWNXGetPluginSubClass("SQL") + ": " + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlbench")) / 1000.0, 0, 2) + "ms");
+	WriteTimestampedLogEntry("[SQLBenchPrep]   " + NWNXGetPluginSubClass("SQL") + ": selects=" + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlbench")) / (1.0 * nLoops), 0, 2) + "µs / iter");
 
 	StopTimer(oModule, "nwnxtest_sqlbench");
 
@@ -101,6 +105,10 @@ void xp_sql_bench(){
 		);
 	}
 
+	WriteTimestampedLogEntry("[SQLBenchDirect] " + NWNXGetPluginSubClass("SQL") + ": inserts=" + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlbench")) / (1.0 * nLoops), 0, 2) + "µs / iter");
+	StopTimer(oModule, "nwnxtest_sqlbench");
+	StartTimer(oModule, "nwnxtest_sqlbench");
+
 	SQLExecDirect("SELECT `key`,`valuestr`,`valueint`,`valuefloat` FROM `benchtable`");
 	for(i = 0 ; i < nLoops ; i++){
 		AssertEqI(SQLFetch(), 1, __FUNCTION__, __LINE__);
@@ -111,14 +119,21 @@ void xp_sql_bench(){
 		AssertEqF(SQLGetDataFloat(4), sqrt(1f * i), 0.001, __FUNCTION__, __LINE__);
 	}
 
-	WriteTimestampedLogEntry("[SQLBenchDirect] " + NWNXGetPluginSubClass("SQL") + ": " + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlbench")) / 1000.0, 0, 2) + "ms");
+	WriteTimestampedLogEntry("[SQLBenchDirect] " + NWNXGetPluginSubClass("SQL") + ": selects=" + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlbench")) / (1.0 * nLoops), 0, 2) + "µs / iter");
 	// ------------------------------------------
 }
 
+void SQLDisconnect()
+{
+	// Advanced hidden function
+    NWNXGetInt("SQL", "DISCON", "", 0);
+}
 
 void xp_sql(){
 	StartTimer(oModule, "nwnxtest_sqlperf");
 
+	SQLExecDirect("DROP TABLE IF EXISTS pwdata");
+	SQLExecDirect("DROP TABLE IF EXISTS pwobjdata");
 	SQLCreateTables();
 
 	// Simple var storage
@@ -131,6 +146,14 @@ void xp_sql(){
 	SetPersistentVector(oModule, "nwnxtest_vector", Vector(1.0, 2.0, 3.0));
 	Assert(GetPersistentVector(oModule, "nwnxtest_vector") == Vector(1.0, 2.0, 3.0), __FUNCTION__, __LINE__);
 	SetPersistentLocation(oModule, "nwnxtest_location", lStart);
+	Assert(GetPersistentLocation(oModule, "nwnxtest_location") == lStart, __FUNCTION__, __LINE__);
+
+	// Test server disconnection
+	SQLDisconnect();
+	AssertEqS(GetPersistentString(oModule, "nwnxtest_string"), "Café", __FUNCTION__, __LINE__);
+	AssertEqI(GetPersistentInt(oModule, "nwnxtest_int"), 42, __FUNCTION__, __LINE__);
+	AssertEqF(GetPersistentFloat(oModule, "nwnxtest_float"), 13.37, 0.0, __FUNCTION__, __LINE__);
+	Assert(GetPersistentVector(oModule, "nwnxtest_vector") == Vector(1.0, 2.0, 3.0), __FUNCTION__, __LINE__);
 	Assert(GetPersistentLocation(oModule, "nwnxtest_location") == lStart, __FUNCTION__, __LINE__);
 
 	// SCORCO
@@ -161,15 +184,60 @@ void xp_sql(){
 		SQLPrepBindString(nSelectAllStmt, 1, "~");
 		SQLPrepExecute(nSelectAllStmt);
 		while(SQLPrepFetch(nSelectAllStmt)){
-			Assert(SQLPrepGetString(nSelectAllStmt, 1) == "~", __FUNCTION__, __LINE__);
+			AssertEqS(SQLPrepGetString(nSelectAllStmt, 1), "~", __FUNCTION__, __LINE__);
 			nCount++;
 		}
 
-		// Prepared statement without parameters
+		// Prepared statement without parameters, with sql conversion to string
 		int test = SQLPrepPrepareStatement("SELECT `name`, `val` FROM pwdata");
-		// SQLPrepExecute(test);
+		SQLPrepExecute(test);
+
+		int i = 0;
 		while(SQLPrepFetch(test)){
-			WriteTimestampedLogEntry("    name=" + SQLPrepGetString(test, 1) + " val=" + SQLPrepGetString(test, 2));
+			string sName = SQLPrepGetString(test, 1);
+			switch(i++){
+				case 0:
+					AssertEqS(SQLPrepGetString(test, 1), "nwnxtest_string", __FUNCTION__, __LINE__);
+					AssertEqS(SQLPrepGetString(test, 2), "Café", __FUNCTION__, __LINE__);
+					break;
+				case 1:
+					AssertEqS(SQLPrepGetString(test, 1), "nwnxtest_int", __FUNCTION__, __LINE__);
+					AssertEqS(SQLPrepGetString(test, 2), "42", __FUNCTION__, __LINE__);
+					break;
+				case 2:
+					AssertEqS(SQLPrepGetString(test, 1), "nwnxtest_float", __FUNCTION__, __LINE__);
+					AssertEqF(StringToFloat(SQLPrepGetString(test, 2)), 13.37, 0.0001, __FUNCTION__, __LINE__);
+					break;
+				case 3:
+					{
+						AssertEqS(SQLPrepGetString(test, 1), "nwnxtest_vector", __FUNCTION__, __LINE__);
+						vector vValue = SQLStringToVector(SQLPrepGetString(test, 2));
+						AssertEqF(vValue.x, 1.0, 0.0001, __FUNCTION__, __LINE__);
+						AssertEqF(vValue.y, 2.0, 0.0001, __FUNCTION__, __LINE__);
+						AssertEqF(vValue.z, 3.0, 0.0001, __FUNCTION__, __LINE__);
+					}
+					break;
+				case 4:
+					{
+						AssertEqS(SQLPrepGetString(test, 1), "nwnxtest_location", __FUNCTION__, __LINE__);
+						location lValue = SQLStringToLocation(SQLPrepGetString(test, 2));
+
+						object oArea = GetAreaFromLocation(lValue);
+						Assert(oArea == GetFirstArea(), __FUNCTION__, __LINE__);
+
+						vector vPos = GetPositionFromLocation(lValue);
+						AssertEqF(vPos.x, 18.0, 0.0001, __FUNCTION__, __LINE__);
+						AssertEqF(vPos.y, 18.0, 0.0001, __FUNCTION__, __LINE__);
+						AssertEqF(vPos.z, 0.0, 0.0001, __FUNCTION__, __LINE__);
+
+						float fFacing = GetFacingFromLocation(lValue);
+						AssertEqF(fFacing, 270.0, 0.0001, __FUNCTION__, __LINE__);
+					}
+					break;
+				default:
+					Assert(FALSE, __FUNCTION__, __LINE__, "unexpected " + SQLPrepGetString(test, 1));
+			}
+			// WriteTimestampedLogEntry("    name=" + SQLPrepGetString(test, 1) + " val=" + SQLPrepGetString(test, 2));
 		}
 	}
 	else{
@@ -177,6 +245,54 @@ void xp_sql(){
 		while(SQLFetch()){
 			Assert(SQLGetData(1) == "~", __FUNCTION__, __LINE__);
 			nCount++;
+		}
+
+		int i = 0;
+		while(SQLFetch()){
+			string sName = SQLGetData(1);
+			switch(i++){
+				case 0:
+					AssertEqS(SQLGetData(1), "nwnxtest_string", __FUNCTION__, __LINE__);
+					AssertEqS(SQLGetData(2), "Café", __FUNCTION__, __LINE__);
+					break;
+				case 1:
+					AssertEqS(SQLGetData(1), "nwnxtest_int", __FUNCTION__, __LINE__);
+					AssertEqS(SQLGetData(2), "42", __FUNCTION__, __LINE__);
+					break;
+				case 2:
+					AssertEqS(SQLGetData(1), "nwnxtest_float", __FUNCTION__, __LINE__);
+					AssertEqF(StringToFloat(SQLGetData(2)), 13.37, 0.0001, __FUNCTION__, __LINE__);
+					break;
+				case 3:
+					{
+						AssertEqS(SQLGetData(1), "nwnxtest_vector", __FUNCTION__, __LINE__);
+						vector vValue = SQLStringToVector(SQLGetData(2));
+						AssertEqF(vValue.x, 1.0, 0.0001, __FUNCTION__, __LINE__);
+						AssertEqF(vValue.y, 2.0, 0.0001, __FUNCTION__, __LINE__);
+						AssertEqF(vValue.z, 3.0, 0.0001, __FUNCTION__, __LINE__);
+					}
+					break;
+				case 4:
+					{
+						AssertEqS(SQLGetData(1), "nwnxtest_location", __FUNCTION__, __LINE__);
+						location lValue = SQLStringToLocation(SQLGetData(2));
+
+						object oArea = GetAreaFromLocation(lValue);
+						Assert(oArea == GetFirstArea(), __FUNCTION__, __LINE__);
+
+						vector vPos = GetPositionFromLocation(lValue);
+						AssertEqF(vPos.x, 18.0, 0.0001, __FUNCTION__, __LINE__);
+						AssertEqF(vPos.y, 18.0, 0.0001, __FUNCTION__, __LINE__);
+						AssertEqF(vPos.z, 0.0, 0.0001, __FUNCTION__, __LINE__);
+
+						float fFacing = GetFacingFromLocation(lValue);
+						AssertEqF(fFacing, 270.0, 0.0001, __FUNCTION__, __LINE__);
+					}
+					break;
+				default:
+					Assert(FALSE, __FUNCTION__, __LINE__, "unexpected " + SQLGetData(1));
+			}
+			// WriteTimestampedLogEntry("    name=" + SQLGetData(1) + " val=" + SQLGetData(test, 2));
 		}
 	}
 	Assert(nCount == 5, __FUNCTION__, __LINE__);
@@ -205,8 +321,8 @@ void xp_sql(){
 	WriteTimestampedLogEntry("[PERF] " + NWNXGetPluginSubClass("SQL") + ": " + FloatToString(StringToFloat(QueryTimer(oModule, "nwnxtest_sqlperf")) / 1000.0, 0, 2) + "ms");
 
 	if(NWNXGetPluginSubClass("SQL") == "MySQL"){
-		DelayCommand(2.0, xp_sql_bench());
-		DelayCommand(3.0, xp_sql_bench());
+		DelayCommand(2.2, xp_sql_bench());
+		DelayCommand(3.2, xp_sql_bench());
 	}
 }
 

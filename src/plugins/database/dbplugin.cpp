@@ -122,6 +122,11 @@ int DBPlugin::GetInt(char* sFunction, char* sParam1, int nParam2)
 		int col    = (nParam2 >> 24) & 0xFF;
 		int stmtID = nParam2 & 0x00FFFFFF;
 		return PrepGetDataInt(stmtID, col);
+	} else if (function == "CON") {
+		return Connect();
+	} else if (function == "DISCON") {
+		Disconnect();
+		return 0;
 	} else {
 		logger->Err("! Unknown GetInt function '%s'", sFunction);
 		return -1;
@@ -222,6 +227,9 @@ char* DBPlugin::GetString(char* sFunction, char* sParam1, int nParam2)
 
 	return this->returnBuffer;
 }
+
+bool DBPlugin::Connect() { return TRUE; }
+void DBPlugin::Disconnect() { }
 
 bool DBPlugin::Execute(char* query)
 {

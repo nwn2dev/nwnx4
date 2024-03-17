@@ -41,8 +41,8 @@ public:
 	BYTE* ReadScorcoData(char* param, int* size) override;
 
 private:
-	bool Connect();
-	void Disconnect();
+	bool Connect() override;
+	void Disconnect() override;
 	bool Reconnect();
 	bool Execute(char* query) override;
 	int Fetch(char* buffer) override;

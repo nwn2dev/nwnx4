@@ -489,27 +489,6 @@ void SetPersistentString(object oObject, string sVarName, string sValue, int iEx
                 + sPlayer + "','" + sTag + "','" + sVarName + "','" + sValue + "'," + IntToString(iExpiration) + ")"
             + " ON DUPLICATE KEY UPDATE `val`=VALUES(`val`), `expire`=VALUES(`expire`)"
         );
-
-        // string sSQL = "SELECT player FROM " + sTable + " WHERE player='" + sPlayer +
-        //     "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-        // SQLExecDirect(sSQL);
-
-        // if (SQLFetch() == SQL_SUCCESS)
-        // {
-        //     // row exists
-        //     sSQL = "UPDATE " + sTable + " SET val='" + sValue +
-        //         "',expire=" + IntToString(iExpiration) + " WHERE player='" + sPlayer +
-        //         "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-        //     SQLExecDirect(sSQL);
-        // }
-        // else
-        // {
-        //     // row doesn't exist
-        //     sSQL = "INSERT INTO " + sTable + " (player,tag,name,val,expire) VALUES" +
-        //         "('" + sPlayer + "','" + sTag + "','" + sVarName + "','" +
-        //         sValue + "'," + IntToString(iExpiration) + ")";
-        //     SQLExecDirect(sSQL);
-        // }
     }
 
 }
@@ -582,30 +561,6 @@ void SetPersistentInt(object oObject, string sVarName, int iValue, int iExpirati
 int GetPersistentInt(object oObject, string sVarName, string sTable = "pwdata")
 {
     return StringToInt(GetPersistentString(oObject, sVarName, sTable));
-    // string sPlayer;
-    // string sTag;
-
-    // if (GetIsPC(oObject))
-    // {
-    //     sPlayer = SQLEncodeSpecialChars(GetPCPlayerName(oObject));
-    //     sTag = SQLEncodeSpecialChars(GetName(oObject));
-    // }
-    // else
-    // {
-    //     sPlayer = "~";
-    //     sTag = GetTag(oObject);
-    // }
-
-    // sVarName = SQLEncodeSpecialChars(sVarName);
-
-    // string sSQL = "SELECT val FROM " + sTable + " WHERE player='" + sPlayer +
-    //     "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-    // SQLExecDirect(sSQL);
-
-    // if (SQLFetch() == SQL_SUCCESS)
-    //     return StringToInt(SQLGetData(1));
-    // else
-    //     return 0;
 }
 
 void SetPersistentFloat(object oObject, string sVarName, float fValue, int iExpiration =
@@ -617,30 +572,6 @@ void SetPersistentFloat(object oObject, string sVarName, float fValue, int iExpi
 float GetPersistentFloat(object oObject, string sVarName, string sTable = "pwdata")
 {
     return StringToFloat(GetPersistentString(oObject, sVarName, sTable));
-    // string sPlayer;
-    // string sTag;
-
-    // if (GetIsPC(oObject))
-    // {
-    //     sPlayer = SQLEncodeSpecialChars(GetPCPlayerName(oObject));
-    //     sTag = SQLEncodeSpecialChars(GetName(oObject));
-    // }
-    // else
-    // {
-    //     sPlayer = "~";
-    //     sTag = GetTag(oObject);
-    // }
-
-    // sVarName = SQLEncodeSpecialChars(sVarName);
-
-    // string sSQL = "SELECT val FROM " + sTable + " WHERE player='" + sPlayer +
-    //     "' AND tag='" + sTag + "' AND name='" + sVarName + "'";
-    // SQLExecDirect(sSQL);
-
-    // if (SQLFetch() == SQL_SUCCESS)
-    //     return StringToFloat(SQLGetData(1));
-    // else
-    //     return 0.0f;
 }
 
 void SetPersistentLocation(object oObject, string sVarName, location lLocation, int iExpiration =
