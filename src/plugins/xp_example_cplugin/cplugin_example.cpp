@@ -129,8 +129,8 @@ NWNXCPlugin_GetInt(void* cplugin, const char* sFunction, const char* sParam1, in
 	} else if (function == "TEST_EXECUTESCRIPTENHBAD") {
 		constexpr uint32_t OBJID_MODULE = 0;
 		bool executed                   = true;
-		auto res
-		    = plugin->hooks.ExecuteScriptEnhanced("euqsgdihohcqsc", OBJID_MODULE, true, &executed, false);
+		auto res = plugin->hooks.ExecuteScriptEnhanced("euqsgdihohcqsc", OBJID_MODULE, true,
+		                                               &executed, false);
 		if (executed)
 			res -= 1000;
 		return res;

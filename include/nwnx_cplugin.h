@@ -31,7 +31,10 @@ struct NWNXCPlugin_InitInfo {
 ///   has been successfully executed.
 /// @param bReplaceCNWSMsg If true, the CNWSMessage will be switched for this call
 ///   avoiding issues if used during message construction
-typedef void(ExecuteScriptFn)(const char* sScript, uint32_t oTarget, bool* outExecuted, bool bReplaceCNWSMsg);
+typedef void(ExecuteScriptFn)(const char* sScript,
+                              uint32_t oTarget,
+                              bool* outExecuted,
+                              bool bReplaceCNWSMsg);
 /// Bound to NWScript ExecuteScriptEnhanced function
 /// @param outExecuted If not null, the bool will be set to true if the script
 ///   has been successfully executed. This is used to differenciate between a
