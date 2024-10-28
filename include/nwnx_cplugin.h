@@ -29,15 +29,20 @@ struct NWNXCPlugin_InitInfo {
 /// Bound to NWScript ExecuteScript function
 /// @param outExecuted If not null, the bool will be set to true if the script
 ///   has been successfully executed.
-typedef void(ExecuteScriptFn)(const char* sScript, uint32_t oTarget, bool* outExecuted);
+/// @param bReplaceCNWSMsg If true, the CNWSMessage will be switched for this call
+///   avoiding issues if used during message construction
+typedef void(ExecuteScriptFn)(const char* sScript, uint32_t oTarget, bool* outExecuted, bool bReplaceCNWSMsg);
 /// Bound to NWScript ExecuteScriptEnhanced function
 /// @param outExecuted If not null, the bool will be set to true if the script
 ///   has been successfully executed. This is used to differenciate between a
 ///   script returning the value -1 and a script not being executed.
+/// @param bReplaceCNWSMsg If true, the CNWSMessage will be switched for this call
+///   avoiding issues if used during message construction
 typedef int32_t(ExecuteScriptEnhancedFn)(const char* sScriptName,
                                          uint32_t oTarget,
                                          bool bClearParams,
-                                         bool* outExecuted);
+                                         bool* outExecuted,
+                                         bool bReplaceCNWSMsg);
 /// Bound to NWScript AddScriptParameterInt function. Bound values are not
 ///  shared between the NWScript and CPlugin environments
 typedef void(AddScriptParameterIntFn)(int32_t nParam);

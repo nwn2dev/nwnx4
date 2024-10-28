@@ -106,12 +106,12 @@ NWNXCPlugin_GetInt(void* cplugin, const char* sFunction, const char* sParam1, in
 	} else if (function == "TEST_EXECUTESCRIPT") {
 		constexpr uint32_t OBJID_MODULE = 0;
 		bool executed                   = false;
-		plugin->hooks.ExecuteScript("gui_test_executescript", OBJID_MODULE, &executed);
+		plugin->hooks.ExecuteScript("gui_test_executescript", OBJID_MODULE, &executed, false);
 		return executed == true ? 12 : 0;
 	} else if (function == "TEST_EXECUTESCRIPTBAD") {
 		constexpr uint32_t OBJID_MODULE = 0;
 		bool executed                   = true;
-		plugin->hooks.ExecuteScript("euqsgdihohcqsc", OBJID_MODULE, &executed);
+		plugin->hooks.ExecuteScript("euqsgdihohcqsc", OBJID_MODULE, &executed, false);
 		return executed == false ? 13 : 0;
 	} else if (function == "TEST_EXECUTESCRIPTENH") {
 		constexpr uint32_t OBJID_MODULE = 0;
@@ -122,7 +122,7 @@ NWNXCPlugin_GetInt(void* cplugin, const char* sFunction, const char* sParam1, in
 		plugin->hooks.AddScriptParameterObject(0x01020304);
 		bool executed = false;
 		auto res = plugin->hooks.ExecuteScriptEnhanced("gui_test_executescriptenh", OBJID_MODULE,
-		                                               true, &executed);
+		                                               true, &executed, false);
 		if (!executed)
 			res -= 1000;
 		return res;
@@ -130,7 +130,7 @@ NWNXCPlugin_GetInt(void* cplugin, const char* sFunction, const char* sParam1, in
 		constexpr uint32_t OBJID_MODULE = 0;
 		bool executed                   = true;
 		auto res
-		    = plugin->hooks.ExecuteScriptEnhanced("euqsgdihohcqsc", OBJID_MODULE, true, &executed);
+		    = plugin->hooks.ExecuteScriptEnhanced("euqsgdihohcqsc", OBJID_MODULE, true, &executed, false);
 		if (executed)
 			res -= 1000;
 		return res;
