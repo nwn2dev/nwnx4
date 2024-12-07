@@ -788,10 +788,10 @@ void loadPlugins()
 				CPlugin::InitInfo initInfo {
 				    .dll_path          = pluginPathStr.c_str(),
 				    .nwnx_user_path    = nwnxUserDirStr.c_str(),
+				    .nwnx_install_path = nwnxInstallDirStr.c_str(),
 				    .nwn2_install_path = nwn2InstallDir.c_str(),
 				    .nwn2_home_path    = nwn2HomeDir.c_str(),
 				    .nwn2_module_path  = nwn2ModulePathCStr,
-				    .nwnx_install_path = nwnxInstallDirStr.c_str(),
 				    .nwn2_hooks        = &hooks,
 				};
 

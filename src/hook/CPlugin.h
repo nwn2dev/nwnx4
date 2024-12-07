@@ -29,10 +29,10 @@ public:
 	struct InitInfo {
 		const char* dll_path;
 		const char* nwnx_user_path;
+		const char* nwnx_install_path;
 		const char* nwn2_install_path;
 		const char* nwn2_home_path;
 		const char* nwn2_module_path;
-		const char* nwnx_install_path;
 		const struct NWN2Hooks* nwn2_hooks;
 	};
 
@@ -118,7 +118,7 @@ private:
 	void* m_instancePtr = nullptr;
 
 	// clang-format off
-	typedef void*       (__cdecl NewPluginFn)   (InitInfo info);
+	typedef void*       (__cdecl NewPluginFn)   (const InitInfo* info);
 	typedef void        (__cdecl DeletePluginFn)(void* cplugin);
 	typedef const char* (__cdecl GetInfoFn)     ();
 	typedef const char* (__cdecl GetVersionFn)  ();

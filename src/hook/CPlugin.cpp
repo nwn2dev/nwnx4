@@ -64,23 +64,23 @@ CPlugin::CPlugin(HINSTANCE hDLL, const CPlugin::InitInfo& initInfo)
 
 		auto newPlugin
 		    = reinterpret_cast<CompatV1::NewPluginFn*>(GetProcAddress(hDLL, "NWNXCPlugin_New"));
-		m_dll.newPlugin = [newPlugin](InitInfo info) {
+		m_dll.newPlugin = [newPlugin](const InitInfo* info) {
 			auto hooks = CompatV1::NWN2Hooks {
 			    .ExecuteScript            = CompatV1::ExecuteScript,
 			    .ExecuteScriptEnhanced    = CompatV1::ExecuteScriptEnhanced,
-			    .AddScriptParameterInt    = info.nwn2_hooks->AddScriptParameterInt,
-			    .AddScriptParameterString = info.nwn2_hooks->AddScriptParameterString,
-			    .AddScriptParameterFloat  = info.nwn2_hooks->AddScriptParameterFloat,
-			    .AddScriptParameterObject = info.nwn2_hooks->AddScriptParameterObject,
-			    .ClearScriptParams        = info.nwn2_hooks->ClearScriptParams,
+			    .AddScriptParameterInt    = info->nwn2_hooks->AddScriptParameterInt,
+			    .AddScriptParameterString = info->nwn2_hooks->AddScriptParameterString,
+			    .AddScriptParameterFloat  = info->nwn2_hooks->AddScriptParameterFloat,
+			    .AddScriptParameterObject = info->nwn2_hooks->AddScriptParameterObject,
+			    .ClearScriptParams        = info->nwn2_hooks->ClearScriptParams,
 			};
 			auto initInfo = CompatV1::InitInfo {
-			    .dll_path          = info.dll_path,
-			    .nwnx_user_path    = info.nwnx_user_path,
-			    .nwn2_install_path = info.nwn2_install_path,
-			    .nwn2_home_path    = info.nwn2_home_path,
-			    .nwn2_module_path  = info.nwn2_module_path,
-			    .nwnx_install_path = info.nwnx_install_path,
+			    .dll_path          = info->dll_path,
+			    .nwnx_user_path    = info->nwnx_user_path,
+			    .nwn2_install_path = info->nwn2_install_path,
+			    .nwn2_home_path    = info->nwn2_home_path,
+			    .nwn2_module_path  = info->nwn2_module_path,
+			    .nwnx_install_path = info->nwnx_install_path,
 			    .nwn2_hooks        = &hooks,
 			};
 			return newPlugin(initInfo);
@@ -161,7 +161,7 @@ CPlugin::CPlugin(HINSTANCE hDLL, const CPlugin::InitInfo& initInfo)
 	}
 
 	// Initialize instance
-	m_instancePtr = m_dll.newPlugin(initInfo);
+	m_instancePtr = m_dll.newPlugin(&initInfo);
 	if (m_instancePtr == nullptr) {
 		logger->Err("NWNXCPlugin_New returned null");
 		return;
