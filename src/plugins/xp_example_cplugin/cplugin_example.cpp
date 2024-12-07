@@ -10,7 +10,7 @@
 #include <nwnx_cplugin.h>
 
 // Set plugin ABI version. Current latest version is 1
-const uint32_t nwnxcplugin_abi_version = 1;
+const uint32_t nwnxcplugin_abi_version = 2;
 
 class Plugin {
 public:

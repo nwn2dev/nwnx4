@@ -80,7 +80,7 @@ struct NWNXCPlugin_NWN2Hooks {
 //
 
 /// Plugin ABI version for nwnx4 compatibility.
-/// **Must be instantiated** and set to 1 in order to use this include file
+/// **Must be instantiated** and set to 2 in order to use this include file
 __declspec(dllexport) extern const uint32_t nwnxcplugin_abi_version;
 
 //
