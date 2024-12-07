@@ -6,6 +6,7 @@
 #include <string>
 
 #include "../misc/log.h"
+#include "nwn2heap.h"
 extern std::unique_ptr<LogNWNX> logger;
 
 constexpr uint32_t NWN_DEFAULT_EXECUTESCRIPT_ENH_PARAMS_LEN = 32;
@@ -79,9 +80,87 @@ static CVirtualMachine_ExecuteScriptEnhanced_t CVirtualMachine_ExecuteScriptEnha
 
 namespace NWScript {
 
-void ExecuteScript(const char* sScript, NWN::OBJECTID oTarget, bool* outExecuted)
+static int OriginalCNWSMsgAddr = 0;
+
+int* GetPtrToCNWSMessage()
+{
+	int ptr = *(int*)OFFS_g_pAppManager;
+	ptr     = *(int*)(ptr + 4);
+	ptr     = *(int*)(ptr + 4);
+	return (int*)(ptr + 0x10020);
+}
+
+void ApplyScriptCNWSMessage()
+{
+	int* ptrToCNWSMessage = GetPtrToCNWSMessage();
+
+	static unsigned char* scriptCNWSMsg;
+	static bool isInit = false;
+
+	if (!isInit) {
+		OriginalCNWSMsgAddr    = *ptrToCNWSMessage;
+		NWN2_HeapMgr* pHeapMgr = NWN2_HeapMgr::Instance();
+		NWN2_Heap* pHeap       = pHeapMgr->GetDefaultHeap();
+		scriptCNWSMsg          = (unsigned char*)pHeap->Allocate(0x58);
+		unsigned char* Msg1    = (unsigned char*)pHeap->Allocate(0x80);
+		unsigned char* Msg2    = (unsigned char*)pHeap->Allocate(0x80);
+
+		scriptCNWSMsg[0] = 0xC0;
+		scriptCNWSMsg[1] = 0x42;
+		scriptCNWSMsg[2] = 0x80;
+		scriptCNWSMsg[3] = 0x00;
+
+		((uint32_t*)scriptCNWSMsg)[0x14] = 0xFFFFFFFF;
+		((uint32_t*)scriptCNWSMsg)[0x15] = 0x7F000000;
+
+		((uint32_t*)scriptCNWSMsg)[1] = (int)Msg1;
+		((uint32_t*)scriptCNWSMsg)[2] = 0x80;
+		((uint32_t*)scriptCNWSMsg)[3] = 0x0;
+
+		((uint32_t*)scriptCNWSMsg)[4] = (int)Msg2;
+		((uint32_t*)scriptCNWSMsg)[5] = 0x80;
+		((uint32_t*)scriptCNWSMsg)[6] = 0;
+		((uint32_t*)scriptCNWSMsg)[7] = 0;
+
+		scriptCNWSMsg[0x20] = 0;
+
+		((uint32_t*)scriptCNWSMsg)[9]   = 0x0;
+		((uint32_t*)scriptCNWSMsg)[0xa] = 0x0;
+		((uint32_t*)scriptCNWSMsg)[0xb] = 0x0;
+		((uint32_t*)scriptCNWSMsg)[0xc] = 0x0;
+
+		((uint32_t*)scriptCNWSMsg)[0xd]  = 0x0;
+		((uint32_t*)scriptCNWSMsg)[0xe]  = 0x0;
+		((uint32_t*)scriptCNWSMsg)[0xf]  = 0x0;
+		((uint32_t*)scriptCNWSMsg)[0x10] = 0x0;
+		scriptCNWSMsg[0x44]              = 0x0;
+		scriptCNWSMsg[0x45]              = 0x0;
+		isInit                           = true;
+	}
+
+	if (scriptCNWSMsg != NULL)
+		*ptrToCNWSMessage = (int)(scriptCNWSMsg);
+}
+
+void RestoreOriginalCNWSMessage()
+{
+	// Be sure to not restore before saving the Original CNWSMsg
+	if (OriginalCNWSMsgAddr != 0) {
+		int* ptrToCNWSMessage = GetPtrToCNWSMessage();
+		*ptrToCNWSMessage     = OriginalCNWSMsgAddr;
+	}
+}
+
+void ExecuteScript(const char* sScript,
+                   NWN::OBJECTID oTarget,
+                   bool* outExecuted,
+                   bool bReplaceCNWSMsg)
 {
 	logger->Trace("ExecuteScript %s, %lu", sScript, oTarget);
+
+	if (bReplaceCNWSMsg)
+		ApplyScriptCNWSMessage();
+
 	auto executed = CVirtualMachine_ExecuteScript(
 	    *nwn2_vm,
 	    NWN::CExoString {.m_sString = (char*)sScript, // un-const cast, safe as param is read only
@@ -89,14 +168,21 @@ void ExecuteScript(const char* sScript, NWN::OBJECTID oTarget, bool* outExecuted
 	    oTarget, 1, 1);
 	if (outExecuted != nullptr)
 		*outExecuted = executed;
+
+	if (bReplaceCNWSMsg)
+		RestoreOriginalCNWSMessage();
 }
 
 int32_t ExecuteScriptEnhanced(const char* sScriptName,
                               NWN::OBJECTID oTarget,
                               bool bClearParams,
-                              bool* outExecuted)
+                              bool* outExecuted,
+                              bool bReplaceCNWSMsg)
 {
 	logger->Trace("ExecuteScriptEnhanced %s, %lu", sScriptName, oTarget);
+
+	if (bReplaceCNWSMsg)
+		ApplyScriptCNWSMessage();
 
 	const NWN::CExoString script
 	    = {.m_sString = (char*)sScriptName, .m_nBufferLength = strlen(sScriptName)};
@@ -120,6 +206,9 @@ int32_t ExecuteScriptEnhanced(const char* sScriptName,
 		retValue = -1;
 
 	*nwn2_scriptparams = save;
+
+	if (bReplaceCNWSMsg)
+		RestoreOriginalCNWSMessage();
 
 	return retValue;
 }
