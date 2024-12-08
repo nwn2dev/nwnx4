@@ -80,7 +80,7 @@ int NWNXGetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2);
 void NWNXSetInt(char* sPlugin, char* sFunction, char* sParam1, int nParam2, int nValue);
 float NWNXGetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2);
 void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, float fValue);
-char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2);
+const char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2);
 void NWNXSetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2, char* sValue);
 extern void (*SetLocalStringNextHook)();
 void LegacyPluginPayLoad(char* gameObject, char* name, char* value);
