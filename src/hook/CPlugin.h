@@ -81,12 +81,13 @@ public:
 			m_dll.setFloat(m_instancePtr, sFunction, sParam1, nParam2, fValue);
 		}
 	}
-	inline void GetString(
+	inline const char* GetString(
 	    const char* sFunction, const char* sParam1, int nParam2, char* result, size_t resultSize)
 	{
 		if (m_dll.getString) {
 			return m_dll.getString(m_instancePtr, sFunction, sParam1, nParam2, result, resultSize);
 		}
+		return result;
 	}
 	inline void SetString(const char* sFunction, const char* sParam1, int nParam2, char* sValue)
 	{
@@ -127,7 +128,7 @@ private:
 	typedef void        (__cdecl SetIntFn)      (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, int32_t nValue);
 	typedef float       (__cdecl GetFloatFn)    (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2);
 	typedef void        (__cdecl SetFloatFn)    (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, float fValue);
-	typedef void        (__cdecl GetStringFn)   (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, char* result, size_t resultSize);
+	typedef const char* (__cdecl GetStringFn)   (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, char* result, size_t resultSize);
 	typedef void        (__cdecl SetStringFn)   (void* cplugin, const char* sFunction, const char* sParam1, int32_t nParam2, const char* sValue);
 	typedef size_t      (__cdecl GetGFFSizeFn)  (void* cplugin, const char* sVarName);
 	typedef void        (__cdecl GetGFFFn)      (void* cplugin, const char* sVarName, uint8_t* result, size_t resultSize);

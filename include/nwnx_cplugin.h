@@ -163,14 +163,16 @@ __declspec(dllexport) void __cdecl NWNXCPlugin_SetFloat(
 /// @param sFunction NWScript function argument. Null-terminated string
 /// @param sParam1 NWScript function argument. Null-terminated string
 /// @param nParam2 NWScript function argument.
-/// @param result Buffer for storing the returned string. **Must be null-terminated**.
-/// @param resultSize Size of the result buffer
-__declspec(dllexport) void __cdecl NWNXCPlugin_GetString(void* cplugin,
-                                                         const char* sFunction,
-                                                         const char* sParam1,
-                                                         int32_t nParam2,
-                                                         char* result,
-                                                         size_t resultSize);
+/// @param buffer Buffer allocated by nwn2 for storing the result.
+/// @param bufferSize Size of the buffer
+/// @return The resulting null-terminated string pointer. Can be `buffer` or an already allocated
+/// string.
+__declspec(dllexport) const char* __cdecl NWNXCPlugin_GetString(void* cplugin,
+                                                                const char* sFunction,
+                                                                const char* sParam1,
+                                                                int32_t nParam2,
+                                                                char* buffer,
+                                                                size_t bufferSize);
 
 /// Executed by NWScript function `NWNXSetString`
 /// @param cplugin User data pointer, as returned by `NWNXCPlugin_New`

@@ -206,7 +206,7 @@ void NWNXSetFloat(char* sPlugin, char* sFunction, char* sParam1, int nParam2, fl
 	             sPlugin);
 }
 
-char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
+const char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 {
 	logger->Trace("call to NWNXGetString(sPlugin=%s, sFunction=%s, sParam1=%s, nParam2=%d)",
 	              sPlugin, sFunction, sParam1, nParam2);
@@ -286,8 +286,7 @@ char* NWNXGetString(char* sPlugin, char* sFunction, char* sParam1, int nParam2)
 	auto cpluginIt = cplugins.find(sPlugin);
 	if (cpluginIt != cplugins.end()) {
 		returnBuffer[0] = '\0';
-		cpluginIt->second->GetString(sFunction, sParam1, nParam2, returnBuffer, MAX_BUFFER);
-		return returnBuffer;
+		return cpluginIt->second->GetString(sFunction, sParam1, nParam2, returnBuffer, MAX_BUFFER);
 	}
 
 	// Plugin class forwarding
@@ -528,8 +527,9 @@ void init()
 	hookAt = FindPattern(SET_NWNX_GETSTRING);
 	if (hookAt) {
 		logger->Debug("Connecting NWNXGetString (0x%x)...", hookAt);
-		char* (*pt2NWNXSetFunctionPointer)(char* (*pt2Function)(char*, char*, char*, int))
-		    = (char* (*)(char* (*)(char*, char*, char*, int)))hookAt;
+		const char* (*pt2NWNXSetFunctionPointer)(
+		    const char* (*pt2Function)(char*, char*, char*, int))
+		    = (const char* (*)(const char* (*)(char*, char*, char*, int)))hookAt;
 		pt2NWNXSetFunctionPointer(&NWNXGetString);
 	} else {
 		logger->Err("NWNXGetString NOT FOUND!");

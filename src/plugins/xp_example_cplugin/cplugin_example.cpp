@@ -185,12 +185,12 @@ void NWNXCPlugin_SetFloat(
 	plugin->storedFloat = fValue;
 }
 
-void NWNXCPlugin_GetString(void* cplugin,
-                           const char* sFunction,
-                           const char* sParam1,
-                           int32_t nParam2,
-                           char* result,
-                           size_t resultSize)
+const char* NWNXCPlugin_GetString(void* cplugin,
+                                  const char* sFunction,
+                                  const char* sParam1,
+                                  int32_t nParam2,
+                                  char* result,
+                                  size_t resultSize)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 
@@ -199,7 +199,7 @@ void NWNXCPlugin_GetString(void* cplugin,
 
 	// Copy stored string into result buffer
 	plugin->logFile << "  Return " << plugin->storedString << std::endl;
-	strncpy_s(result, resultSize, plugin->storedString.c_str(), plugin->storedString.size());
+	return plugin->storedString.c_str();
 }
 
 void NWNXCPlugin_SetString(
