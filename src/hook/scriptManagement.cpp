@@ -35,8 +35,9 @@ constexpr uint32_t NWN2_OFFSET_CleanParam = 0x006b5cd0;
 struct NWN2ParamsList {
 	struct NWN2Param* list;
 	size_t size;
+	size_t maxSize;
 };
-static_assert(sizeof(NWN2ParamsList) == 8);
+static_assert(sizeof(NWN2ParamsList) == 0xC);
 
 static struct NWN2ParamsList* nwn2_scriptparams = (struct NWN2ParamsList*)(0x0086F15C);
 // static size_t scriptparams_count = 0;
@@ -88,6 +89,15 @@ int* GetPtrToCNWSMessage()
 	ptr     = *(int*)(ptr + 4);
 	ptr     = *(int*)(ptr + 4);
 	return (int*)(ptr + 0x10020);
+}
+
+__declspec(naked) void __fastcall CleanHeapParams(__in void* heapParamPtr, __in void* Unused)
+{
+	__asm
+	{
+		mov		edx, NWN2_OFFSET_CleanParam;
+		jmp		edx;
+	}
 }
 
 void ApplyScriptCNWSMessage()
@@ -189,8 +199,18 @@ int32_t ExecuteScriptEnhanced(const char* sScriptName,
 
 	NWN2ParamsList save = *nwn2_scriptparams;
 
-	nwn2_scriptparams->list = scriptparams.data();
-	nwn2_scriptparams->size = scriptparams.size();
+	// Prepare a heapMemory container. So Script Function can work inside this ExecuteEnhancedScript
+	NWN2_HeapMgr* pHeapMgr   = NWN2_HeapMgr::Instance();
+	NWN2_Heap* pHeap         = pHeapMgr->GetDefaultHeap();
+	size_t total_size        = scriptparams.size() * sizeof(NWN2Param) + sizeof(int32_t);
+	uint32_t* parametersHeap = (uint32_t*)pHeap->Allocate(total_size);
+	parametersHeap[0]        = 0; // Avoid to delete inner parameters.
+
+	std::memcpy(parametersHeap + 1, scriptparams.data(), scriptparams.size() * sizeof(NWN2Param));
+
+	nwn2_scriptparams->list    = reinterpret_cast<NWN2Param*>(parametersHeap + 1);
+	nwn2_scriptparams->size    = scriptparams.size();
+	nwn2_scriptparams->maxSize = scriptparams.size();
 
 	// call the script
 	int retValue
@@ -204,6 +224,9 @@ int32_t ExecuteScriptEnhanced(const char* sScriptName,
 		retValue = (*nwn2_vm)->execscript_ret_value;
 	else
 		retValue = -1;
+
+	// As we want to restore saved scriptParameters, we always "clean" what happened here.
+	CleanHeapParams((void*)nwn2_scriptparams, NULL);
 
 	*nwn2_scriptparams = save;
 
