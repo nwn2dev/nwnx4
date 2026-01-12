@@ -40,7 +40,7 @@ USER nwnx4:nwnx4
 ENV WINEPREFIX="$NWNX4_USER_HOME/.wine32"
 ENV WINEARCH="win32"
 ENV WINEDLLOVERRIDES="mshtml=;devenum,dxdiagn,granny2=n"
-ENV WINEDEBUG="-all,+seh,+tid"  # Better debugging
+ENV WINEDEBUG="-all,+seh,+tid"
 ENV WINE_NO_AUDIO=1
 ENV AUDIODRIVER="none"
 ENV DISPLAY=":0"
