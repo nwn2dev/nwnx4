@@ -1,5 +1,8 @@
 FROM debian:bullseye
 
+RUN echo "* soft stack 16384" >> /etc/security/limits.conf \
+    && echo "* hard stack 16384" >> /etc/security/limits.conf
+
 # Install requirements
 RUN dpkg --add-architecture i386 \
     && apt-get update \
@@ -9,7 +12,7 @@ RUN dpkg --add-architecture i386 \
     && wget -qO- https://dl.winehq.org/wine-builds/winehq.key | apt-key add - \
     && apt-add-repository https://dl.winehq.org/wine-builds/debian/ \
     && apt-get update \
-    && apt-get install -y --install-recommends winehq-stable \
+    && apt-get install -y --install-recommends winehq-staging \
     \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
@@ -37,17 +40,20 @@ USER nwnx4:nwnx4
 ENV WINEPREFIX="$NWNX4_USER_HOME/.wine32"
 ENV WINEARCH="win32"
 ENV WINEDLLOVERRIDES="mshtml=;devenum,dxdiagn,granny2=n"
-ENV WINEDEBUG="fixme-all"
+ENV WINEDEBUG="-all,+seh,+tid"  # Better debugging
 ENV WINE_NO_AUDIO=1
 ENV AUDIODRIVER="none"
 ENV DISPLAY=":0"
+ENV WINEDLLPATH="/usr/lib/wine"
+ENV STAGING_SHARED_MEMORY=1
 
 RUN ln -s /srv/nwn2-home "$NWNX4_USER_HOME/Neverwinter Nights 2" \
     && mkdir -p "$WINEPREFIX/drive_c/users/nwnx4/Temp/NWN2" \
     && ln -s /srv/nwn2-logs "$WINEPREFIX/drive_c/users/nwnx4/Temp/NWN2/LOGS.0" \
     \
     && wineboot --init \
-    && xvfb-run winetricks -q dotnet48 vcrun2005 vcrun2015 \
+    && xvfb-run -a winetricks -q vcrun2005 vcrun2015 \
+    && xvfb-run -a winetricks -q --force dotnet48 \
     \
     && rm -rf /tmp/wine*
 
