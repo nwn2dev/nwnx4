@@ -104,7 +104,7 @@ jobs:
           /c/nwn-lib-d-tools/nwn-erf create -o nwnx4/nwscript/nwnx.erf nwnx4/nwscript/
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
