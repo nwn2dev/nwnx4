@@ -10,7 +10,7 @@
 #include <nwnx_cplugin.h>
 
 // Set plugin ABI version. Current latest version is 1
-const uint32_t nwnxcplugin_abi_version = 1;
+const uint32_t nwnxcplugin_abi_version = 2;
 
 class Plugin {
 public:
@@ -39,33 +39,33 @@ public:
 
 Plugin* g_plugin;
 
-void* NWNXCPlugin_New(NWNXCPlugin_InitInfo info)
+void* NWNXCPlugin_New(const NWNXCPlugin_InitInfo* info)
 {
-	auto logFilePath = std::filesystem::path(info.nwnx_user_path) / "xp_cplugin_example.txt";
-	auto plugin      = new Plugin(logFilePath, info.nwn2_hooks);
+	auto logFilePath = std::filesystem::path(info->nwnx_user_path) / "xp_cplugin_example.txt";
+	auto plugin      = new Plugin(logFilePath, info->nwn2_hooks);
 	plugin->logFile << "Plugin initialized" << std::endl;
-	plugin->logFile << "    dll_path: " << info.dll_path << std::endl;
-	plugin->logFile << "    nwnx_user_path: " << info.nwnx_user_path << std::endl;
-	plugin->logFile << "    nwnx_install_path: " << info.nwnx_install_path << std::endl;
-	plugin->logFile << "    nwn2_home_path: " << info.nwn2_home_path << std::endl;
-	plugin->logFile << "    nwn2_install_path: " << info.nwn2_install_path << std::endl;
+	plugin->logFile << "    dll_path: " << info->dll_path << std::endl;
+	plugin->logFile << "    nwnx_user_path: " << info->nwnx_user_path << std::endl;
+	plugin->logFile << "    nwnx_install_path: " << info->nwnx_install_path << std::endl;
+	plugin->logFile << "    nwn2_home_path: " << info->nwn2_home_path << std::endl;
+	plugin->logFile << "    nwn2_install_path: " << info->nwn2_install_path << std::endl;
 	plugin->logFile << "    nwn2_module_path: "
-	                << (info.nwn2_module_path == nullptr ? "unknown" : info.nwn2_module_path)
+	                << (info->nwn2_module_path == nullptr ? "unknown" : info->nwn2_module_path)
 	                << std::endl;
 	plugin->logFile << "    nwn2_hooks: " << std::endl;
-	plugin->logFile << "        ExecuteScript: " << (void*)info.nwn2_hooks->ExecuteScript
+	plugin->logFile << "        ExecuteScript: " << (void*)info->nwn2_hooks->ExecuteScript
 	                << std::endl;
 	plugin->logFile << "        ExecuteScriptEnhanced: "
-	                << (void*)info.nwn2_hooks->ExecuteScriptEnhanced << std::endl;
+	                << (void*)info->nwn2_hooks->ExecuteScriptEnhanced << std::endl;
 	plugin->logFile << "        AddScriptParameterInt: "
-	                << (void*)info.nwn2_hooks->AddScriptParameterInt << std::endl;
+	                << (void*)info->nwn2_hooks->AddScriptParameterInt << std::endl;
 	plugin->logFile << "        AddScriptParameterString: "
-	                << (void*)info.nwn2_hooks->AddScriptParameterString << std::endl;
+	                << (void*)info->nwn2_hooks->AddScriptParameterString << std::endl;
 	plugin->logFile << "        AddScriptParameterFloat: "
-	                << (void*)info.nwn2_hooks->AddScriptParameterFloat << std::endl;
+	                << (void*)info->nwn2_hooks->AddScriptParameterFloat << std::endl;
 	plugin->logFile << "        AddScriptParameterObject: "
-	                << (void*)info.nwn2_hooks->AddScriptParameterObject << std::endl;
-	plugin->logFile << "        ClearScriptParams: " << info.nwn2_hooks->ClearScriptParams
+	                << (void*)info->nwn2_hooks->AddScriptParameterObject << std::endl;
+	plugin->logFile << "        ClearScriptParams: " << info->nwn2_hooks->ClearScriptParams
 	                << std::endl;
 	g_plugin = plugin;
 	return plugin;
@@ -185,12 +185,12 @@ void NWNXCPlugin_SetFloat(
 	plugin->storedFloat = fValue;
 }
 
-void NWNXCPlugin_GetString(void* cplugin,
-                           const char* sFunction,
-                           const char* sParam1,
-                           int32_t nParam2,
-                           char* result,
-                           size_t resultSize)
+const char* NWNXCPlugin_GetString(void* cplugin,
+                                  const char* sFunction,
+                                  const char* sParam1,
+                                  int32_t nParam2,
+                                  char* result,
+                                  size_t resultSize)
 {
 	auto plugin = static_cast<Plugin*>(cplugin);
 
@@ -199,7 +199,7 @@ void NWNXCPlugin_GetString(void* cplugin,
 
 	// Copy stored string into result buffer
 	plugin->logFile << "  Return " << plugin->storedString << std::endl;
-	strncpy_s(result, resultSize, plugin->storedString.c_str(), plugin->storedString.size());
+	return plugin->storedString.c_str();
 }
 
 void NWNXCPlugin_SetString(

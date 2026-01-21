@@ -12,6 +12,8 @@ struct NWNXCPlugin_InitInfo {
 	/// Path to the NWNX4 user directory, where config files are stored and log files should be
 	/// written.
 	const char* nwnx_user_path;
+	/// Path to the NWNX4 user directory, where nwnx4_controller.exe is located.
+	const char* nwnx_install_path;
 	/// Path to the NWN2 installation directory, where nwn2server.exe is located.
 	const char* nwn2_install_path;
 	/// Path to the NWN2 home folder, usually 'Documents\Neverwinter Nights 2'
@@ -20,8 +22,6 @@ struct NWNXCPlugin_InitInfo {
 	/// Note: this value depends on the parameters list in nwnx.ini. If the server has not been
 	/// started with -module or -moduledir, this value is set to NULL.
 	const char* nwn2_module_path;
-	/// Path to the NWNX4 user directory, where nwnx4_controller.exe is located.
-	const char* nwnx_install_path;
 	/// Function pointers to interact with the nwn2server instance
 	const struct NWNXCPlugin_NWN2Hooks* nwn2_hooks;
 };
@@ -80,7 +80,7 @@ struct NWNXCPlugin_NWN2Hooks {
 //
 
 /// Plugin ABI version for nwnx4 compatibility.
-/// **Must be instantiated** and set to 1 in order to use this include file
+/// **Must be instantiated** and set to 2 in order to use this include file
 __declspec(dllexport) extern const uint32_t nwnxcplugin_abi_version;
 
 //
@@ -93,7 +93,7 @@ __declspec(dllexport) extern const uint32_t nwnxcplugin_abi_version;
 /// @return A user data pointer (to a struct or object) containing the plugin runtime data
 /// (prefer storing plugin data inside this struct rather than global variables). NULL if the
 /// plugin failed to be initialized.
-__declspec(dllexport) void* __cdecl NWNXCPlugin_New(NWNXCPlugin_InitInfo info);
+__declspec(dllexport) void* __cdecl NWNXCPlugin_New(const NWNXCPlugin_InitInfo* info);
 
 //
 // OPTIONAL FUNCTIONS TO IMPLEMENT:
@@ -163,14 +163,16 @@ __declspec(dllexport) void __cdecl NWNXCPlugin_SetFloat(
 /// @param sFunction NWScript function argument. Null-terminated string
 /// @param sParam1 NWScript function argument. Null-terminated string
 /// @param nParam2 NWScript function argument.
-/// @param result Buffer for storing the returned string. **Must be null-terminated**.
-/// @param resultSize Size of the result buffer
-__declspec(dllexport) void __cdecl NWNXCPlugin_GetString(void* cplugin,
-                                                         const char* sFunction,
-                                                         const char* sParam1,
-                                                         int32_t nParam2,
-                                                         char* result,
-                                                         size_t resultSize);
+/// @param buffer Buffer allocated by nwn2 for storing the result.
+/// @param bufferSize Size of the buffer
+/// @return The resulting null-terminated string pointer. Can be `buffer` or an already allocated
+/// string.
+__declspec(dllexport) const char* __cdecl NWNXCPlugin_GetString(void* cplugin,
+                                                                const char* sFunction,
+                                                                const char* sParam1,
+                                                                int32_t nParam2,
+                                                                char* buffer,
+                                                                size_t bufferSize);
 
 /// Executed by NWScript function `NWNXSetString`
 /// @param cplugin User data pointer, as returned by `NWNXCPlugin_New`
