@@ -81,6 +81,10 @@ jobs:
           cd builddir
           meson install --destdir=$PWD/../nwnx4
 
+      - name: Download additional plugins from contrib repos
+        shell: bash
+        run: .github/workflows/download-contrib-plugins.sh nwnx4
+
       # Download / restore nwn-lib-d tools
       - name: Restore cached nwn-lib-d-tools
         id: nwnlibd_cache
@@ -108,6 +112,8 @@ jobs:
         with:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
+
+  # --------------------------------------------------
 
   clang-format:
     name: clang-format check
