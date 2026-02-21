@@ -6,45 +6,42 @@ env:
 
 jobs:
 
+  # --------------------------------------------------
+
   build:
     name: Build
     runs-on: windows-latest
     env:
       VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
-
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Required for git describe
           submodules: recursive
 
-      # ---------------- MSVC ----------------
-
-      - name: Prepare MSVC tools
+      # Setup MSVC
+      - name: Preparing msvc tools
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x86
+          # toolset: 14.XX
 
-      # ---------------- Python / Meson ----------------
-
+      # Install python & meson
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-
-      - name: Install Meson + Ninja
+      - name: Install Python Dependencies
         run: pip install meson ninja
 
-      # ---------------- VCPKG ----------------
-
-      - name: Restore cached VCPKG
+      - name: Restore cached VCPKG dependencies
         id: vcpkg_cache
         uses: actions/cache@v3
         with:
           path: vcpkg_installed/
-          key: vcpkg-${{ hashFiles('vcpkg.json') }}
+          key: "vcpkg.json-${{ hashFiles('vcpkg.json') }}"
 
-      - name: Install VCPKG dependencies
+      - name: ↳ Install VCPKG dependencies
         if: steps.vcpkg_cache.outputs.cache-hit != 'true'
         uses: lukka/run-vcpkg@v10
         env:
@@ -55,10 +52,10 @@ jobs:
           runVcpkgInstall: true
           doNotCache: true
 
-      # ---------------- Meson Build (MSVC SAFE) ----------------
-
+      # Prepare build files
       - name: Meson Configure
-        run: meson setup builddir --buildtype=release --optimization=2 --vsenv
+        run: |
+          meson setup builddir --buildtype=release --optimization=2
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
@@ -67,40 +64,43 @@ jobs:
           languages: cpp
           source-root: src
 
-      - name: Meson Build
-        run: meson compile -C builddir
-
-      - name: Meson Install
-        run: meson install -C builddir --destdir=nwnx4
+      # Compile everything
+      - name: Meson build
+        run: |
+          cd builddir
+          meson compile
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
         continue-on-error: true
 
-      # ---------------- nwn-lib-d-tools ----------------
+      # Copy nwnx4 files in appropriate directories
+      - name: Meson install
+        shell: pwsh
+        run: |
+          cd builddir
+          meson install --destdir=$PWD/../nwnx4
 
+      # Download / restore nwn-lib-d tools
       - name: Restore cached nwn-lib-d-tools
         id: nwnlibd_cache
         uses: actions/cache@v3
         with:
           path: C:/nwn-lib-d-tools/
-          key: nwn-lib-d-tools-${{env.nwnlibd_version}}
+          key: "nwn-lib-d-tools-${{env.nwnlibd_version}}"
 
-      - name: Install nwn-lib-d-tools
+      - name: Install nwn-lib-d-tools if not cached
         if: steps.nwnlibd_cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "https://github.com/CromFr/nwn-lib-d/releases/download/${{env.nwnlibd_version}}/nwn-lib-d-tools-windows-x86_64.zip" -o tools.zip
-          unzip tools.zip -d /c/
-          rm tools.zip
+          curl -L 'https://github.com/CromFr/nwn-lib-d/releases/download/${{env.nwnlibd_version}}/nwn-lib-d-tools-windows-x86_64.zip' -o /tmp/nwn-lib-d-tools.zip
+          unzip -d /c/ /tmp/nwn-lib-d-tools.zip
+          rm /tmp/nwn-lib-d-tools.zip
 
-      # ---------------- Package ----------------
-
-      - name: Package NWNX4
+      - name: Package nwnx4
         shell: bash
         run: |
-          rm -f nwnx4/*.lib
-          rm -f nwnx4/plugins/*.lib
+          rm nwnx4/*.lib nwnx4/plugins/*.lib
           /c/nwn-lib-d-tools/nwn-erf create -o nwnx4/nwscript/nwnx.erf nwnx4/nwscript/
 
       - name: Upload artifacts
@@ -108,8 +108,6 @@ jobs:
         with:
           path: nwnx4/
           name: nwnx4-${{ github.sha }}
-
-  # --------------------------------------------------
 
   clang-format:
     name: clang-format check
@@ -119,14 +117,14 @@ jobs:
 
       - name: Install clang-format
         run: |
-          sudo apt update
-          sudo apt install -y clang-format-14
+          sudo apt install clang-format-14
+          clang-format --version
 
-      - name: Check formatting
+      - name: Check files format
         run: |
           git ls-files \*.h \*.cpp \*.c \
             | grep -vE '^src/plugins/xp_sqlite/lib/|^src/plugins/xp_bugfix/|^src/NWN2Lib/' \
-            | xargs -d '\n' clang-format-14 --dry-run --Werror
+            | xargs -d\\n clang-format --dry-run --Werror
 
   # --------------------------------------------------
 
@@ -141,82 +139,196 @@ jobs:
       fail-fast: false
 
     steps:
+      # ------------- Install dependencies
+      - uses: shogo82148/actions-setup-mysql@v1
+        if: matrix.sql == 'xp_mysql'
+        with:
+          distribution: mariadb
+          mysql-version: '10.6'
+          auto-start: true
+
+      - name: "Setup MySQL user and database access"
+        if: matrix.sql == 'xp_mysql'
+        run: |
+          mysql -uroot -hlocalhost -e "
+            CREATE USER 'nwn'@'localhost' IDENTIFIED BY 'nwn';
+            CREATE DATABASE nwnx;
+            GRANT ALL ON nwnx.* TO 'nwn'@'localhost';
+          "
+
+      - name: Install cached nwn-lib-d-tools
+        id: nwnlibd_cache
+        uses: actions/cache@v3
+        with:
+          path: C:/nwn-lib-d-tools/
+          key: "nwn-lib-d-tools-${{env.nwnlibd_version}}"
+
+      - name: "Download NWN2Server"
+        shell: bash
+        run: |
+          curl -L 'https://raw.githubusercontent.com/wiki/nwn2dev/nwnx4/nwnx4_nwn2server.zip' -o nwnx4_nwn2server.zip
+          7z x nwnx4_nwn2server.zip -o/c/
+          rm nwnx4_nwn2server.zip
+
+      - name: "Install choco packages"
+        run: |
+          choco install directx vcredist2010 procdump
+        # Note: vcredist2010 is required for xp_ini (msvcr100.dll)
+
+      - name: "Enable crash dumps"
+        run: |
+          mkdir -p "C:\CrashDumps"
+          procdump.exe -i "C:\CrashDumps" -ma -k
+
+      # Download the repo for installing test module files
       - uses: actions/checkout@v3
 
+      # Download nwnx4 release zip
       - uses: actions/download-artifact@v3
         with:
           name: nwnx4-${{ github.sha }}
           path: C:/nwnx4/
 
-      - name: Install cached nwn-lib-d-tools
-        uses: actions/cache@v3
-        with:
-          path: C:/nwn-lib-d-tools/
-          key: nwn-lib-d-tools-${{env.nwnlibd_version}}
-
-      - name: Download NWN2Server
+      - name: "Copy NWN2 home"
         shell: bash
         run: |
-          curl -L https://raw.githubusercontent.com/wiki/nwn2dev/nwnx4/nwnx4_nwn2server.zip -o server.zip
-          7z x server.zip -o/c/
-          rm server.zip
+          cp -r test/ /c/nwn2home
 
-      - name: Install dependencies
-        run: choco install directx vcredist2010 procdump -y
-
-      - name: Enable crash dumps
-        run: |
-          mkdir C:\CrashDumps
-          procdump.exe -i C:\CrashDumps -ma -k
-
-      - name: Copy test module
-        shell: bash
-        run: cp -r test/ /c/nwn2home
-
-      - name: Configure NWNX4
+      - name: "Configure NWNX4"
         shell: bash
         run: |
-          mkdir -p /c/nwnx4_user/plugins
-          cp /c/nwnx4/config.example/* /c/nwnx4_user/
-          echo "Configuration ready"
+          mkdir -p /c/nwnx4_user/ /c/nwnx4_user/plugins/
 
-      - name: Start server and verify
+          # Install old ini plugin for testing compatibility
+          cp .github/workflows/xp_ini.dll /c/nwnx4_user/plugins/
+          cp .github/workflows/test.ini /c/nwnx4_nwn2server/
+
+          cd /c/nwnx4_user/
+
+          # Install default config for plugins
+          cp /c/nwnx4/config.example/* .
+
+          # Configure nwnx.ini to load the module
+          sed -i -E '
+            s|^\s*#?\s*nwn2\s*=.*$|nwn2 = ../nwnx4_nwn2server|g;
+            s|^\s*#?\s*parameters\s*=.*$|parameters = -moduledir NWNX4UnitTests -home %NWNX4_DIR%/../nwn2home|g;
+            s|^\s*#?\s*nwn2temp\s*=.*$|nwn2temp = C:/nwn2temp|g;
+
+            s|plugin_list\s*=.*$|plugin_list = xp_bugfix,xp_fastboot,xp_funcs,${{matrix.sql}},xp_objectattributes,xp_pickpocket,xp_profiler,xp_srvadmin,xp_time,xp_example_cplugin,xp_ini|g;
+
+            s|^restartDelay\s*=.*$|restartDelay = 600|g;
+            s|^gamespyInterval\s*=.*$|gamespyInterval = 1|g;
+            s|^gamespyDelay\s*=.*$|gamespyDelay = 10|g;
+          ' nwnx.ini
+
+          echo "======================================== nwnx.ini"
+          cat nwnx.ini
+          echo "========================================"
+
+      # - name: "Disable windows defender"
+      #   run: |
+      #     Add-MpPreference -ExclusionProcess "NWNX4_Controller.exe"
+      #     Add-MpPreference -ExclusionProcess "nwn2server.exe"
+
+      - name: "Start server and wait for test success"
         shell: bash
         run: |
           set -o pipefail
-          cd /c/nwnx4_user/
-          powershell -Command "Start-Process ../nwnx4/NWNX4_Controller.exe -ArgumentList '-verbose','-interactive'"
-          sleep 20
-          tasklist | grep -qi "nwn2server.exe"
 
-      - name: Upload logs
+          # Start procdump and let it trigger on nwn2server crash
+          procdump -ma -e -w nwn2server.exe "/c/CrashDumps" > /dev/null &
+
+          cd /c/nwnx4_user/
+          echo "> $(date --rfc-3339=seconds --utc) Start NWNX4"
+
+          # Start NWNX4_Controller.exe with admin privileges
+          powershell -Command "Start-Process ../nwnx4/NWNX4_Controller.exe -ArgumentList '-verbose','-interactive' -Verb RunAs"
+
+          sleep 20
+          echo "> $(date --rfc-3339=seconds --utc) Check NWNX4"
+
+          # Check if nwn2server is online
+          RUN_MOD=$(/c/nwn-lib-d-tools/nwn-srv bnxi 127.0.0.1 -f json 2> /dev/null | jq -r .modName || echo "Unknown")
+          if tasklist | grep -qi "NWNX4_Controller.exe" \
+          && tasklist | grep -qi "nwn2server.exe" \
+          && [[ "$RUN_MOD" == "NWNX4UnitTests" ]]; then
+            echo "> NWN2Server is still running, tests succeeded"
+            RES=0
+          else
+            echo "> NWN2Server is not running as expected:"
+            tasklist | grep -qi "NWNX4_Controller.exe" || echo "> Missing NWNX4_Controller.exe process"
+            tasklist | grep -qi "nwn2server.exe"       || echo "> Missing nwn2server.exe process"
+            /c/nwn-lib-d-tools/nwn-srv ping 127.0.0.1 >&/dev/null || echo "> Not responding to UDP pings"
+            [[ "$RUN_MOD" == "NWNX4UnitTests" ]]       || echo "> Loaded module: $RUN_MOD"
+            RES=1
+          fi
+
+          # Stop processes if still running
+          taskkill //IM nwn2server.exe //IM NWNX4_Controller.exe //F ||true
+
+          exit $RES
+
+      - name: Check for warnings and errors in logs
+        if: always()
+        shell: bash
+        run: |
+          ! grep -E "ERROR:|WARN: " /c/nwnx4_user/*.txt /c/nwn2temp/NWN2/LOGS.0/*.txt
+
+      - name: "Upload nwn2server logs"
         if: always()
         uses: actions/upload-artifact@v6
         with:
           path: |
-            C:/CrashDumps/*
+            C:/nwn2temp/NWN2/LOGS.0/*.txt
             C:/nwnx4_user/*.txt
-          name: test-${{matrix.sql}}-logs
+          name: "test-${{matrix.sql}}-logs"
+
+      - name: "Upload nwn2server crash dump if any"
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          path: C:/CrashDumps/*
+          name: "test-${{matrix.sql}}-crash-dumps"
+          if-no-files-found: ignore
 
   # --------------------------------------------------
 
   release:
     name: Create release if tagged
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     needs: test
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/download-artifact@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
         with:
           name: nwnx4-${{ github.sha }}
           path: nwnx4/
 
       - name: Compress release
-        run: zip -r nwnx4.zip nwnx4/
+        run: |
+          zip -r nwnx4.zip nwnx4/
 
-      - name: Create draft release
+      - name: Extract release info
+        shell: bash
+        id: rel_info
+        run: |
+          TAG=$(echo '${{ github.ref }}' | grep -oE '\bv[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$' || true)
+          echo "tag=$TAG" >> $GITHUB_STATE
+
+          [[ "$TAG" =~ -rc[0-9]+$ ]] && PRERELEASE=true || PRERELEASE=false
+          echo "prerelease=$PRERELEASE" >> $GITHUB_STATE
+
+          if [[ "$TAG" != "" ]]; then
+            echo "Deploying $TAG (prerelease=$PRERELEASE)"
+          else
+            echo "Not a tagged release"
+          fi
+
+      - name: Create draft release with artifact
         uses: softprops/action-gh-release@v1
         with:
+          name: ${{ steps.rel_info.outputs.tag }}
+          prerelease: ${{ steps.rel_info.outputs.prerelease }}
           files: nwnx4.zip
           draft: true
