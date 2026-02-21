@@ -4,9 +4,9 @@ if get_option('buildtype') == 'release'
     wx_dep = [
         cppcompiler.find_library('jpeg', dirs: lib_dirs),
         cppcompiler.find_library('libpng16', dirs: lib_dirs),
-        cppcompiler.find_library('wxbase32u', dirs: lib_dirs),
-        cppcompiler.find_library('wxbase32u_net', dirs: lib_dirs),
-        cppcompiler.find_library('wxmsw32u_core', dirs: lib_dirs),
+        cppcompiler.find_library('wxbase33u', dirs: lib_dirs),
+        cppcompiler.find_library('wxbase33u_net', dirs: lib_dirs),
+        cppcompiler.find_library('wxmsw33u_core', dirs: lib_dirs),
         cppcompiler.find_library('zlib', dirs: lib_dirs),
     ]
 else
@@ -14,9 +14,9 @@ else
     wx_dep = [
         cppcompiler.find_library('jpeg', dirs: lib_dirs),
         cppcompiler.find_library('libpng16d', dirs: lib_dirs),
-        cppcompiler.find_library('wxbase32ud', dirs: lib_dirs),
-        cppcompiler.find_library('wxbase32ud_net', dirs: lib_dirs),
-        cppcompiler.find_library('wxmsw32ud_core', dirs: lib_dirs),
+        cppcompiler.find_library('wxbase33ud', dirs: lib_dirs),
+        cppcompiler.find_library('wxbase33ud_net', dirs: lib_dirs),
+        cppcompiler.find_library('wxmsw33ud_core', dirs: lib_dirs),
         cppcompiler.find_library('zlibd', dirs: lib_dirs),
     ]
 endif
@@ -46,6 +46,6 @@ NWNx4Gui_exe = executable('NWNX4_Gui',
         cppcompiler.find_library('rpcrt4'),
         cppcompiler.find_library('detours', dirs: lib_dirs)
     ] + wx_dep,
-    implib: false,
+    export_dynamic: false,
     install: true,
 )
