@@ -1,7 +1,7 @@
 {
   "name": "nwnx4",
   "version-string": "0.1.0",
-  "builtin-baseline": "1d5f3adf598a877c6870dc37b80b453f4c74d462",
+  "builtin-baseline": "66c0373dc7fca549e5803087b9487edfe3aca0a1",
   "dependencies": [
     "cryptopp",
     "detours",
