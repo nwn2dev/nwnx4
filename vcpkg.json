@@ -6,6 +6,7 @@
     "cryptopp",
     "detours",
     "wxwidgets",
+    "nanosvg",
     "libmariadb"
   ]
 }

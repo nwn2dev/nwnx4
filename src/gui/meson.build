@@ -1,4 +1,4 @@
-wx_args = ['/DwxUSE_GUI=1', '/DwxUSE_UNICODE']
+wx_args = ['/DwxUSE_GUI=1', '/DwxUSE_UNICODE=1']
 if get_option('buildtype') == 'release'
     wx_args += ['/D__WXMSWU__']
     wx_dep = [
@@ -44,7 +44,9 @@ NWNx4Gui_exe = executable('NWNX4_Gui',
         cppcompiler.find_library('wsock32'),
         cppcompiler.find_library('comctl32'),
         cppcompiler.find_library('rpcrt4'),
-        cppcompiler.find_library('detours', dirs: lib_dirs)
+        cppcompiler.find_library('detours', dirs: lib_dirs),
+        cppcompiler.find_library('nanosvg', dirs: lib_dirs),
+        cppcompiler.find_library('nanosvgrast', dirs: lib_dirs)
     ] + wx_dep,
     implib: false,
     install: true,
