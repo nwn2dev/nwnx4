@@ -1,0 +1,23 @@
+name: Notify NWNX4 Docker Image Repository of Tag Name
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send repository_dispatch to docker repository
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{secrets.REPO_DISPATCH_TOKEN}}" \
+            https://api.github.com/repos/nwn2dev/nwnx4-linux-docker-image/dispatches \
+            -d '{
+              "event_type": "nwnx4_release",
+              "client_payload": {
+                "tag_name": "${{github.event.release.tag_name}}"
+              }
+            }'
