@@ -1,0 +1,29 @@
+name: NWNX4 Docker Image CI
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout NWNX4 Docker Image repository
+        uses: actions/checkout@v6
+        with:
+          repository: nwn2dev/nwnx4-linux-docker-image
+          path: nwnx4-linux-docker-image
+
+      - name: Set TAG_NAME to environment
+        run: |
+          echo "TAG_NAME=${{github.event.release.tag_name}}" >> $GITHUB_ENV
+
+      - name: Login to Docker Hub
+        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build ./nwnx4-linux-docker-image/nwnx4 -t nwn2dev/nwnx4:${TAG_NAME} -t nwn2dev/nwnx4:latest
+          docker push nwn2dev/nwnx4:${TAG_NAME}
+          docker push nwn2dev/nwnx4:latest
