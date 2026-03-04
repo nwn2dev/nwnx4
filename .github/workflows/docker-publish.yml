@@ -24,6 +24,6 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build ./nwnx4-linux-docker-image/nwnx4 -t nwn2dev/nwnx4:latest -t nwn2dev/nwnx4:${TAG_NAME}
+          docker build --build-arg=VERSION=${TAG_NAME} ./nwnx4-linux-docker-image/nwnx4 -t nwn2dev/nwnx4:latest -t nwn2dev/nwnx4:${TAG_NAME}
           docker push nwn2dev/nwnx4:latest
           docker push nwn2dev/nwnx4:${TAG_NAME}
