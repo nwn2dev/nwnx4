@@ -21,6 +21,8 @@ aaaaaaaa ICON "nwnx.ico"
 // this icon is used with wxFrame::SetIcon()
 //sample ICON "nwnx4.ico"
 
-#include "wx/msw/wx.rc"
+#define wxUSE_RC_MANIFEST 1
+#define wxUSE_DPI_AWARE_MANIFEST 2
+#include <wx/msw/wx.rc>
 
 //iconsmall   ICON    "res/NWNX4.ico"
