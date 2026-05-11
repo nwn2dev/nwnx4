@@ -1,3 +1,5 @@
+windows = import('windows')
+
 wx_args = ['/DwxUSE_GUI=1', '/DwxUSE_UNICODE=1']
 if get_option('buildtype') == 'release'
     wx_args += ['/D__WXMSWU__']
@@ -21,6 +23,8 @@ else
     ]
 endif
 
+app_res = windows.compile_resources('nwnx.rc', include_directories: include_dirs)
+
 NWNx4Gui_exe = executable('NWNX4_Gui',
     [
         'mainframe.cpp',
@@ -31,7 +35,8 @@ NWNx4Gui_exe = executable('NWNX4_Gui',
         'worker.cpp',
         'main.cpp',
         '../misc/log.cpp',
-        'GuiLog.cpp'
+        'GuiLog.cpp',
+        app_res
     ],
     nwnx_version,
     cpp_pch : 'pch/pch.h',
