@@ -55,7 +55,7 @@ jobs:
       # Prepare build files
       - name: Meson Configure
         run: |
-          meson setup builddir --buildtype=release --optimization=2
+          meson setup builddir -Ddebug=true -Doptimization=2
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
